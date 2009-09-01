@@ -128,3 +128,7 @@ if settings.DEBUG:
 			{'document_root': '/opt/pysk/data/uploads/'}),
 	)
 
+urlpatterns += patterns("pysk.vps0.views",
+	(r'^helloworld.pdf$', 'helloworld'),
+)
+

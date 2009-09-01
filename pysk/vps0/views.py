@@ -427,3 +427,22 @@ def migrate(request):
 
     return HttpResponseRedirect("/admin/")
 
+
+
+from pycpdf import PyCPDF
+
+def helloworld( request ):
+	response = HttpResponse( mimetype='application/pdf' );
+	response['Content-Disposition'] = 'attachment; filename=ohai.pdf'
+	
+	c = PyCPDF( response );
+	
+	c.setFont( "Helvetica-Bold", 20 );
+	c.cell( txt="Ohai!", border=True, ln=True, align="C" );
+	
+	c.setFont( "Helvetica", 14 );
+	c.cell( txt="I haz printed teh hello world PDF." );
+	
+	c.save();
+	return response;
+
