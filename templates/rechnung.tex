@@ -1,0 +1,134 @@
+{% load babel %}
+\documentclass[%
+ 	fontsize=12pt,	%Schriftgroesse (12pt default)
+ 	paper=a4,		%Papierformat (A4 default)
+	parskip=half*,  %Absatz statt Einzug
+	moretext,       %DINmtext statt DIN
+%	DINfalse,       %Satzspiegel scrlttr2-Standard, aber nicht strikt DIN5008-konform!
+%	nonsymm,        %historisch :)
+%	nonexthead,     %leerer nexthead auf den Folgeseiten
+	ngerman,        %Briefsprache Deutsch
+% 	english,        %Briefsprache Englisch
+]{igowobrief}	%aktuelle Briefklasse aus dem KOMA-Paket
+
+%% Sprache / Zeichensatz =====================================================================
+\usepackage[T1]{fontenc}        %Schriftkodierung
+\usepackage[utf8]{inputenc}     %Unicode-Zeichensatz (Unix/Linux)
+% --------------------------------------------------------------------------------------------
+
+%% sonstige Pakete ===========================================================================
+\usepackage{textcomp}   %Symbole und Schriftlayout
+\usepackage{lmodern}    %ComputernModern-Schrift (TYPE1-tauglich)
+\usepackage{microtype}  %echter Blocksatz
+\usepackage{array,booktabs,longtable}
+\usepackage{eurosym}
+\usepackage{ltxtable}
+\usepackage{booktabs}
+% --------------------------------------------------------------------------------------------
+
+%% Satzspiegel / Layout ======================================================================
+% \LoadLetterOption{nowindow} % *KEINE* foldmarks und backaddress (z.B. Zeugnisse und fensterlose Umschlaege!)
+% \LoadLetterOption{nonexthead} % keinen Header auf den Folgeseiten
+%% -------------------------------------------------------------------------------------------
+
+%% Absender.lco ==============================================================================
+\LoadLetterOption{igowo}
+% --------------------------------------------------------------------------------------------
+
+\firstfoot{% templatetag openblock %}
+	\strut%
+    \makebox[\textwidth][l]{% templatetag openblock %}
+	\parbox[t]{\useplength{firstfootwidth}}{% templatetag openblock %}
+	    \raisebox{-0.3em}{\usekomafont{pagenumber}\thepage\,/\,\ref{TotPages}} \quad \hrulefill \quad \raisebox{-1.95mm}{\usekomavar{igowoicon}}
+        }
+    }
+
+	\parbox[t]{\textwidth}{\footnotesize%
+	\begin{tabular}[t]{l@{}}%
+		\multicolumn{1}{@{}l@{}}{% templatetag openblock %}
+		\textbf{Gesellschafter:}}\\
+		Benedikt Golla,	Philipp Wollermann
+	\end{tabular}
+	\ifkomavarempty{frombank}{}{% templatetag openblock %}
+		\hfill%
+		\begin{tabular}[t]{l@{}}%
+			\multicolumn{1}{@{}l@{}}{% templatetag openblock %}
+				\textbf{\usekomavar*{frombank}:}}\\
+			\usekomavar{frombank}
+		\end{tabular}
+		}
+	}
+}
+
+\begin{document}
+\begin{letter}{% templatetag openblock %}
+{% if c.firma %}\textbf{% templatetag openbrace %}{{ c.firma }}}\\{% endif %}
+{% if not c.firma %}\textbf{% templatetag openbrace %}{% endif %}{{ c.anrede }} {{ u.first_name }} {{ u.last_name }}{% if not c.firma %}}{% endif %}\\
+{{ c.strasse }}\\
+{{ c.plz }} {{ c.ort }}\\
+{{ c.land }}}
+
+\setkomavar{customer}{% templatetag openbrace %}{{ u.username }}}
+\setkomavar{invoice}{% templatetag openbrace %}{{ r.id }}}
+\setkomavar{date}{% templatetag openbrace %}Rechnungsdatum: {{ r.datum|date:"d.m.Y" }}}
+\setkomavar{subject}{Rechnung Nr. {{ r.id }}}
+
+%% global fuer das Briefdokument SansSerif-Schriftfamilie
+\sffamily
+
+\opening{Sehr geehrter {{ c.anrede }} {{ u.last_name }},}
+
+hiermit stellen wir folgende Leistungen in Rechnung:
+
+\footnotesize
+\begin{longtable}{llp{8cm}rrr}
+\textbf{Pos} & \textbf{Menge} & \textbf{Bezeichnung} & \textbf{Einzelpreis} & \textbf{Gesamt} & \textbf{St.} \\
+\toprule
+\endfirsthead
+\textbf{Pos} & \textbf{Menge} & \textbf{Bezeichnung} & \textbf{Einzelpreis} & \textbf{Gesamt} & \textbf{St.} \\
+\toprule
+\endhead
+\midrule
+{% if r.netto_volle_ust  %}\multicolumn{4}{r}{Nettobetrag (19\%):} & {{ r.netto_volle_ust|decimalfmt:"#,##0.00" }} EUR \\{% endif %}
+{% if r.steuer_volle_ust %}\multicolumn{4}{r}{zzgl. 19\% Mehrwertsteuer:} & {{ r.steuer_volle_ust|decimalfmt:"#,##0.00" }} EUR \\{% endif %}
+{% if r.netto_halbe_ust  %}\multicolumn{4}{r}{Nettobetrag (7\%):} & {{ r.netto_halbe_ust|decimalfmt:"#,##0.00" }} EUR \\{% endif %}
+{% if r.steuer_halbe_ust %}\multicolumn{4}{r}{zzgl. 7\% Mehrwertsteuer:} & {{ r.steuer_halbe_ust|decimalfmt:"#,##0.00" }} EUR \\{% endif %}
+\bottomrule
+\\\multicolumn{4}{r}{\textbf{Rechnungsendbetrag}} & \textbf{% templatetag openbrace %}{{ r.brutto|decimalfmt:"#,##0.00" }} EUR} \\
+\endlastfoot
+{% for p in posten %}
+{{ forloop.counter }} &%
+{{ p.menge|decimalfmt:"#,##0.000" }} {{ p.einheit }} &%
+{{ p.name }}%
+{% ifequal p.typ "lieferung" %}%
+\newline Lieferzeitpunkt: {{ p.leistungsbeginn|date:"d.m.Y" }} &%
+{% endifequal %}%
+{% ifequal p.typ "leistung" %}%
+{% ifequal p.leistungsbeginn p.leistungsende %}%
+\newline Leistungszeitpunkt: {{ p.leistungsbeginn|date:"d.m.Y" }} &%
+{% else %}%
+\newline Leistungszeitraum: {{ p.leistungsbeginn|date:"d.m.Y" }} - {{ p.leistungsende|date:"d.m.Y" }} &%
+{% endifequal %}%
+{% endifequal %}%
+{{ p.preis|decimalfmt:"#,##0.0000" }} EUR &%
+{{ p.gesamt|decimalfmt:"#,##0.0000" }} EUR & 19\% \\{% if not forloop.last %}\midrule{% endif %}
+{% endfor %}
+\end{longtable}
+\normalsize
+
+Zahlbar bis zum {{ zahlbar_bis }} {{ zahlbar_kond }}.
+
+{% if steuerfrei %}
+Diese Rechnung enthält Leistungen, die steuerfrei sind, weil ... FIXME
+{% endif %}
+{% if unsteuerbar %}
+Diese Rechnung enthält Leistungen, die in der Bundesrepublik Deutschland nicht steuerbar sind, weil es sich um sonstige Leistungen gemäß §3a Abs.4 UStG handelt.
+{% endif %}
+
+Wir bedanken uns für Ihr Vertrauen.
+
+\closing{\raggedright Mit freundlichen Grüßen,}
+
+\end{letter}
+\end{document}
+
