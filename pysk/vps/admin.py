@@ -1,5 +1,5 @@
 from django.contrib import admin
-from pysk.vps0.models import *
+from pysk.vps.models import *
 
 ## Utility classes
 

@@ -4,8 +4,7 @@ import re
 from django.conf.urls.defaults import *
 from django.conf import settings
 from django.contrib import admin
-from pysk.vps0.models import *
-#from pysk.vps1.models import *
+from pysk.vps.models import *
 
 admin.autodiscover()
 
@@ -106,7 +105,7 @@ urlpatterns = patterns("pysk.vps1.views",
 """
 
 # Muss per HTTP Digest abgesichert werden!
-urlpatterns += patterns("pysk.vps0.views",
+urlpatterns += patterns("pysk.vps.views",
 	(r'^api/v0/vz/(?P<server>.*)/apache/', 'v0_apache'),
 	(r'^api/v0/vz/(?P<server>.*)/aliases/', 'v0_aliases'),
 	(r'^api/v0/vz/(?P<server>.*)/aliases_nginx/', 'v0_aliases_nginx'),
@@ -128,7 +127,7 @@ if settings.DEBUG:
 			{'document_root': '/opt/pysk/data/uploads/'}),
 	)
 
-urlpatterns += patterns("pysk.vps0.views",
+urlpatterns += patterns("pysk.vps.views",
 	(r'^helloworld.pdf$', 'helloworld'),
 )
 

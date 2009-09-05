@@ -17,8 +17,8 @@ MANAGERS = ADMINS
 DATABASE_ENGINE = 'postgresql_psycopg2' # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
 DATABASE_NAME = 'pysk'                  # Or path to database file if using sqlite3.
 DATABASE_USER = 'pysk'                  # Not used with sqlite3.
-DATABASE_PASSWORD = open("/etc/pysk/dbpass", "r").read()
-DATABASE_HOST = 'db1.igowo.de'          # Set to empty string for localhost. Not used with sqlite3.
+DATABASE_PASSWORD = 'z62VUW2m59Y69u99'
+DATABASE_HOST = ''                      # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = ''                      # Set to empty string for default. Not used with sqlite3.
 
 TIME_ZONE = 'Europe/Berlin'
@@ -80,6 +80,6 @@ INSTALLED_APPS = (
 	'babeldjango',
 	'django_extensions',
 	'pysk.main',
-	'pysk.vps0',
+	'pysk.vps',
 )
 

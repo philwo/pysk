@@ -24,7 +24,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 
 from pysk.main.models import *
-from pysk.vps0.models import *
+from pysk.vps.models import *
 
 @user_passes_test(lambda u: u.is_superuser == True)
 def sync(request):

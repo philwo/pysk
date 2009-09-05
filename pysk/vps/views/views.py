@@ -5,7 +5,7 @@ from django.shortcuts import get_list_or_404, get_object_or_404, render_to_respo
 from django.db import transaction
 from django.contrib.auth.decorators import user_passes_test
 
-from pysk.vps0.models import *
+from pysk.vps.models import *
 from sets import Set
 import cPickle
 import hashlib
