@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.contrib import admin
-from pysk.main.models import *
+from pysk.app.models import *
 
 # Create your models here.
 class CustomerAdmin(admin.ModelAdmin):

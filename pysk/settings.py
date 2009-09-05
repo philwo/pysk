@@ -2,10 +2,14 @@
 
 # Django settings for pysk project.
 
+from os import path as os_path
+PROJECT_PATH = os_path.abspath(os_path.split(__file__)[0])
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
-DEFAULT_FROM_EMAIL = "support@igowo.de"
-SEND_BROKEN_LINK_EMAILS = True
+
+#if TEMPLATE_DEBUG == True:
+#	TEMPLATE_STRING_IF_INVALID = "TEMPLATE_INVALID"
 
 ADMINS = (
 	("Philipp Wollermann", "philipp@igowo.de"),
@@ -13,7 +17,6 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-# New postgres database
 DATABASE_ENGINE = 'postgresql_psycopg2' # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
 DATABASE_NAME = 'pysk'                  # Or path to database file if using sqlite3.
 DATABASE_USER = 'pysk'                  # Not used with sqlite3.
@@ -24,34 +27,55 @@ DATABASE_PORT = ''                      # Set to empty string for default. Not u
 TIME_ZONE = 'Europe/Berlin'
 LANGUAGE_CODE = 'de-de'
 
+_ = lambda s: s
+
+LANGUAGES = (
+	('de', _('German')),
+#	('en', _('English')),
+)
+
 SITE_ID = 1
 USE_I18N = True
 
 # MEDIA_* settings are only relevant for uploaded files,
 # specifically fields of type FileField and ImageField!
-MEDIA_ROOT = '/opt/pysk/data/uploads/'
+MEDIA_ROOT = os_path.join(PROJECT_PATH, 'uploads')
 MEDIA_URL = '/uploads/'
-ADMIN_MEDIA_PREFIX = '/media/'
+STATIC_ROOT = os_path.join(PROJECT_PATH, 'static')
+STATIC_URL = '/static/'
+ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 SECRET_KEY = 'xgYRsDMhGsnjubsP1JwT9b6ux6teGVLedHEJywNtIsMQKxgK'
 
 ROOT_URLCONF = 'pysk.urls'
-AUTH_PROFILE_MODULE = "main.customer"
+AUTH_PROFILE_MODULE = "app.customer"
 LOGIN_URL = "/login/"
-LOGIN_REDIRECT_URL = "/vps/"
+LOGIN_REDIRECT_URL = "/admin/"
 ACCOUNT_ACTIVATION_DAYS = 14
+
+DEFAULT_FROM_EMAIL = "support@igowo.de"
+SEND_BROKEN_LINK_EMAILS = not DEBUG
+APPEND_SLASH = False
+PREPEND_WWW = False
+USE_ETAGS = True
+
+TEMPLATE_DIRS = (
+	"/opt/pysk/templates",
+)
+
+# List of callables that know how to import templates from various sources.
+TEMPLATE_LOADERS = (
+	'django.template.loaders.filesystem.load_template_source',
+	'django.template.loaders.app_directories.load_template_source',
+)
 
 TEMPLATE_CONTEXT_PROCESSORS = (
 	"django.core.context_processors.auth",
 	"django.core.context_processors.debug",
 	"django.core.context_processors.i18n",
 	"django.core.context_processors.media",
-	"pysk.urls.navigation"
-)
-
-TEMPLATE_LOADERS = (
-	'django.template.loaders.filesystem.load_template_source',
-	'django.template.loaders.app_directories.load_template_source',
+	"django.core.context_processors.request",
+	#"pysk.urls.navigation"
 )
 
 MIDDLEWARE_CLASSES = (
@@ -59,15 +83,12 @@ MIDDLEWARE_CLASSES = (
 	'django.middleware.http.ConditionalGetMiddleware',
 	'django.contrib.csrf.middleware.CsrfMiddleware',
 	'django.middleware.common.CommonMiddleware',
-	'babeldjango.middleware.LocaleMiddleware',
+	#'babeldjango.middleware.LocaleMiddleware',
 	'django.contrib.sessions.middleware.SessionMiddleware',
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
+	'django.middleware.http.ConditionalGetMiddleware',
 	'django.middleware.doc.XViewMiddleware',
 	'django.middleware.transaction.TransactionMiddleware',
-)
-
-TEMPLATE_DIRS = (
-	"/opt/pysk/templates",
 )
 
 INSTALLED_APPS = (
@@ -77,9 +98,10 @@ INSTALLED_APPS = (
 	'django.contrib.sites',
 	'django.contrib.admin',
 	'django.contrib.webdesign',
-	'babeldjango',
+	#'babeldjango',
 	'django_extensions',
-	'pysk.main',
+	'pysk.app',
+	'pysk.voip',
 	'pysk.vps',
 )
 

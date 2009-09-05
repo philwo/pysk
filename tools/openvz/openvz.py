@@ -32,7 +32,7 @@ def main(argv=None):
     db = psycopg2.connect("host='db1.igowo.de' user='pysk' password='%s' dbname='pysk'" % (DATABASE_PASSWORD,))
     cursor = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
     
-    query = "SELECT DISTINCT server_id, ip FROM vps0_ipaddress WHERE server_id != 0 ORDER BY server_id, ip"
+    query = "SELECT DISTINCT server_id, ip FROM vps_ipaddress WHERE server_id != 0 ORDER BY server_id, ip"
     cursor.execute(query)
     ips = {}
 
@@ -41,7 +41,7 @@ def main(argv=None):
             ips[row["server_id"]] = []
         ips[row["server_id"]].append(row["ip"])
     
-    query = "SELECT DISTINCT s.id, i.ip FROM vps0_server s, vps0_ipaddress i WHERE s.main_ip_id = i.id ORDER BY s.id"
+    query = "SELECT DISTINCT s.id, i.ip FROM vps_server s, vps_ipaddress i WHERE s.main_ip_id = i.id ORDER BY s.id"
     cursor.execute(query)
     main_ips = dict([(x["id"], x["ip"]) for x in cursor.fetchall()])
     
