@@ -4,15 +4,15 @@
 import cPickle
 import urllib2
 
-APIPASS = open("/etc/pysk/apipass", "r").read().strip()
+APIPASS = "W68p20YST5Iv6KGG"
 
 authhandler = urllib2.HTTPDigestAuthHandler()
-authhandler.add_password("private area", "pysk.igowo.de", "pysk", APIPASS)
+authhandler.add_password(realm="Pysk API", uri="https://localhost:8080/", user="pysk", passwd=APIPASS)
 
 opener = urllib2.build_opener(authhandler)
 urllib2.install_opener(opener)
 
-zonefiles = cPickle.load(urllib2.urlopen("https://pysk.igowo.de/api/v0/dns/bind/"))
+zonefiles = cPickle.load(urllib2.urlopen("https://localhost:8080/api/v0/dns/bind/"))
 conf = []
 
 for key, value in zonefiles.iteritems():

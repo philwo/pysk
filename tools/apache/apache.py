@@ -13,16 +13,16 @@ import socket
 hostname = socket.getfqdn()
 apacheroot = "/etc/httpd/conf"
 
-APIPASS = open("/etc/pysk/apipass", "r").read().strip()
+APIPASS = "W68p20YST5Iv6KGG"
 
-authhandler = urllib2.HTTPDigestAuthHandler()
-authhandler.add_password("private area", "pysk.igowo.de", "pysk", APIPASS)
+authhandler = urllib2.HTTPBasicAuthHandler()
+authhandler.add_password(realm="Pysk API", uri="https://localhost:8080/", user="pysk", passwd=APIPASS)
 
 opener = urllib2.build_opener(authhandler)
 urllib2.install_opener(opener)
 
 print "Getting config for %s ..." % (hostname,)
-configdata = cPickle.load(urllib2.urlopen("https://pysk.igowo.de/api/v0/vz/%s/apache/" % (hostname,)))
+configdata = cPickle.load(urllib2.urlopen("https://localhost:8080/api/v0/vz/%s/apache/" % (hostname,)))
 vhosts = configdata["apache"]["vhosts"]
 ips = configdata["apache"]["ips"]
 validDomain = re.compile("([a-zA-Z0-9-]+\.?)+")
