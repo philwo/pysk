@@ -1,0 +1,44 @@
+# /etc/postfix/main.cf
+
+soft_bounce = no
+unknown_local_recipient_reject_code = 550
+
+smtpd_banner = $myhostname ESMTP $mail_name
+myorigin = $myhostname
+mydestination = $myhostname localhost.$mydomain localhost
+append_dot_mydomain = no
+biff = no
+
+inet_interfaces = 127.0.0.1
+mynetworks = 127.0.0.0/8
+
+alias_maps = hash:/etc/postfix/aliases
+alias_database = $alias_maps
+
+relayhost = [mikuru.igowo.de]
+
+smtpd_helo_required = yes
+disable_vrfy_command = yes
+recipient_delimiter = +
+
+smtpd_recipient_restrictions =
+  permit_mynetworks,
+  reject
+
+message_size_limit = 104857600
+mailbox_size_limit = 524288000
+
+mail_owner = postfix
+setgid_group = postdrop
+
+command_directory = /usr/sbin
+daemon_directory = /usr/lib/postfix
+data_directory = /var/lib/postfix
+html_directory = no
+mailq_path = /usr/bin/mailq
+manpage_directory = /usr/share/man
+newaliases_path = /usr/bin/newaliases
+queue_directory = /var/spool/postfix
+readme_directory = no
+sample_directory = /etc/postfix/sample
+sendmail_path = /usr/sbin/sendmail
