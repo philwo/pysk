@@ -1,0 +1,7 @@
+check host localhost with address 127.0.0.1 
+    start program = "/etc/rc.d/postfix start" 
+    stop  program = "/etc/rc.d/postfix stop" 
+    if failed host 127.0.0.1 port smtp
+        protocol SMTP
+        then restart
+

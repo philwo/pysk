@@ -1,0 +1,7 @@
+check process apache with pidfile /var/run/httpd/httpd.pid
+    start "/etc/rc.d/httpd start"
+    stop  "/etc/rc.d/httpd stop"
+    if failed host localhost port 80 
+        protocol HTTP
+        then restart
+
