@@ -16,6 +16,7 @@ rsync $RSYNCOPTS /opt/pysk/serverconfig/ /
 echo "Fixing permissions"
 chmod 0700 /root /root/.ssh /etc/monit.d
 chmod 0600 /etc/monitrc /root/.pgpass /root/.ssh/*
+chown postgres:postgres /var/lib/postgres/data/*
 
 echo "Fixing up httpd.conf"
 sed -i s/MAINUSER/$MAINUSER/g /etc/httpd/conf/httpd.conf
