@@ -4,5 +4,6 @@
 alias ls='ls --color=auto'
 PS1='[\u@\h \W]\$ '
 
-export PGHOST="yuki.igowo.de"
+export PGHOST="localhost"
 export PGUSER="postgres"
+
