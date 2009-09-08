@@ -19,6 +19,7 @@ chmod 0600 /etc/monitrc /root/.pgpass /root/.ssh/*
 chown -R postgres:postgres /var/lib/postgres/data
 chmod 0600 /var/lib/postgres/data/server.{crt,key}
 chmod 0700 /var/lib/postgres/data
+chmod 0600 /etc/ssl/private/*
 
 echo "Fixing up httpd.conf"
 sed -i s/MAINUSER/$MAINUSER/g /etc/httpd/conf/httpd.conf
