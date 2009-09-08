@@ -1,4 +1,4 @@
-check process apache with pidfile /var/run/httpd/httpd.pid
+check process httpd with pidfile /var/run/httpd/httpd.pid
     group www
     start "/etc/rc.d/httpd start"
     stop  "/etc/rc.d/httpd stop"

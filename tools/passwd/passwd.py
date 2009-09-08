@@ -37,7 +37,7 @@ def main(argv=None):
     #   return 1
 
     DATABASE_PASSWORD = open("/etc/pysk/dbpass", "r").read().strip()
-    db = psycopg2.connect("host='db1.igowo.de' user='pysk' password='%s' dbname='pysk'" % (DATABASE_PASSWORD,))
+    db = psycopg2.connect("host='localhost' user='pysk' password='%s' dbname='pysk'" % (DATABASE_PASSWORD,))
     cursor = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     # /etc/passwd

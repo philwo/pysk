@@ -11,7 +11,7 @@ import socket
 
 APIPASS = "W68p20YST5Iv6KGG"
 
-authhandler = urllib2.HTTPDigestAuthHandler()
+authhandler = urllib2.HTTPBasicAuthHandler()
 authhandler.add_password(realm="Pysk API", uri="https://localhost:8080/", user="pysk", passwd=APIPASS)
 
 opener = urllib2.build_opener(authhandler)
