@@ -6,10 +6,11 @@ set idfile /var/.monit.id
 set statefile /var/.monit.state
 set mailserver smtp.gmail.com port 587 username philipp@igowo.de password meeridian4 using TLSV1
 set mail-format { from: philipp@igowo.de }
-set alert philipp@igowo.de
+#set alert philipp@igowo.de
+set mmonit http://monit:8AcnRmYBoxqz@mikuru.igowo.de:8082/collector
 set httpd port 2812 and
-    use address localhost  # only accept connection from localhost
-    allow localhost        # allow localhost to connect to the server
+    use address 0.0.0.0
+    allow localhost
     allow mikuru.igowo.de
     ssl enable
     pemfile /etc/ssl/private/star_igowo_de_combined.crt
