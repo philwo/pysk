@@ -17,6 +17,7 @@ echo "Fixing permissions"
 chmod 0700 /root /root/.ssh /etc/monit.d
 chmod 0600 /etc/monitrc /root/.pgpass /root/.ssh/*
 chown -R postgres:postgres /var/lib/postgres/data
+chmod 0600 /var/lib/postgres/data/server.{crt,key}
 chmod 0700 /var/lib/postgres/data
 
 echo "Fixing up httpd.conf"

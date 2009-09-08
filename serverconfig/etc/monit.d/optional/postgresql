@@ -1,0 +1,8 @@
+check process postgres with pidfile /var/lib/postgres/data/postmaster.pid
+    group database
+    start program = "/etc/rc.d/postgresql start"
+    stop  program = "/etc/rc.d/postgresql stop"
+    if failed unixsocket /tmp/.s.PGSQL.5432 protocol pgsql then restart
+    if failed port 5432 protocol pgsql then restart
+    if 5 restarts within 5 cycles then timeout
+

@@ -1,0 +1,271 @@
+PHPPGADMIN TODO LIST FOR DEVELOPERS
+-----------------------------------
+
+phpPgAdmin is an open source project which means that if you see something on 
+this list that you would like to implement, just send us a patch.  You can find
+our project page here:
+
+	http://sourceforge.net/projects/phppgadmin/
+
+An item is marked 'claimed' when a username in brackets is put after the TODO
+item. If you want to work a claimed item, please contact the developers list.
+
+An item is marked with a '-' if it has been completed.
+
+Cluster
+-------
+* Allow reading of postgresql.conf and pg_hba.conf per pg_read_file() in 8.1
+* Support pg_reload_conf(), pg_rotate_logfile() 8.1 commands
+
+
+Export
+------
+
+* Switch to SPARQL format:
+  http://www.w3.org/TR/2005/WD-rdf-sparql-XMLres-20050801/
+
+  Actually...SQL/XML is maybe better.
+
+
+Users
+-----
+
+* 7.3 user variables (eg. ALTER USER SET .. TO ...)
+
+
+Groups
+------
+
+
+Roles
+-----
+
+* -Support for 8.1 roles (removing users and groups) (chriskl,javier)
+* -Support for ALTER ROLE (done by ?)
+
+
+Permissions
+-----------
+
+* Grant ... on all tables, views, ... to user, group, public
+* Grant connect on database [8.2]
+
+
+Databases
+---------
+
+* Add alter database variables for 7.3+
+* -Comments on Create and Alter database [8.2]
+* Add database stats
+* REASSIGN OWNED & DROP OWNED support for 8.2+ 
+	- http://www.postgresql.org/docs/8.2/interactive/sql-reassign-owned.html
+	- http://www.postgresql.org/docs/8.2/interactive/sql-drop-owned.html
+
+
+Schemas (7.3)
+-------------
+
+* -Rename (xzilla)
+* -Alter owner (ioguix)
+* Alter ... SET SCHEMA support per 8.1 
+
+
+Large Objects
+-------------
+
+* Add support for large objects
+
+
+Tables
+------
+
+* Allow PK and UNIQUE and FKs during create table (Jawed)
+* -Vacuum & analyze individual tables (analyze by ioguix, vacuum already done)
+* When adding a column or creating a table, prevent size on non-size types (eg. integer(2)).  You can find these by looking at format_type in the postgresql source code.
+* When browsing a table, clicking on a FK value should jump to the
+  PK row. (ioguix)
+* When editing a table, turn FK columns into drop-downs based on estimated
+  rows in the foreign table? (Jawed)
+* -Auto-select 'WITHOUT OIDS' if 'default_with_oids' setting is false (Guillaume LELARGE)
+* Add WITH storage_parameter option to create table [8.2]
+* Add last vacuum and analyze information from statistics tables [8.2]
+* Restrict operators (from $selectOps array) to appropriate types (ie. no LIKE for int4 fields)
+* Alter column should handle types with implicit cast types distinctly from those requiring a USING clause
+* Where ENUM types are an option, restrict choice to enum values [8.3]
+
+
+Views
+-----
+
+* Support temporary views per 8.1?
+* Allow INSERT and import on views with the appropriate rules.
+* - Allow altering of comments (ioguix, with rename, owner & schema)
+
+
+Sequences
+---------
+
+* -Alter sequence (Guillaume LELARGE)
+* -setval & nextval (Guillaume LELARGE)
+* -change schema (ioguix)
+* -rename (done using alter table) (ioguix)
+
+
+Functions
+---------
+
+* -Support 8.1 IN, OUT and INOUT parameters.(Jawed)
+* Remove options for OUT/INOUT params in older servers
+* Clean up javascript html spec warnings
+* -Display owner (xzilla)
+* -Alter owner (xzilla)
+* -Alter schema (xzilla)
+* GUC settings [8.3]
+* Default param values
+
+Indexes 
+-------
+
+* Support 8.1 Reindex [Database|System] commands
+* Expressional indexes
+* Allow indexes to be built concurrently [8.2]
+* Create Index Asc/Desc, Nulls First/Last [8.3]
+
+
+Types
+-----
+
+* Suppres psuedo-type options in type list for creating composite types. 
+
+
+Operators
+---------
+
+* Create
+* Create/Alter/Drop Operator Family
+
+
+Operator Classes
+----------------
+
+* Create
+
+
+Triggers
+--------
+
+* Allow functions from other schemas.
+* -Support ENABLE/DISABLE trigger in 8.1 (Jawed)
+
+
+Aggregates
+----------
+
+* -Properties (Javier)
+* -Drop (Javier)
+* -Create (Javier)
+* Allow for multi-column aggregates [8.2]
+
+
+Languages
+---------
+
+* Drop
+* Create
+* Alter owner [8.3]
+* Alter name [8.3]
+
+
+Domains (7.3)
+-------------
+
+
+Conversions (7.3)
+-----------------
+
+* Properties
+* Drop
+* Create
+
+
+Casts (7.3)
+-----------
+
+* Properties
+* Drop
+* Create
+
+
+Full Text Search (8.3)
+----------------------
+
+* Create/Alter/Drop parser 
+* Help Pages 
+* Alter Owner 
+
+
+Miscellaneous
+-------------
+
+* Support 8.1 standard compliant strings (E'')
+* -Allow management of built-in autovacuum in 8.1 (xzilla)
+* Support per-user and per-database connection limits per 8.1
+* Put a 'What's blocking this query' on Processes view
+* -Show locks on database view (Javier)
+* Show prepared statements on database view [8.2]
+* Show cursors on database view [8.2]
+* Show NOTICES on queries in SQL window/file
+* -Add sslmode to connection variables (Eric Kinolik)
+* Printable view of things
+* Show comments for all objects (Dan Boren)
+* Allow setting/dropping comments for all objects (Dan Boren)
+* Show owner for all objects
+* Allow changing owner for objects that have this feature [7.4+ generally]
+* -Icons for all objects, for use in navigation widgets
+  Most objects are now covered thanks to those provided by Niko,
+  but we still need icons for:
+    Introduction, Variables, Admin, Privileges, Reports
+* Add CASCADE option to Truncate [8.2]
+* Add information about synch tool to TRANSLATORS
+* Translated FAQ
+* Pull FAQ/HISTORY/CREDITS/etc... from CVS for website. 
+* Add support for csvlogs [8.3]
+* Add executed file scripts in history 
+
+
+Exotic
+------
+
+* Support contrib/tsearch2 for easy full text indexes
+* Pivot reports (ADODB has a feature for this)
+* Parameterized reports (use prepared queries)
+* Full web accessability conformance
+* reversing the database stack inheritance
+	it would have the following advantages:
+	- less class to load when using the latests pg versions
+	- every newer/up-to-date methods will be in the same class file. Other classes will have specific methods 
+	for their pg versions and older
+	- ... complete me please :)
+
+Principles
+----------
+
+* register_globals off support
+* maximum error_reporting support - enforces code quality, reduces bugs and 
+  improves security
+* PHP 4.2 features used
+* No HTML font, colour, layout tags.  Use CSS for everything
+* One day we should make it all XHTML
+* everything properly escaped - prevent sql injection and cross-site scripting 
+  probs
+* Support Postgres 7.0 and upwards
+* psql -E is a cool way of seeing how to do schema queries
+* Checking out older versions of describe.c in src/bin/psql in the postgres 
+  distro is a good way of seeing how to query older versions of postgres for 
+  schema information
+* Put functions in the highest class possible.  For instance, simple selects 
+  should be in Postgres, whereas something that works for 7.1+ should be in the 
+  7.1 class.  This will minimise bugs and duplicated code.
+* Adhere to current coding standards
+* Avoid using global variables if possible
+

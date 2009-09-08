@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Generate random password for MySQL
+# Generate random password for Postgres
 rootpw=`tr -cd '[:alnum:]' < /dev/urandom | head -c 12`
 hostname=`hostname`
 

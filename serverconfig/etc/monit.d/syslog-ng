@@ -1,0 +1,10 @@
+check process syslogd with pidfile /var/run/syslog-ng.pid
+    group system
+    start program = "/etc/rc.d/syslog-ng start"
+    stop program = "/etc/rc.d/syslog-ng stop"
+    if 5 restarts within 5 cycles then timeout
+
+check file syslogd_file with path /var/log/everything.log
+    group system
+    if timestamp > 65 minutes then alert # Have you seen "-- MARK --"?
+
