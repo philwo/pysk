@@ -74,6 +74,13 @@ NameVirtualHost %(ip)s:%(port)s
         Order allow,deny
         allow from all
     </Directory>
+
+    <Location /server-status>
+        SetHandler server-status
+        Order Deny,Allow
+        Deny from all
+        Allow from 127.0.0.1
+    </Location>
 """ % {"ip": ip, "port": port})
 
     if sslcert != "" and sslkey != "":

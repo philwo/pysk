@@ -1,7 +1,9 @@
-check host localhost with address 127.0.0.1 
+check host localhost_smtp with address 127.0.0.1
+    group mail
     start program = "/etc/rc.d/postfix start" 
     stop  program = "/etc/rc.d/postfix stop" 
-    if failed host 127.0.0.1 port smtp
+    if failed port 25
         protocol SMTP
         then restart
+    if 5 restarts within 5 cycles then timeout
 

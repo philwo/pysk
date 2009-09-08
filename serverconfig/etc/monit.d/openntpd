@@ -1,8 +1,9 @@
-check host localhost with address 127.0.0.1 
+check host localhost_ntp with address 127.0.0.1
+    group system
     start program = "/etc/rc.d/openntpd start" 
     stop  program = "/etc/rc.d/openntpd stop" 
-    if failed host 127.0.0.1 port 123
+    if failed port 123
         type udp
-        protocol ntp3
         then restart
 	every 10 cycles
+

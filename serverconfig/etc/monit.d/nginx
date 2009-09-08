@@ -1,11 +1,15 @@
 check process nginx with pidfile /var/run/nginx.pid
+    group www
     start program = "/etc/rc.d/nginx start"
     stop program = "/etc/rc.d/nginx stop"
-    if failed host 127.0.0.1 port 8080
-        protocol HTTP
+    if failed port 8080
+	type TCPSSL
+        protocol HTTP request "/nginx_status"
         then restart
+    if 5 restarts within 5 cycles then timeout
 
 check file nginx.conf with path /etc/nginx/conf/nginx.conf
+    group www
     if changed timestamp
         then exec "/etc/rc.d/nginx reload"
 

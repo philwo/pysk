@@ -1,6 +1,8 @@
 check process pysk with pidfile /var/run/pysk.pid
-    start program = "/usr/bin/python /opt/pysk/pysk/manage.py runfcgi daemonize=false host=127.0.0.1 port=8081 pidfile=/var/run/pysk.pid --settings=settings"
-    stop program = "/usr/bin/test -s /var/run/xyz.pid && /bin/kill `cat /var/run/xyz.pid` && /bin/rm -f /var/run/pysk.pid"
-    if failed host 127.0.0.1 port 8081
+    group system
+    start program = "/usr/bin/python /opt/pysk/pysk/manage.py runfcgi daemonize=false method=threaded host=127.0.0.1 port=8081 pidfile=/var/run/pysk.pid --settings=settings"
+    stop program = "/usr/bin/test -s /var/run/pysk.pid && /bin/kill `cat /var/run/pysk.pid` && /bin/rm -f /var/run/pysk.pid"
+    if failed port 8081
         then restart
     if 5 restarts within 5 cycles then timeout
+

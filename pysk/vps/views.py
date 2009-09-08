@@ -311,7 +311,7 @@ def v0_apache(request, server):
                         output.append("RPAFenable On")
                         output.append("RPAFsethostname On")
                         #output.append("RPAFproxy_ips 127.0.0.1 %s" % (ip.parent_ip.ip))
-                        output.append("RPAFproxy_ips 127.0.0.1 81.95.0.210")
+                        output.append("RPAFproxy_ips 127.0.0.1")
                     output.append("</VirtualHost>")
                     vhosts.append(("%s-%s-%s" % (vh.fqdn(), ip.ip, ip.port), "\n".join(output), username, htdocs_dir))
             
