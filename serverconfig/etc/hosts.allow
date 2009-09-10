@@ -3,5 +3,6 @@
 #
 
 sshd: ALL
+mysqld: ALL
 
 # End of file
