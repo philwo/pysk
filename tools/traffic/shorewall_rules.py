@@ -18,7 +18,7 @@ def main(argv=None):
     #   print >> sys.stderr, "Usage: traffic.py <VirtualHost>"
     #   return 1
 
-    DATABASE_PASSWORD = open("/etc/pysk/dbpass", "r").read().strip()
+    DATABASE_PASSWORD = 'z62VUW2m59Y69u99'
     db = psycopg2.connect("host='db1.igowo.de' user='pysk' password='%s' dbname='pysk'" % (DATABASE_PASSWORD,))
     cursor = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
