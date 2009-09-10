@@ -11,6 +11,7 @@ if [ -s $EXCLUDEFILE ] ; then
 	RSYNCOPTS="$RSYNCOPTS --exclude-from=$EXCLUDEFILE"
 fi
 
+#rm -rf /etc/monit.d
 rsync $RSYNCOPTS /opt/pysk/serverconfig/ /
 
 echo "Fixing permissions"
