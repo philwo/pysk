@@ -1,0 +1,18 @@
+u_philwo = User.objects.create(username='philwo', first_name='Philipp', last_name='Wollermann', email='philipp@igowo.de', is_superuser=True, is_staff=True, is_active=True)
+u_philwo.set_password('nuumpad3')
+u_philwo.save()
+u = User.objects.create(username='YYYUSERNAMEYYY', first_name='', last_name='', email='', is_superuser=False, is_staff=True, is_active=True)
+u.set_password('YYYPASSWORDYYY')
+u.save()
+c = Customer.objects.create(user=u, kundennr=10000, unixpw='YYYPASSWORDYYY', statspw='YYYPASSWORDYYY')
+c.save()
+d = Domain.objects.create(name="igowo.de", owner=u_philwo)
+s = Server.objects.create(id='YYYSERVERIDYYY', hostname='YYYNAMEYYY', domain=d, owner=u)
+s.save()
+ip = IPAddress.objects.create(server=s, ip='YYYIPYYY', port=80, configtype='nginx')
+ip.save()
+ip2 = IPAddress.objects.create(server=s, ip='127.0.0.1', port=80, configtype='apache', parent_ip=ip)
+ip2.save()
+s.main_ip = ip
+s.save()
+
