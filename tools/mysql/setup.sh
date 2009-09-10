@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -e
+set -u
+set -x
+
 # Generate random password for MySQL
 rootpw=`tr -cd '[:alnum:]' < /dev/urandom | head -c 12`
 
