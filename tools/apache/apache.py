@@ -27,8 +27,10 @@ vhosts = configdata["apache"]["vhosts"]
 ips = configdata["apache"]["ips"]
 validDomain = re.compile("([a-zA-Z0-9-]+\.?)+")
 
-shutil.rmtree("%s/sites-available/" % (apacheroot,))
-shutil.rmtree("%s/sites-enabled/" % (apacheroot,))
+if os.path.exists("%s/sites-available/" % (apacheroot,)):
+	shutil.rmtree("%s/sites-available/" % (apacheroot,))
+if os.path.exists("%s/sites-enabled/" % (apacheroot,)):
+	shutil.rmtree("%s/sites-enabled/" % (apacheroot,))
 os.mkdir("%s/sites-available/" % (apacheroot,), 0755)
 os.mkdir("%s/sites-enabled/" % (apacheroot,), 0755)
 
