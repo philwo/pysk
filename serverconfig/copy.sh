@@ -24,5 +24,5 @@ chmod 0600 /etc/ssl/private/*
 
 echo "Fixing up httpd.conf"
 sed -i s/MAINUSER/$MAINUSER/g /etc/httpd/conf/httpd.conf
-sed -i s/MAINUSER/$MAINUSER/g /etc/php/php-fpm.conf
+sed -i s/XXXMAINUSERXXX/$MAINUSER/g /etc/php/php-fpm.conf
 
