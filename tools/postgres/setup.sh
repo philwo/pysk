@@ -9,6 +9,7 @@ set -u
 /etc/rc.d/postgresql start
 sleep 3
 /etc/rc.d/postgresql stop
+sleep 3
 
 # But then delete the default database and recreate with UTF8 charset
 rm -rf $PGROOT/data
@@ -17,6 +18,7 @@ su - postgres -c "/usr/bin/initdb -E UTF8 -D $PGROOT/data"
 
 # Start postgres again
 /etc/rc.d/postgresql start
+sleep 3
 
 # Generate random password for Postgres
 rootpw=`tr -cd '[:alnum:]' < /dev/urandom | head -c 12`
