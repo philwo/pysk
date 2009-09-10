@@ -41,7 +41,7 @@ class Domain(models.Model):
     #def fmtuser(self):
         #return u"%s (%s %s)"
 
-    def save(self):
+    def save(self, force_insert=False, force_update=False):
         from datetime import date
         t = date.today().strftime("%Y%m%d")
 
@@ -60,7 +60,7 @@ class Domain(models.Model):
                 c = int(str(self.serial)[8:]) + 1
 
         self.serial = "%s%02i" % (t, c)
-        super(Domain, self).save()
+        super(Domain, self).save(force_insert, force_update)
 
     class Meta:
         ordering = ["owner", "name"]
@@ -115,8 +115,8 @@ class Server(models.Model):
     fqdn.short_description = "FQDN"
     fqdn.admin_order_field = "domain"
 
-    def save(self):
-        super(Server, self).save()
+    def save(self, force_insert=False, force_update=False):
+        super(Server, self).save(force_insert, force_update)
 
     class Meta:
         ordering = ["id"]
