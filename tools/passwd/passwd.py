@@ -11,6 +11,7 @@ from time import mktime
 from string import letters, digits
 from random import choice
 from subprocess import Popen, PIPE
+from shutil import copy2
 import psycopg2, psycopg2.extras
 import csv
 import socket
@@ -41,7 +42,8 @@ def main(argv=None):
     cursor = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     # /etc/passwd
-    query = "SELECT DISTINCT p.username, p.password, p.uid, p.gid, p.gecos, p.home, p.shell FROM passwd_list p JOIN server_ip_user_list u ON p.username = u.username WHERE u.host = %s ORDER BY uid"
+    #query = "SELECT DISTINCT p.username, p.password, p.uid, p.gid, p.gecos, p.home, p.shell FROM passwd_list p JOIN server_ip_user_list u ON p.username = u.username WHERE u.host = %s ORDER BY uid"
+    query = "SELECT DISTINCT p.username, p.password, p.uid, p.gid, p.gecos, p.home, p.shell FROM passwd_list_all p ORDER BY uid"
     cursor.execute(query, [socket.getfqdn()])
     users = cursor.fetchall()
     users_by_uid = dict([(x["uid"], x) for x in users])
@@ -74,7 +76,7 @@ def main(argv=None):
 
     for row in group_csv:
         gid = int(row[2])
-        if gid < 10000 or gid >= 20000:
+        if gid != 100 and (gid < 10000 or gid >= 20000):
             # User is an un-managed user, just copy it
             group_new.writerow(row)
 
@@ -98,12 +100,15 @@ def main(argv=None):
         passwd_new.writerow((username, fakepasswd, uid, gid, gecos, home, shell))
 
     # group.new
+    userlist = []
     for user_row in users:
         groupname = user_row[0]
         fakepasswd = "x"
         gid = user_row[3]
         members = ""
+	userlist.append(groupname)
         group_new.writerow((groupname, fakepasswd, gid, members))
+    group_new.writerow(("users", "x", "100", ",".join(userlist)))
     
     # shadow.new
     for user_row in users:
@@ -120,13 +125,19 @@ def main(argv=None):
     group_new_file.close()
     shadow_new_file.close()
 
-    print Popen(["diff", "-u", "/etc/passwd", "/etc/passwd.new"], stdout=PIPE).communicate()[0]
-    print Popen(["diff", "-u", "/etc/group", "/etc/group.new"], stdout=PIPE).communicate()[0]
-    #print Popen(["diff", "-u", "/etc/shadow", "/etc/shadow.new"], stdout=PIPE).communicate()[0]
-
+    copy2("/etc/passwd", "/etc/passwd.old")
+    copy2("/etc/group", "/etc/group.old")
+    copy2("/etc/shadow", "/etc/shadow.old")
     rename("/etc/passwd.new", "/etc/passwd")
     rename("/etc/group.new", "/etc/group")
     rename("/etc/shadow.new", "/etc/shadow")
+
+    print Popen(["/usr/sbin/pwck", "-s"], stdout=PIPE).communicate()[0]
+    print Popen(["/usr/sbin/grpck", "-s"], stdout=PIPE).communicate()[0]
+
+    print Popen(["diff", "-u", "/etc/passwd.old", "/etc/passwd"], stdout=PIPE).communicate()[0]
+    print Popen(["diff", "-u", "/etc/group.old", "/etc/group"], stdout=PIPE).communicate()[0]
+    #print Popen(["diff", "-u", "/etc/shadow.old", "/etc/shadow"], stdout=PIPE).communicate()[0]
 
 if __name__ == "__main__":
   sys.exit(main())
