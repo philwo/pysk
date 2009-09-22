@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-set-u
+set -u
 
 pacman -Rcs vi
 rm -f /usr/bin/rview
