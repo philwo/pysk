@@ -21,6 +21,9 @@ chown -R postgres:postgres /var/lib/postgres/data
 chmod 0600 /var/lib/postgres/data/server.{crt,key}
 chmod 0700 /var/lib/postgres/data
 chmod 0600 /etc/ssl/private/*
+chmod 0711 /opt/pysk
+chmod -R u=rwX,g=rX,o= /opt/pysk/secret
+chown -R root:http /opt/pysk/secret
 
 echo "Fixing up httpd.conf"
 sed -i s/MAINUSER/$MAINUSER/g /etc/httpd/conf/httpd.conf

@@ -314,7 +314,7 @@ def v0_apache(request, server):
                         output.append("RPAFproxy_ips 127.0.0.1")
 
                     # PHP via FastCGI
-                    output.append("FastCGIExternalServer /home/%s/www/%s/fast-cgi-fake-handler -host 127.0.0.1:9000" % (username, vh.fqdn()))
+                    output.append("FastCGIExternalServer /home/%s/www/%s/htdocs/fast-cgi-fake-handler -host 127.0.0.1:9000" % (username, vh.fqdn()))
                     output.append("<Files ~ \"\\.php$\">")
                     output.append("    AddType application/x-httpd-fastphp5 .php")
                     output.append("    Action application/x-httpd-fastphp5 /fast-cgi-fake-handler")
