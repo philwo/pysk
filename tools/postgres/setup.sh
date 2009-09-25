@@ -27,6 +27,15 @@ hostname=`hostname`
 # Set password
 psql -U postgres template1 -f - <<EOT
 ALTER USER postgres WITH PASSWORD '${rootpw}';
+
+REVOKE ALL ON DATABASE template1 FROM public;
+GRANT CONNECT ON DATABASE template1 TO PUBLIC;
+
+REVOKE ALL ON SCHEMA public FROM public;
+GRANT ALL ON SCHEMA public TO postgres;
+
+CREATE LANGUAGE plpgsql;
+
 EOT
 
 # Store in .pgpass

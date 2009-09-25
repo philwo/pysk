@@ -3,8 +3,8 @@
 set -e
 set -u
 
-pacman -Rcs vi
+pacman -Rcs --noconfirm vi
 rm -f /usr/bin/rview
-pacman -S vim
+pacman -S --noconfirm vim
 ln -s /usr/bin/vim /usr/local/bin/vi
 
