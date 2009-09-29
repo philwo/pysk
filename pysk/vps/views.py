@@ -67,6 +67,8 @@ def genentries(resp, d):
     output.append("pop IN CNAME mail")
     output.append("")
 
+    output.append("; ON APPEND CUT HERE")
+
     dataset = NSEntry.objects.filter(domain=d)
     if dataset.count() > 0:
         output.append("; CUSTOM NS ENTRIES")
