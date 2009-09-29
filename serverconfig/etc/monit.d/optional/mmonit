@@ -1,4 +1,4 @@
-check process mmonit with pidfile /opt/mmonit/logs/monit.pid
+check process mmonit with pidfile /opt/mmonit/logs/mmonit.pid
     start program = "/opt/mmonit/bin/mmonit"
     stop program = "/opt/mmonit/bin/mmonit stop"
     depends on postgresql
