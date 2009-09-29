@@ -67,63 +67,74 @@ def genentries(resp, d):
     output.append("pop IN CNAME mail")
     output.append("")
 
-    #nsentries = NSEntry.objects.filter(active=True).filter(domain=d)
-    output.append("; CUSTOM NS ENTRIES")
-    for n in NSEntry.objects.filter(domain=d):
-        if n.type == "A":
-            output.append("%s IN A %s" % (n.host if n.host else "@", n.value))
-        elif n.type == "AAAA":
-            output.append("%s IN AAAA %s" % (n.host if n.host else "@", n.value))
-        elif n.type == "CNAME":
-            output.append("%s IN CNAME %s" % (n.host if n.host else "@", n.value))
-        elif n.type == "MX":
-            output.append("%s IN MX %s %s" % (n.host if n.host else "@", n.priority, n.value))
-        else:
-            raise ValueError("Unknown NSEntry type %s" % (n.type,))
-    output.append("")
+    dataset = NSEntry.objects.filter(domain=d)
+    if dataset.count() > 0:
+        output.append("; CUSTOM NS ENTRIES")
+        for n in dataset:
+            if n.type == "A":
+                output.append("%s IN A %s" % (n.host if n.host else "@", n.value))
+            elif n.type == "AAAA":
+                output.append("%s IN AAAA %s" % (n.host if n.host else "@", n.value))
+            elif n.type == "CNAME":
+                output.append("%s IN CNAME %s" % (n.host if n.host else "@", n.value))
+            elif n.type == "MX":
+                output.append("%s IN MX %s %s" % (n.host if n.host else "@", n.priority, n.value))
+            else:
+                raise ValueError("Unknown NSEntry type %s" % (n.type,))
+        output.append("")
 
-    output.append("; DOMAIN ALIASES")
-    for a in Alias.objects.filter(active=True).filter(domain=d):
-        output.append("; %s -> %s" % (a.fqdn(), a.target))
-        output.append("%s IN A  %s" % (a.name if a.name else "@", domainForwardingServer))
-        if a.www_alias:
-            output.append("%s IN A %s" % ("www."+a.name if a.name else "www", domainForwardingServer))
-    output.append("")
+    dataset = Alias.objects.filter(active=True).filter(domain=d)
+    if dataset.count() > 0:
+        output.append("; DOMAIN ALIASES")
+        for a in dataset:
+            output.append("; %s -> %s" % (a.fqdn(), a.target))
+            output.append("%s IN A  %s" % (a.name if a.name else "@", domainForwardingServer))
+            if a.www_alias:
+                output.append("%s IN A %s" % ("www."+a.name if a.name else "www", domainForwardingServer))
+        output.append("")
 
-    output.append("; SERVERS")
-    for s in Server.objects.filter(active=True).filter(domain=d):
-        # fixme reverse DNS
-        output.append("%s IN A %s" % (s.hostname, s.main_ip.ip))
-    output.append("")
+    dataset = Server.objects.filter(active=True).filter(domain=d)
+    if dataset.count() > 0:
+        output.append("; SERVERS")
+        for s in dataset:
+            # fixme reverse DNS
+            output.append("%s IN A %s" % (s.hostname, s.main_ip.ip))
+        output.append("")
 
-    output.append("; HOSTS")
-    for vh in VirtualHost.objects.filter(active=True).filter(domain=d):
-        for ip in vh.ipports.all():
-            hc = HostConfig.objects.get(host=vh, ipport=ip)
+    dataset = VirtualHost.objects.filter(active=True).filter(domain=d)
+    if dataset.count() > 0:
+        output.append("; HOSTS")
+        for vh in dataset:
+            for ip in vh.ipports.all():
+                hc = HostConfig.objects.get(host=vh, ipport=ip)
+                if hc.publish_dns:
+                    host_ip = ip.parent_ip.ip if ip.parent_ip else ip.ip
+                    output.append("%s IN A %s" % (vh.name if vh.name else "@", host_ip))
+                    output.append("%s IN A %s" % ("ftp."+vh.name if vh.name else "ftp", host_ip))
+                    output.append("%s IN A %s" % ("www."+vh.name if vh.name else "www", host_ip))
+        output.append("")
+
+    dataset = DirectAlias.objects.filter(active=True).filter(domain=d)
+    if dataset.count() > 0:
+        output.append("; DIRECT ALIASES")
+        for da in dataset:
+            hc = HostConfig.objects.get(host=da.host, ipport=da.ipport)
             if hc.publish_dns:
+                ip = hc.ipport
                 host_ip = ip.parent_ip.ip if ip.parent_ip else ip.ip
-                output.append("%s IN A %s" % (vh.name if vh.name else "@", host_ip))
-                output.append("%s IN A %s" % ("ftp."+vh.name if vh.name else "ftp", host_ip))
-                output.append("%s IN A %s" % ("www."+vh.name if vh.name else "www", host_ip))
-    output.append("")
-
-    output.append("; DIRECT ALIASES")
-    for da in DirectAlias.objects.filter(active=True).filter(domain=d):
-        hc = HostConfig.objects.get(host=da.host, ipport=da.ipport)
-        if hc.publish_dns:
-            ip = hc.ipport
-            host_ip = ip.parent_ip.ip if ip.parent_ip else ip.ip
-            output.append("; %s -> %s" % (da.fqdn(), da.host.fqdn()))
-            output.append("%s IN A %s" % (da.name if da.name else "@", host_ip))
-    output.append("")
-
-    output.append("; SUBDOMAINS")
-    for sd in Domain.objects.filter(active=True).filter(name__endswith="."+d.name):
-        output.append("$ORIGIN %s." % (sd.name,))
-        newoutput, newprocessed = genentries(resp, sd)
-        output.extend(newoutput)
-        processed.extend(newprocessed)
-    output.append("")
+                output.append("; %s -> %s" % (da.fqdn(), da.host.fqdn()))
+                output.append("%s IN A %s" % (da.name if da.name else "@", host_ip))
+        output.append("")
+        
+    dataset = Domain.objects.filter(active=True).filter(name__endswith="."+d.name)
+    if dataset.count() > 0:
+        output.append("; SUBDOMAINS")
+        for sd in dataset:
+            output.append("$ORIGIN %s." % (sd.name,))
+            newoutput, newprocessed = genentries(resp, sd)
+            output.extend(newoutput)
+            processed.extend(newprocessed)
+        output.append("")
 
     return output, processed
 
@@ -169,25 +180,25 @@ def bind(request):
         tmpzone = "\n".join(output)
 
         # Compute digest to check if it was changed since last time
-        hash = hashlib.sha1(tmpzone).hexdigest()
-        if hash != d.zonehash:
-            # Update the hash and generate a new serial (in save())
-            d.zonehash = hash
-            d.save()
+        #hash = hashlib.sha1(tmpzone).hexdigest()
+        #if hash != d.zonehash:
+        #    # Update the hash and generate a new serial (in save())
+        #    d.zonehash = hash
+        #    d.save()
 
         # Construct final zonefile
-        zonefiles[d.name] = tmpzone.replace("SOASERIAL", str(d.serial))
+        #zonefiles[d.name] = tmpzone.replace("SOASERIAL", str(d.serial))
 
     # Generate Reverse DNS
-    serial = int(time())
-    output = []
-    output.append("$TTL 3600")
-    output.append("@ IN SOA %s %s ( %d %d %d %d %d )" % ("ns1.igowo.de.", SOAmail, serial, refresh, retry, expire, min))
-    output.append("@ IN NS ns1.igowo.de.")
-    for ip in IPAddress.objects.filter(ip__startswith="10."):
-        ipy = IP(ip.ip)
-        output.append("%s IN PTR %s." % (ipy.reverseName(), ip.server.fqdn(),))
-    zonefiles["10.in-addr.arpa"] = "\n".join(output)
+    #serial = int(time())
+    #output = []
+    #output.append("$TTL 3600")
+    #output.append("@ IN SOA %s %s ( %d %d %d %d %d )" % ("ns1.igowo.de.", SOAmail, serial, refresh, retry, expire, min))
+    #output.append("@ IN NS ns1.igowo.de.")
+    #for ip in IPAddress.objects.filter(ip__startswith="10."):
+    #    ipy = IP(ip.ip)
+    #    output.append("%s IN PTR %s." % (ipy.reverseName(), ip.server.fqdn(),))
+    #zonefiles["10.in-addr.arpa"] = "\n".join(output)
 
     resp.write(cPickle.dumps(zonefiles, cPickle.HIGHEST_PROTOCOL))
     return resp
