@@ -35,7 +35,7 @@ urlpatterns += patterns("pysk.voip.views",
 )
 
 urlpatterns += patterns('django.views.generic.simple',
-    (r'^/', 'direct_to_template', {'template': 'index.html'}),
+    (r'^$', 'direct_to_template', {'template': 'index.html'}),
 )
 
 if settings.DEBUG:

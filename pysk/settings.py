@@ -60,7 +60,7 @@ PREPEND_WWW = False
 USE_ETAGS = True
 
 TEMPLATE_DIRS = (
-	"/opt/pysk/templates",
+	"/opt/pysk/pysk/templates",
 )
 
 # List of callables that know how to import templates from various sources.
