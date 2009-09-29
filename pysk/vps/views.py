@@ -188,6 +188,7 @@ def bind(request):
 
         # Construct final zonefile
         #zonefiles[d.name] = tmpzone.replace("SOASERIAL", str(d.serial))
+        zonefiles[d.name] = tmpzone
 
     # Generate Reverse DNS
     #serial = int(time())
