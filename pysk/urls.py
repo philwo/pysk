@@ -21,7 +21,7 @@ urlpatterns = patterns("",
 	(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 )
 
-# Muss per HTTP Digest abgesichert werden!
+# Muss per HTTP Auth abgesichert werden!
 urlpatterns += patterns("pysk.vps.views",
 	(r'^api/v0/vz/(?P<server>.*)/apache/', 'v0_apache'),
 	(r'^api/v0/vz/(?P<server>.*)/aliases/', 'v0_aliases'),
@@ -32,6 +32,10 @@ urlpatterns += patterns("pysk.vps.views",
 
 urlpatterns += patterns("pysk.voip.views",
 	(r'^api/v0/cdr/', 'import_cdr'),
+)
+
+urlpatterns += patterns('django.views.generic.simple',
+    (r'^/', 'direct_to_template', {'template': 'index.html'}),
 )
 
 if settings.DEBUG:
