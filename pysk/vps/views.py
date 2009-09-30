@@ -19,7 +19,7 @@ class PyskValidationException(Exception):
         return repr(self.parameter)
 
 def genentries(resp, d):
-    domainForwardingServer = "81.95.0.211"
+    domainForwardingServer = Server.objects.all()[0].main_ip.ip
     processed = [d.name]
     output = []
 
@@ -60,12 +60,12 @@ def genentries(resp, d):
         if (d.mx3 != ""): output.append("@ IN MX 30 %s" % (d.mx3,))
         output.append("")
 
-    output.append("; EMAIL")
-    output.append("mail IN A %s" % ("81.95.0.210",))
-    output.append("imap IN CNAME mail")
-    output.append("smtp IN CNAME mail")
-    output.append("pop IN CNAME mail")
-    output.append("")
+    #output.append("; EMAIL")
+    #output.append("mail IN A %s" % (Server.objects.all()[0].main_ip.ip,))
+    #output.append("imap IN CNAME mail")
+    #output.append("smtp IN CNAME mail")
+    #output.append("pop IN CNAME mail")
+    #output.append("")
 
     output.append("; ON APPEND CUT HERE")
 
@@ -112,7 +112,7 @@ def genentries(resp, d):
                 if hc.publish_dns:
                     host_ip = ip.parent_ip.ip if ip.parent_ip else ip.ip
                     output.append("%s IN A %s" % (vh.name if vh.name else "@", host_ip))
-                    output.append("%s IN A %s" % ("ftp."+vh.name if vh.name else "ftp", host_ip))
+                    #output.append("%s IN A %s" % ("ftp."+vh.name if vh.name else "ftp", host_ip))
                     output.append("%s IN A %s" % ("www."+vh.name if vh.name else "www", host_ip))
         output.append("")
 
@@ -211,7 +211,7 @@ def v0_aliases(request, server):
     Wir generieren hier die Apache Config für die Weiterleitungen
     """
     resp = HttpResponse(mimetype="text/plain")
-    domainForwardingServer = "81.95.0.212"
+    domainForwardingServer = Server.objects.all()[0].main_ip.ip
 
     for a in Alias.objects.filter(active=True):
         resp.write("<VirtualHost %s:80>\n" % (domainForwardingServer,))
@@ -231,7 +231,7 @@ def v0_aliases_nginx(request, server):
     Wir generieren hier die nginx Config für die Weiterleitungen
     """
     resp = HttpResponse(mimetype="text/plain")
-    domainForwardingServer = "81.95.0.211"
+    domainForwardingServer = Server.objects.all()[0].main_ip.ip
 
     for a in Alias.objects.filter(active=True):
         if a.www_alias:
