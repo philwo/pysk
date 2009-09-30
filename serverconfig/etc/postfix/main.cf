@@ -5,25 +5,99 @@ unknown_local_recipient_reject_code = 550
 
 smtpd_banner = $myhostname ESMTP $mail_name
 myorigin = $myhostname
-mydestination = $myhostname localhost.$mydomain localhost
 append_dot_mydomain = no
 biff = no
 
-inet_interfaces = 127.0.0.1
+# RECEIVING MAIL
+inet_interfaces = all
+inet_protocols = ipv4
+mydestination = $myhostname localhost.$mydomain localhost
+
+# REJECTING MAIL FOR UNKNOWN LOCAL USERS
+local_recipient_maps = unix:passwd.byname $alias_maps
+
+# TRUST AND RELAY CONTROL
 mynetworks = 127.0.0.0/8
 
+# ADDRESS REWRITING
 alias_maps = hash:/etc/postfix/aliases
 alias_database = $alias_maps
 
-#relayhost = [kyon.igowo.de]
+# Generate "delayed mail" warnings
+delay_warning_time = 4h
+
+# TLS parameters
+smtpd_tls_cert_file = /etc/ssl/private/star_igowo_de_combined.crt
+smtpd_tls_key_file = /etc/ssl/private/star_igowo_de.key
+smtpd_tls_CApath = /etc/ssl/certs
+smtpd_tls_security_level = may
+smtpd_tls_session_cache_database = btree:/var/lib/postfix/smtpd_scache
+smtp_tls_session_cache_database = btree:/var/lib/postfix/smtp_scache
+
+virtual_alias_maps = hash:/etc/postfix/virtual_forwardings
+virtual_mailbox_domains = hash:/etc/postfix/virtual_domains
+virtual_mailbox_maps = hash:/etc/postfix/virtual_mailboxes
+virtual_transport = dovecot
+dovecot_destination_recipient_limit = 1
+
+smtpd_sasl_auth_enable = yes
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = /var/run/dovecot/auth-client
+smtpd_sasl_security_options = noanonymous
+broken_sasl_auth_clients = yes
+smtpd_sasl_authenticated_header = yes
 
 smtpd_helo_required = yes
 disable_vrfy_command = yes
 recipient_delimiter = +
 
 smtpd_recipient_restrictions =
-  permit_mynetworks,
-  reject
+    # sender or recipient without fqdn makes no sense
+    reject_non_fqdn_sender,
+    reject_non_fqdn_recipient,
+
+    # Users may only send mail with a sender equivalent to the login name
+    # reject_sender_login_mismatch,
+
+    # If you want to relay using our server, your MAIL FROM and
+    # RCPT TO addresses must have a correct DNS A or MX record
+    reject_unknown_sender_domain,
+    reject_unknown_recipient_domain,
+
+    # We allow our localhost, our TLS-trusted clients and all SASL authenticated
+    # clients to relay, however we don't allow multi-recipient-bounces even if they
+    # come from SASL clients
+    # check_client_access hash:/etc/postfix/mynetworks,
+    permit_mynetworks,
+    permit_tls_clientcerts,
+    # reject_multi_recipient_bounce,
+    permit_sasl_authenticated,
+
+    # !!! All checks starting here only match clients who want to deliver a
+    # !!! mail to one of our domains - no relaying is possible after this check.
+    reject_unauth_destination,
+
+    # Rejects mail, when we are the final destination for the recipient domain,
+    # but there is no such recipient address in the domain
+    reject_unlisted_recipient,
+
+    # always allow postmaster@ / abuse@
+    check_recipient_access hash:/etc/postfix/roleaccounts,
+
+    # Whitelist some uber-stupid clients -.-
+    check_client_access hash:/etc/postfix/whitelist_client,
+    check_sender_access hash:/etc/postfix/whitelist_sender,
+
+    # policyd-weight
+    reject_invalid_helo_hostname,
+    reject_non_fqdn_helo_hostname,
+    #reject_unknown_helo_hostname,
+    reject_unknown_reverse_client_hostname,
+    reject_rbl_client zen.spamhaus.org,
+    reject_rbl_client ix.dnsbl.manitu.net,
+#   check_policy_service inet:127.0.0.1:12525,
+#   check_recipient_access hash:/etc/postfix/amavis_access,
+    permit
 
 message_size_limit = 104857600
 mailbox_size_limit = 524288000
@@ -42,3 +116,4 @@ queue_directory = /var/spool/postfix
 readme_directory = no
 sample_directory = /etc/postfix/sample
 sendmail_path = /usr/sbin/sendmail
+
