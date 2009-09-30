@@ -85,8 +85,8 @@ smtpd_recipient_restrictions =
     check_recipient_access hash:/etc/postfix/roleaccounts,
 
     # Whitelist some uber-stupid clients -.-
-    check_client_access hash:/etc/postfix/whitelist_client,
-    check_sender_access hash:/etc/postfix/whitelist_sender,
+#   check_client_access hash:/etc/postfix/whitelist_client,
+#   check_sender_access hash:/etc/postfix/whitelist_sender,
 
     # policyd-weight
     reject_invalid_helo_hostname,
