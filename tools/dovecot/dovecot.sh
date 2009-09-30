@@ -8,7 +8,7 @@ VMAILGID=`stat --printf="%g" /home/vmail/`
 
 cd /etc/dovecot
 rm -f passwd.new passwd.sort
-touch passwd.new passwd.sort
+touch passwd passwd.new passwd.sort
 
 IFS=`echo -e "\t\n"`
 psql -At -F $'\t' -U postgres -h localhost -c'SELECT * FROM dovecot_passwd' pysk  | while read USER PASSWORD QUOTA HOME; do
