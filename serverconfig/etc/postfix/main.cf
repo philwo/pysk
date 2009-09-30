@@ -1,7 +1,7 @@
 # /etc/postfix/main.cf
 
-soft_bounce = no
-unknown_local_recipient_reject_code = 550
+soft_bounce = yes
+unknown_local_recipient_reject_code = 450
 
 smtpd_banner = $myhostname ESMTP $mail_name
 myorigin = $myhostname
