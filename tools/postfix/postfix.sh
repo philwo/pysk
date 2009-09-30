@@ -9,7 +9,7 @@ rm -f virtual_mailboxes.new virtual_forwardings.new virtual_domains.new
 touch virtual_mailboxes.new virtual_forwardings.new virtual_domains.new
 touch virtual_mailboxes virtual_forwardings virtual_domains roleaccounts
 
-postfix set-permissions 2>/dev/null
+postfix set-permissions 2>/dev/null || /bin/true
 
 # virtual_mailboxes
 psql -At -F $'\t' -U postgres -h localhost -c'SELECT * FROM postfix_virtual_mailboxes' pysk | sort > virtual_mailboxes.new
