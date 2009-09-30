@@ -1,0 +1,10 @@
+check process dovecot with pidfile /var/run/dovecot/master.pid
+    group mail
+    start program = "/etc/rc.d/dovecot start"
+    stop program = "/etc/rc.d/dovecot stop"
+    if failed port 143
+        type TCP
+        protocol IMAP
+        then restart
+    if 5 restarts within 5 cycles then timeout
+
