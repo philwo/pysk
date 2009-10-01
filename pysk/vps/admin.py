@@ -21,7 +21,7 @@ class DomainAdmin(admin.ModelAdmin):
             return Domain.objects.all()
         return Domain.objects.filter(owner=request.user)
 
-    list_display = ("owner", "name", "serial", "active")
+    list_display = ("owner", "name", "mx1", "serial", "active")
     list_display_links = ("name",)
     fieldsets = (
         (None, {
