@@ -7,7 +7,7 @@ set -u
 /opt/pysk/tools/postfix/postfix.sh || /bin/true
 
 /opt/pysk/tools/apache/apache.py
-/opt/pysk/tools/nginx/nginx.py
+/opt/pysk/tools/nginx/run.sh
 /opt/pysk/tools/passwd/passwd.py
 
 /usr/sbin/apachectl graceful

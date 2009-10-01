@@ -1,0 +1,8 @@
+check host localhost_ftp with address 127.0.0.1
+    group system
+    start program = "/etc/rc.d/vsftpd start" 
+    stop  program = "/etc/rc.d/vsftpd stop" 
+    if failed port 21
+        type tcp
+        then restart
+
