@@ -25,6 +25,7 @@ servers = ["mikuru", "kyon", "yuki",
 "c-healit-1",
 "c-dw30-1",
 "c-schreiber-1",
+"c-md-1"
 ]
 
 authhandler = urllib2.HTTPBasicAuthHandler()
