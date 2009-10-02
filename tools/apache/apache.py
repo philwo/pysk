@@ -110,7 +110,6 @@ os.chown("/srv/http/default/htdocs/", 0, 0)
 subprocess.call(["/opt/pysk/tools/apache/a2ensite", "default"])
 
 for vhosttuple in vhosts:
-    print vhosttuple
     key = vhosttuple[0]
     value = vhosttuple[1]
     username = vhosttuple[2]
