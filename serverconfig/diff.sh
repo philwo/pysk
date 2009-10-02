@@ -1,4 +1,4 @@
 #!/bin/bash
 
-diff -ur /opt/pysk/serverconfig/ / | grep -v "Only in /" | less
+diff -ur -x php-fpm.conf /opt/pysk/serverconfig/ / | grep -v "Only in /" | less
 
