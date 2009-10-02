@@ -5,9 +5,9 @@ EXCLUDES=""
 
 if [ -s $EXCLUDEFILE ] ; then
     for i in `cat $EXCLUDEFILE`; do
-        $EXCLUDES="$EXCLUDES -x $i"
+        EXCLUDES="$EXCLUDES -x `basename $i`"
     done
 fi
 
-echo "diff -ur $EXCLUDES /opt/pysk/serverconfig/ / | grep -v 'Only in /' | less"
+diff -ur -x php-fpm.conf -x known_hosts $EXCLUDES /opt/pysk/serverconfig/ / | grep -v 'Only in /' | less
 
