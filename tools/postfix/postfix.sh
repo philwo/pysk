@@ -5,9 +5,13 @@ set -u
 
 cd /etc/postfix
 
+if [ ! -e virtual_mailboxes ]; then   touch virtual_mailboxes;   postmap virtual_mailboxes; fi
+if [ ! -e virtual_forwardings ]; then touch virtual_forwardings; postmap virtual_forwardings; fi
+if [ ! -e virtual_domains ]; then     touch virtual_domains;     postmap virtual_domains; fi
+if [ ! -e roleaccounts ]; then        touch roleaccounts;        postmap roleaccounts; fi
+
 rm -f virtual_mailboxes.new virtual_forwardings.new virtual_domains.new
 touch virtual_mailboxes.new virtual_forwardings.new virtual_domains.new
-touch virtual_mailboxes virtual_forwardings virtual_domains roleaccounts
 
 postfix set-permissions 2>/dev/null || /bin/true
 
