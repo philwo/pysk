@@ -328,7 +328,7 @@ def v0_apache(request, server):
                         output.append("RPAFproxy_ips 127.0.0.1")
 
                     # PHP via FastCGI
-                    output.append("FastCGIExternalServer /home/%s/www/%s/htdocs/fast-cgi-fake-handler-%s-%s -host 127.0.0.1:9000 -idle-timeout 60" % (username, vh.fqdn(), ip.ip.replace(".", "-"), ip.port))
+                    output.append("FastCGIExternalServer /home/%s/www/%s/htdocs/fast-cgi-fake-handler-%s-%s -host 127.0.0.1:9000 -idle-timeout 300" % (username, vh.fqdn(), ip.ip.replace(".", "-"), ip.port))
                     output.append("<Files ~ \"\\.php$\">")
                     output.append("    AddType application/x-httpd-fastphp5 .php")
                     output.append("    Action application/x-httpd-fastphp5 /fast-cgi-fake-handler-%s-%s" % (ip.ip.replace(".", "-"), ip.port))
@@ -419,9 +419,8 @@ def v0_apache(request, server):
                 output.append("\t\tproxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;")
                 output.append("\t\tclient_max_body_size       1024m;")
                 output.append("\t\tclient_body_buffer_size    128k;")
-                output.append("\t\tproxy_connect_timeout      90;")
-                output.append("\t\tproxy_send_timeout         90;")
-                output.append("\t\tproxy_read_timeout         90;")
+                output.append("\t\tproxy_send_timeout         300;")
+                output.append("\t\tproxy_read_timeout         300;")
                 output.append("\t\tproxy_buffer_size          4k;")
                 output.append("\t\tproxy_buffers              4 32k;")
                 output.append("\t\tproxy_busy_buffers_size    64k;")
