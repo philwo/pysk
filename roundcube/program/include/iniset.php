@@ -50,7 +50,7 @@ if (set_include_path($include_path) === false) {
   die('Fatal error: ini_set/set_include_path does not work.');
 }
 
-ini_set('error_reporting', E_ALL&~E_NOTICE);
+ini_set('error_reporting', E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_USER_DEPRECATED);
 if  (isset($_SERVER['HTTPS'])) {
    ini_set('session.cookie_secure', ($_SERVER['HTTPS'] && ($_SERVER['HTTPS'] != 'off'))?1:0);
 } else {
