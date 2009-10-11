@@ -1,3 +1,5 @@
+fastcgi_index index.php;
+
 fastcgi_param HTTPS on;
 
 fastcgi_split_path_info ^(.+\.php)(.*)$;
