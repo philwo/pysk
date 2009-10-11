@@ -21,9 +21,12 @@ chown -R postgres:postgres /var/lib/postgres/data
 chmod 0600 /var/lib/postgres/data/server.{crt,key}
 chmod 0700 /var/lib/postgres/data
 chmod 0600 /etc/ssl/private/*
+
+chown -R root:root /opt/pysk
 chmod 0711 /opt/pysk
-chmod -R u=rwX,g=rX,o= /opt/pysk/secret
-chown -R root:http /opt/pysk/secret
+chmod 0700 /opt/pysk/*
+chmod -R u=rwX,g=rX,o= /opt/pysk/secret /opt/pysk/roundcube /opt/pysk/pma /opt/pysk/pga
+chown -R root:http /opt/pysk/secret /opt/pysk/roundcube /opt/pysk/pma /opt/pysk/pga
 
 echo "Fixing up httpd.conf"
 sed -i s/MAINUSER/$MAINUSER/g /etc/httpd/conf/httpd.conf
