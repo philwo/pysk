@@ -126,7 +126,7 @@ for vhosttuple in vhosts:
 
     # Fixup htdocs dir
     uid = getpwnam(username).pw_uid
-    gid = getpwnam(username).pw_gid
+    gid = 100
 
     for dir in [os.path.realpath(htdocs_dir), os.path.realpath(os.path.join(htdocs_dir, "../"))]:
         print "Fixing %s ..." % (dir,)
