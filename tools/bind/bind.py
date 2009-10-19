@@ -7,7 +7,7 @@ import urllib2
 APIPASS = "W68p20YST5Iv6KGG"
 
 servers = ["mikuru", "kyon", "yuki",
-"c-ds",
+"c-ds-1",
 "c-ps1-1",
 "c-mehlis-1",
 "c-spt-1",
@@ -36,15 +36,23 @@ urllib2.install_opener(opener)
 
 conf = {}
 for s in servers:
+    print "Fetching zones from %s ..." % (s,)
     zonefiles = cPickle.load(urllib2.urlopen("https://%s:8080/api/v0/dns/bind/" % (s,)))
     for key, value in zonefiles.iteritems():
-        print "%s: Generating zone '%s' ... " % (s, key,),
-        outpath = "/var/named/pysk/db.%s" % (key,)
-        if not key in conf:
+        print "-> Generating zone '%s' ... " % (key,),
+
+        parent = key
+        while parent.count(".") > 1 and not parent in conf:
+            parent = ".".join(parent.split(".")[1:])
+        if parent in conf and key != parent:
+            print "-> Found parent zone for %s: %s" % (key, parent)
+
+        outpath = "/var/named/pysk/db.%s" % (parent,)
+        if not parent in conf:
             print "new"
             f = open(outpath, "w")
             f.writelines(value)
-            conf[key] = 'zone "%s" { type master; file "%s"; allow-query { any; }; };' % (key, outpath)
+            conf[parent] = 'zone "%s" { type master; file "%s"; allow-query { any; }; };' % (parent, outpath)
         else:
             print "appending"
             f = open(outpath, "a")
