@@ -31,7 +31,7 @@ chown -R root:root /opt/pysk/.hg
 chmod 0711 /opt/pysk
 chmod 0700 /opt/pysk/*
 chmod -R u=rwX,g=rX,o= /opt/pysk/run /opt/pysk/secret /opt/pysk/www
-chmod 0660 /opt/pysk/run/php.sock
+chmod 0660 /opt/pysk/run/php.sock || /bin/true
 chown -R pysk:http /opt/pysk/run /opt/pysk/secret /opt/pysk/www
 
 echo "Fixing up configs"
