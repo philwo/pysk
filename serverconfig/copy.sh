@@ -7,6 +7,7 @@ excludefile="/opt/pysk/etc/serverconfig/exclude/`hostname`"
 rsyncopts="-rltDv --exclude copy.sh --exclude diff.sh"
 mainuser=`grep "igowo user" /etc/passwd | head -n1 | cut -d":" -f1`
 hostname=`hostname --fqdn`
+ipaddress=`python -c "import socket;print socket.gethostbyaddr(socket.gethostname())[2][0]"`
 
 if [ -s $excludefile ] ; then
 	rsyncopts="$rsyncopts --exclude-from=$excludefile"
@@ -37,5 +38,6 @@ echo "Fixing up configs"
 sed -i s/XXXMAINUSERXXX/$mainuser/g /etc/httpd/conf/httpd.conf
 sed -i s/XXXMAINUSERXXX/$mainuser/g /etc/php/php-fpm.conf
 sed -i s/XXXPHPCHILDRENXXX/5/g /etc/php/php-fpm.conf
+sed -i s/XXXIPXXX/$ipaddress/g /etc/nginx/conf/pysk.conf
 sed -i s/XXXHOSTNAMEXXX/$hostname/g /etc/nginx/conf/pysk.conf
 

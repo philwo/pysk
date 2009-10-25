@@ -10,6 +10,6 @@ set -u
 /opt/pysk/tools/nginx/run.sh
 /opt/pysk/tools/passwd/passwd.py
 
-/usr/sbin/apachectl graceful
+/usr/sbin/apachectl restart
 /etc/rc.d/nginx reload
 
