@@ -22,7 +22,7 @@ opener = urllib2.build_opener(authhandler)
 urllib2.install_opener(opener)
 
 print "Getting config for %s ..." % (hostname,)
-configdata = cPickle.load(urllib2.urlopen("https://%s/api/v0/vz/%s/apache/" % (hostname, hostname,)))
+configdata = cPickle.load(urllib2.urlopen("https://%s/api/v0/vz/apache/" % (hostname,)))
 vhosts = configdata["apache"]["vhosts"]
 ips = configdata["apache"]["ips"]
 validDomain = re.compile("([a-zA-Z0-9-]+\.?)+")

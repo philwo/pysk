@@ -7,7 +7,6 @@ from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 
 from pysk.vps.models import *
-from sets import Set
 import cPickle
 import hashlib
 from time import time
@@ -250,7 +249,7 @@ def v0_apache(request):
         if not "vhosts" in all_vhosts[ip.configtype]:
             all_vhosts[ip.configtype]["vhosts"] = []
         if not "ips" in all_vhosts[ip.configtype]:
-            all_vhosts[ip.configtype]["ips"] = Set()
+            all_vhosts[ip.configtype]["ips"] = set()
         
         vhosts = all_vhosts[ip.configtype]["vhosts"]
         ips = all_vhosts[ip.configtype]["ips"]
@@ -321,7 +320,7 @@ def v0_apache(request):
         if not "vhosts" in all_vhosts[ip.configtype]:
             all_vhosts[ip.configtype]["vhosts"] = []
         if not "ips" in all_vhosts[ip.configtype]:
-            all_vhosts[ip.configtype]["ips"] = Set()
+            all_vhosts[ip.configtype]["ips"] = set()
         
         vhosts = all_vhosts[ip.configtype]["vhosts"]
         ips = all_vhosts[ip.configtype]["ips"]

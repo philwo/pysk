@@ -17,7 +17,7 @@ authhandler.add_password(realm="Pysk API", uri="https://localhost/", user="pysk"
 opener = urllib2.build_opener(authhandler)
 urllib2.install_opener(opener)
 
-configdata = cPickle.load(urllib2.urlopen("https://localhost/api/v0/vz/%s/apache/" % (socket.getfqdn(),)))
+configdata = cPickle.load(urllib2.urlopen("https://localhost/api/v0/vz/apache/"))
 
 if not "nginx" in configdata:
     exit(0)
