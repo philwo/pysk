@@ -58,11 +58,6 @@ class NSEntryAdmin(admin.ModelAdmin):
     )
 
 class IPAddressAdmin(admin.ModelAdmin):
-    def queryset(self, request):
-        if request.user.is_superuser:
-            return IPAddress.objects.all()
-        return IPAddress.objects.filter(server__owner=request.user)
-
     list_display = ("ip", "port", "sslcert", "sslca", "sslkey", "configtype", "parent_ip")
 
 class AliasAdmin(admin.ModelAdmin):

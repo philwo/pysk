@@ -116,15 +116,17 @@ class IPAddress(models.Model):
     parent_ip = models.ForeignKey("IPAddress", blank=True, null=True)
 
     def __unicode__(self):
-        return u"%s:%s (%s)" % (self.ip, self.port, self.server.fqdn())
+        return u"%s:%s (%s)" % (self.ip, self.port, self.configtype)
 
     class Meta:
         unique_together = (("ip", "port", "parent_ip"),)
         ordering = ["ip", "port"]
+        verbose_name = "IP address"
+        verbose_name_plural = "IP addresses"
 
 class VirtualHost(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField("Hostname", max_length=255, blank=True)
+    name = models.CharField(max_length=255, blank=True, verbose_name="Hostname", help_text="Sometimes also called 'subdomain' ...")
     domain = models.ForeignKey(Domain)
     owner = models.ForeignKey(User)
     ipports = models.ManyToManyField(IPAddress, through="HostConfig")
@@ -163,9 +165,9 @@ class VirtualHost(models.Model):
 class HostConfig(models.Model):
     id = models.AutoField(primary_key=True)
     host = models.ForeignKey(VirtualHost)
-    ipport = models.ForeignKey(IPAddress)
-    config = models.TextField(blank=True)
-    publish_dns = models.BooleanField(default=True)
+    ipport = models.ForeignKey(IPAddress, verbose_name="IP and port")
+    config = models.TextField(blank=True, verbose_name="Webserver config")
+    publish_dns = models.BooleanField(default=True, verbose_name="Publish in DNS", help_text="If this is checked, a DNS record for this config is created. You usually only want this once for every virtual host and only if the Host Config uses a public IP")
     active = models.BooleanField(default=True)
 
 class Alias(models.Model):
