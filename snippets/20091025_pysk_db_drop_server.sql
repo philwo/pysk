@@ -4,4 +4,5 @@ DROP VIEW IF EXISTS server_ip_user_list;
 DROP VIEW IF EXISTS pysk_vzlist;
 ALTER TABLE vps_ipaddress DROP COLUMN server_id;
 DROP TABLE IF EXISTS vps_server;
+DELETE FROM vps_domain WHERE name = 'igowo.de';
 
