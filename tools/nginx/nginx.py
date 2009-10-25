@@ -10,14 +10,15 @@ import urllib2
 import socket
 
 APIPASS = "W68p20YST5Iv6KGG"
+hostname = socket.getfqdn()
 
 authhandler = urllib2.HTTPBasicAuthHandler()
-authhandler.add_password(realm="Pysk API", uri="https://localhost/", user="pysk", passwd=APIPASS)
+authhandler.add_password(realm="Pysk API", uri="https://%s/" % (hostname,), user="pysk", passwd=APIPASS)
 
 opener = urllib2.build_opener(authhandler)
 urllib2.install_opener(opener)
 
-configdata = cPickle.load(urllib2.urlopen("https://localhost/api/v0/vz/apache/"))
+configdata = cPickle.load(urllib2.urlopen("https://%s/api/v0/vz/apache/" % (hostname,)))
 
 if not "nginx" in configdata:
     exit(0)
