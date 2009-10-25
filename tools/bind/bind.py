@@ -11,14 +11,14 @@ servers = [host for host in yaml.load_all(open("/opt/pysk/etc/hosts.yml", "r"))]
 
 authhandler = urllib2.HTTPBasicAuthHandler()
 for s in servers:
-    authhandler.add_password(realm="Pysk API", uri="https://%s/" % (s["name"],), user="pysk", passwd=APIPASS)
+    authhandler.add_password(realm="Pysk API", uri="https://%s.igowo.de/" % (s["name"],), user="pysk", passwd=APIPASS)
 opener = urllib2.build_opener(authhandler)
 urllib2.install_opener(opener)
 
 conf = {}
 for s in servers:
     print "Fetching zones from %s ..." % (s["name"],)
-    zonefiles = cPickle.load(urllib2.urlopen("https://%s/api/v0/dns/bind/" % (s["name"],)))
+    zonefiles = cPickle.load(urllib2.urlopen("https://%s.igowo.de/api/v0/dns/bind/" % (s["name"],)))
     for key, value in zonefiles.iteritems():
         print "-> Generating zone '%s' ... " % (key,),
 
@@ -52,6 +52,7 @@ zonefile = open("/var/named/pysk/db.igowo.de", "a")
 zonefile.write("\n; SERVERS\n")
 zonefile.write("$ORIGIN igowo.de.\n\n")
 zonefile.writelines("\n".join(["%s IN A %s" % (s["name"], s["ip"]) for s in servers]))
+zonefile.write("\n")
 zonefile.close()
 
 f = open("/var/named/zones.pysk", "w")
