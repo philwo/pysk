@@ -19,6 +19,7 @@ def redirect(url):
 urlpatterns = patterns("",
 	(r'^admin/(.*)', admin.site.root),
 	(r'^admin/doc/', include('django.contrib.admindocs.urls')),
+    (r'^accounts/login/$', 'django.contrib.auth.views.login'),
 )
 
 # Muss per HTTP Auth abgesichert werden!
@@ -30,7 +31,6 @@ urlpatterns += patterns("pysk.vps.views",
 )
 
 urlpatterns += patterns("pysk.vps.views",
-    (r'^accounts/login/$', 'django.contrib.auth.views.login', {'template_name': 'myapp/login.html'}),
     (r'^actions/save/$', 'save'),
 )
 
