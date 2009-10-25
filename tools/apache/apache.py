@@ -35,29 +35,11 @@ os.mkdir("%s/sites-available/" % (apacheroot,), 0755)
 os.mkdir("%s/sites-enabled/" % (apacheroot,), 0755)
 
 portsconf = open("%s/ports.conf" % (apacheroot,), "w")
-#portsconf.write("Listen 127.0.0.1:80\n")
-
 f = open("%s/sites-available/default" % (apacheroot,), "w")
-#f.write("""
-#<VirtualHost localhost:80>
-#        ServerAdmin philipp@igowo.de
-#        DocumentRoot /srv/http/default/htdocs/
-#
-#        CustomLog /dev/null common env=DOES_NOT_EXIST
-#
-#        <Directory /srv/http/default/htdocs/>
-#                Options Indexes FollowSymLinks MultiViews
-#                AllowOverride None
-#                Order allow,deny
-#                allow from all
-#        </Directory>
-#</VirtualHost>
-#""")
 
 for (ip, namehost, port, sslcert, sslca, sslkey) in ips:
     portsconf.write("Listen %(ip)s:%(port)s\n" % {"ip": ip, "port": port})
 
-    #if namehost == True:
     f.write("""
 NameVirtualHost %(ip)s:%(port)s
 """ % {"ip": ip, "port": port})

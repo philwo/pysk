@@ -59,6 +59,11 @@ APPEND_SLASH = False
 PREPEND_WWW = False
 USE_ETAGS = True
 
+# Hostname and IP of this server
+import socket
+MY_IP = socket.gethostbyaddr(socket.gethostname())[2][0]
+MY_HOSTNAME = socket.gethostbyaddr(socket.gethostname())[0]
+
 TEMPLATE_DIRS = (
 	"/opt/pysk/pysk/templates",
 )
@@ -75,7 +80,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 	"django.core.context_processors.i18n",
 	"django.core.context_processors.media",
 	"django.core.context_processors.request",
-	#"pysk.urls.navigation"
 )
 
 MIDDLEWARE_CLASSES = (
@@ -101,7 +105,6 @@ INSTALLED_APPS = (
 	#'babeldjango',
 	'django_extensions',
 	'pysk.app',
-    #'pysk.voip',
 	'pysk.vps',
 )
 

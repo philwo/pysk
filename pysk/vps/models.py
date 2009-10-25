@@ -122,13 +122,12 @@ class Server(models.Model):
 
 IP_CONFIG_CHOICES = (
     ("apache", "Apache Webserver"),
-    ("nginx", "nginx (Load-Balancer only ATM)"),
+    ("nginx", "nginx (Load-Balancer only, at the moment)"),
     ("custom", "Custom App"),
 )
 
 class IPAddress(models.Model):
     id = models.AutoField(primary_key=True)
-    server = models.ForeignKey(Server, related_name="ipaddress_set")
     ip = models.IPAddressField()
     port = models.IntegerField()
     sslcert = models.CharField(max_length=250, blank=True)

@@ -27,11 +27,6 @@ urlpatterns += patterns("pysk.vps.views",
 	(r'^api/v0/vz/(?P<server>.*)/aliases/', 'v0_aliases'),
 	(r'^api/v0/vz/(?P<server>.*)/aliases_nginx/', 'v0_aliases_nginx'),
 	(r'^api/v0/dns/bind/', 'bind'),
-	#(r'^helloworld.pdf$', 'helloworld'),
-)
-
-urlpatterns += patterns("pysk.voip.views",
-	(r'^api/v0/cdr/', 'import_cdr'),
 )
 
 urlpatterns += patterns('django.views.generic.simple',
