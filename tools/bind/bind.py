@@ -3,41 +3,22 @@
 
 import cPickle
 import urllib2
+import yaml
 
 APIPASS = "W68p20YST5Iv6KGG"
 
-servers = ["mikuru", "kyon", "yuki",
-"c-ds-1",
-"c-ps1-1",
-"c-mehlis-1",
-"c-spt-1",
-"c-kpni-1",
-"c-wygand-1",
-"c-eot-1",
-"c-jf-1",
-"c-hermanussen-1",
-"c-ernst-1",
-"c-gfa-1",
-"c-chris-1",
-"c-simon-1",
-"c-kg24-1",
-"c-elsenkoch-1",
-"c-healit-1",
-"c-dw30-1",
-"c-schreiber-1",
-"c-md-1"
-]
+servers = [host for host in yaml.load_all(open("/opt/pysk/etc/hosts.yml", "r"))]
 
 authhandler = urllib2.HTTPBasicAuthHandler()
 for s in servers:
-    authhandler.add_password(realm="Pysk API", uri="https://%s/" % (s,), user="pysk", passwd=APIPASS)
+    authhandler.add_password(realm="Pysk API", uri="https://%s/" % (s["name"],), user="pysk", passwd=APIPASS)
 opener = urllib2.build_opener(authhandler)
 urllib2.install_opener(opener)
 
 conf = {}
 for s in servers:
-    print "Fetching zones from %s ..." % (s,)
-    zonefiles = cPickle.load(urllib2.urlopen("https://%s/api/v0/dns/bind/" % (s,)))
+    print "Fetching zones from %s ..." % (s["name"],)
+    zonefiles = cPickle.load(urllib2.urlopen("https://%s/api/v0/dns/bind/" % (s["name"],)))
     for key, value in zonefiles.iteritems():
         print "-> Generating zone '%s' ... " % (key,),
 
@@ -56,7 +37,7 @@ for s in servers:
         else:
             print "appending"
             f = open(outpath, "a")
-            f.write("\n; APPENDING FROM %s\n" % (s,))
+            f.write("\n; APPENDING FROM %s\n" % (s["name"],))
             f.write("$ORIGIN %s.\n\n" % (key,))
             lines = value.split("\n")
             if "; ON APPEND CUT HERE" in lines:
@@ -65,6 +46,13 @@ for s in servers:
                 del lines[0]
             f.writelines("\n".join(lines))
         f.close()
+
+# Add servers to igowo.de zone
+zonefile = open("/var/named/pysk/db.igowo.de", "a")
+zonefile.write("\n; SERVERS\n")
+zonefile.write("$ORIGIN igowo.de.\n\n")
+zonefile.writelines("\n".join(["%s IN A %s" % (s["name"], s["ip"]) for s in servers]))
+zonefile.close()
 
 f = open("/var/named/zones.pysk", "w")
 f.writelines("\n".join(conf.values()))
