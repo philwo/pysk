@@ -1,45 +1,10 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="de" lang="de">
-<head>
-<title>igowo VServer | Konfiguration speichern</title>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta http-equiv="Content-Style-Type" content="text/css" />
-<meta http-equiv="Content-Script-Type" content="text/javascript" />
-<style type="text/css">
-    html * { font-size: 100.01% }
+{% extends "base.html" %}
 
-    body {
-        font-family: "Bitstream Vera Sans", "Lucida Grande", "Lucida Sans Unicode", Verdana, Helvetica, Arial, sans-serif;
-        font-size: 75.00%;
-        color: #444;
-    }
+{% block title %}Konfiguration speichern{% endblock %}
 
-    h1,h2,h3,h4,h5,h6 {
-        font-family: "Trebuchet MS", Helvetica, sans-serif;
-        font-weight:bold;
-        color:#666;
-        margin: 0 0 0.25em 0;
-    }
-
-    h1 { font-size: 175% }                        /* 24px */
-    h2 { font-size: 175%; color:#182E7A}          /* 24px */
-    h3 { font-size: 150% }                        /* 18px */
-    h4 { font-size: 133.33% }                     /* 16px */
-    h5 { font-size: 116.67% }                     /* 14px */
-    h6 { font-size: 116.67%; font-style:italic }  /* 14px */
-
-    p { line-height: 1.5em; margin: 0 0 1em 0; }
-
-    ul, ol, dl { line-height: 1.5em; margin: 0 0 1em 1em }
-    li { margin-left: 1.5em; line-height: 1.5em }
-</style>
-</head>
-<body>
-    <h1>igowo VServer</h1>
-    <p><strong>Konfiguration wird gespeichert ...</strong></p>
-    <pre>{{output}}</pre>
-    <p><a href="/admin/">Zurück zum Admin-Interface</a></p>
-</body>
-</html>
-
+{% block content %}
+<h1>igowo VServer</h1>
+<p><strong>Konfiguration wird gespeichert ...</strong></p>
+<pre>{{output}}</pre>
+<p><a href="/admin/">Zurück zum Admin-Interface</a></p>
+{% endblock %}
