@@ -102,7 +102,6 @@ class NSEntry(models.Model):
 class Server(models.Model):
     id = models.IntegerField(primary_key=True, help_text="Muss immer &gt; 100 sein!")
     hostname = models.CharField(max_length=64, unique=True)
-    domain = models.ForeignKey(Domain)
     owner = models.ForeignKey(User)
     active = models.BooleanField(default=True)
     main_ip = models.ForeignKey("IPAddress", unique=True, related_name="server_main_ips", blank=True, null=True)
@@ -111,7 +110,7 @@ class Server(models.Model):
         return self.fqdn()
 
     def fqdn(self):
-        return (u"%s.%s." % (self.hostname, self.domain)).strip(".")
+        return (u"%s.igowo.de." % (self.hostname, self.domain)).strip(".")
     fqdn.short_description = "FQDN"
     fqdn.admin_order_field = "domain"
 

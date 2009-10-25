@@ -327,12 +327,9 @@ def v0_apache(request, server):
                         #output.append("RPAFproxy_ips 127.0.0.1 %s" % (ip.parent_ip.ip))
                         output.append("RPAFproxy_ips 127.0.0.1")
 
-                    # PHP via FastCGI
-                    output.append("FastCGIExternalServer /home/%s/www/%s/htdocs/fast-cgi-fake-handler-%s-%s -host 127.0.0.1:9000 -idle-timeout 300" % (username, vh.fqdn(), ip.ip.replace(".", "-"), ip.port))
-                    output.append("<Files ~ \"\\.php$\">")
-                    output.append("    AddType application/x-httpd-fastphp5 .php")
-                    output.append("    Action application/x-httpd-fastphp5 /fast-cgi-fake-handler-%s-%s" % (ip.ip.replace(".", "-"), ip.port))
-                    output.append("</Files>")
+                    # PHP via mod_php
+                    output.append("AddHandler application/x-httpd-php .php")
+                    output.append("AddHandler application/x-httpd-php-source .phps")
 
                     output.append("</VirtualHost>")
                     vhosts.append(("%s-%s-%s" % (vh.fqdn(), ip.ip, ip.port), "\n".join(output), username, htdocs_dir))

@@ -3,18 +3,21 @@
 set -e
 set -u
 
-EXCLUDEFILE="/opt/pysk/etc/serverconfig/exclude/`hostname`"
-RSYNCOPTS="-a --exclude copy.sh --exclude diff.sh"
-MAINUSER=`grep "igowo user" /etc/passwd | head -n1 | cut -d":" -f1`
+excludefile="/opt/pysk/etc/serverconfig/exclude/`hostname`"
+rsyncopts="-rltDv --exclude copy.sh --exclude diff.sh"
+mainuser=`grep "igowo user" /etc/passwd | head -n1 | cut -d":" -f1`
+hostname=`hostname --fqdn`
 
-if [ -s $EXCLUDEFILE ] ; then
-	RSYNCOPTS="$RSYNCOPTS --exclude-from=$EXCLUDEFILE"
+if [ -s $excludefile ] ; then
+	rsyncopts="$rsyncopts --exclude-from=$excludefile"
 fi
 
 #rm -rf /etc/monit.d
-rsync $RSYNCOPTS /opt/pysk/serverconfig/ /
+rsync $rsyncopts /opt/pysk/serverconfig/ /
 
 echo "Fixing permissions"
+chown root:root /
+chmod 0755 /
 chmod 0700 /root /root/.ssh /etc/monit.d
 chmod 0600 /etc/monitrc /root/.pgpass /root/.ssh/*
 chown -R postgres:postgres /var/lib/postgres/data
@@ -22,13 +25,17 @@ chmod 0600 /var/lib/postgres/data/server.{crt,key}
 chmod 0700 /var/lib/postgres/data
 chmod 0600 /etc/ssl/private/*
 
-chown -R root:root /opt/pysk
+chown -R pysk:pysk /opt/pysk
+chown -R root:root /opt/pysk/.hg
 chmod 0711 /opt/pysk
 chmod 0700 /opt/pysk/*
-chmod -R u=rwX,g=rX,o= /opt/pysk/secret /opt/pysk/roundcube /opt/pysk/pma /opt/pysk/pga
-chown -R root:http /opt/pysk/secret /opt/pysk/roundcube /opt/pysk/pma /opt/pysk/pga
+chmod -R u=rwX,g=rX,o= /opt/pysk/run /opt/pysk/secret /opt/pysk/www
+chmod 0660 /opt/pysk/run/php.sock
+chown -R pysk:http /opt/pysk/run /opt/pysk/secret /opt/pysk/www
 
-echo "Fixing up httpd.conf"
-sed -i s/MAINUSER/$MAINUSER/g /etc/httpd/conf/httpd.conf
-sed -i s/XXXMAINUSERXXX/$MAINUSER/g /etc/php/php-fpm.conf
+echo "Fixing up configs"
+sed -i s/XXXMAINUSERXXX/$mainuser/g /etc/httpd/conf/httpd.conf
+sed -i s/XXXMAINUSERXXX/$mainuser/g /etc/php/php-fpm.conf
+sed -i s/XXXPHPCHILDRENXXX/5/g /etc/php/php-fpm.conf
+sed -i s/XXXHOSTNAMEXXX/$hostname/g /etc/nginx/conf/pysk.conf
 

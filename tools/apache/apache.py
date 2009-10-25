@@ -16,13 +16,13 @@ apacheroot = "/etc/httpd/conf"
 APIPASS = "W68p20YST5Iv6KGG"
 
 authhandler = urllib2.HTTPBasicAuthHandler()
-authhandler.add_password(realm="Pysk API", uri="https://localhost:8080/", user="pysk", passwd=APIPASS)
+authhandler.add_password(realm="Pysk API", uri="https://%s/" % (hostname,), user="pysk", passwd=APIPASS)
 
 opener = urllib2.build_opener(authhandler)
 urllib2.install_opener(opener)
 
 print "Getting config for %s ..." % (hostname,)
-configdata = cPickle.load(urllib2.urlopen("https://localhost:8080/api/v0/vz/%s/apache/" % (hostname,)))
+configdata = cPickle.load(urllib2.urlopen("https://%s/api/v0/vz/%s/apache/" % (hostname, hostname,)))
 vhosts = configdata["apache"]["vhosts"]
 ips = configdata["apache"]["ips"]
 validDomain = re.compile("([a-zA-Z0-9-]+\.?)+")

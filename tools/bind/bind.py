@@ -30,14 +30,14 @@ servers = ["mikuru", "kyon", "yuki",
 
 authhandler = urllib2.HTTPBasicAuthHandler()
 for s in servers:
-    authhandler.add_password(realm="Pysk API", uri="https://%s:8080/" % (s,), user="pysk", passwd=APIPASS)
+    authhandler.add_password(realm="Pysk API", uri="https://%s/" % (s,), user="pysk", passwd=APIPASS)
 opener = urllib2.build_opener(authhandler)
 urllib2.install_opener(opener)
 
 conf = {}
 for s in servers:
     print "Fetching zones from %s ..." % (s,)
-    zonefiles = cPickle.load(urllib2.urlopen("https://%s:8080/api/v0/dns/bind/" % (s,)))
+    zonefiles = cPickle.load(urllib2.urlopen("https://%s/api/v0/dns/bind/" % (s,)))
     for key, value in zonefiles.iteritems():
         print "-> Generating zone '%s' ... " % (key,),
 
