@@ -101,7 +101,7 @@ INSTALLED_APPS = (
 	#'babeldjango',
 	'django_extensions',
 	'pysk.app',
-	'pysk.voip',
+    #'pysk.voip',
 	'pysk.vps',
 )
 
