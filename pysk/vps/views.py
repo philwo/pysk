@@ -3,6 +3,7 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_list_or_404, get_object_or_404, render_to_response
 from django.db import transaction
+from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 
 from pysk.vps.models import *
@@ -19,7 +20,6 @@ class PyskValidationException(Exception):
         return repr(self.parameter)
 
 def genentries(resp, d):
-    domainForwardingServer = Server.objects.all()[0].main_ip.ip
     processed = [d.name]
     output = []
 
@@ -90,17 +90,9 @@ def genentries(resp, d):
         output.append("; DOMAIN ALIASES")
         for a in dataset:
             output.append("; %s -> %s" % (a.fqdn(), a.target))
-            output.append("%s IN A  %s" % (a.name if a.name else "@", domainForwardingServer))
+            output.append("%s IN A  %s" % (a.name if a.name else "@", settings.MY_IP))
             if a.www_alias:
-                output.append("%s IN A %s" % ("www."+a.name if a.name else "www", domainForwardingServer))
-        output.append("")
-
-    dataset = Server.objects.filter(active=True).filter(domain=d)
-    if dataset.count() > 0:
-        output.append("; SERVERS")
-        for s in dataset:
-            # fixme reverse DNS
-            output.append("%s IN A %s" % (s.hostname, s.main_ip.ip))
+                output.append("%s IN A %s" % ("www."+a.name if a.name else "www", settings.MY_IP))
         output.append("")
 
     dataset = VirtualHost.objects.filter(active=True).filter(domain=d)
@@ -192,17 +184,6 @@ def bind(request):
         #zonefiles[d.name] = tmpzone.replace("SOASERIAL", str(d.serial))
         zonefiles[d.name] = tmpzone
 
-    # Generate Reverse DNS
-    #serial = int(time())
-    #output = []
-    #output.append("$TTL 3600")
-    #output.append("@ IN SOA %s %s ( %d %d %d %d %d )" % ("ns1.igowo.de.", SOAmail, serial, refresh, retry, expire, min))
-    #output.append("@ IN NS ns1.igowo.de.")
-    #for ip in IPAddress.objects.filter(ip__startswith="10."):
-    #    ipy = IP(ip.ip)
-    #    output.append("%s IN PTR %s." % (ipy.reverseName(), ip.server.fqdn(),))
-    #zonefiles["10.in-addr.arpa"] = "\n".join(output)
-
     resp.write(cPickle.dumps(zonefiles, cPickle.HIGHEST_PROTOCOL))
     return resp
 
@@ -211,10 +192,9 @@ def v0_aliases(request, server):
     Wir generieren hier die Apache Config für die Weiterleitungen
     """
     resp = HttpResponse(mimetype="text/plain")
-    domainForwardingServer = Server.objects.all()[0].main_ip.ip
 
     for a in Alias.objects.filter(active=True):
-        resp.write("<VirtualHost %s:80>\n" % (domainForwardingServer,))
+        resp.write("<VirtualHost %s:80>\n" % (settings.MY_IP,))
         resp.write("\tServerName %s\n" % (a.fqdn(),))
         if a.www_alias:
             resp.write("\tServerAlias www.%s\n" % (a.fqdn(),))
@@ -231,7 +211,6 @@ def v0_aliases_nginx(request, server):
     Wir generieren hier die nginx Config für die Weiterleitungen
     """
     resp = HttpResponse(mimetype="text/plain")
-    domainForwardingServer = Server.objects.all()[0].main_ip.ip
 
     for a in Alias.objects.filter(active=True):
         if a.www_alias:
@@ -244,29 +223,28 @@ def v0_aliases_nginx(request, server):
             a.target += "/"
 
         resp.write("server {\n")
-        resp.write("\tlisten %s:80;\n" % (domainForwardingServer,))
+        resp.write("\tlisten %s:80;\n" % (settings.MY_IP,))
         resp.write("\tserver_name %s;\n" % (server_name,))
         resp.write("\taccess_log off;\n")
         resp.write("\trewrite ^/(.*)$ %s$1 permanent;\n" % (a.target,))
         resp.write("}\n\n")
     return resp
 
-def v0_apache(request, server):
+def v0_apache(request):
     """
     Apache configuration for vserver
     """
     resp = HttpResponse(mimetype="text/plain")
 
-    host = server.split(".")[0]
-    domain = get_object_or_404(Domain, name=".".join(server.split(".")[1:]))
-    server = get_object_or_404(Server, hostname=host, domain=domain)
+    #host = settings.MY_HOSTNAME.split(".")[0]
+    #domain = get_object_or_404(Domain, name=".".join(settings.MY_HOSTNAME.split(".")[1:]))
 
     #ips = []
     #vhosts = []
     all_vhosts = {}
 
     # For every IP of this server, which should be served by an apache
-    for ip in server.ipaddress_set.filter(configtype="apache"):
+    for ip in IPAddress.objects.filter(configtype="apache"):
         if not ip.configtype in all_vhosts:
             all_vhosts[ip.configtype] = {}
         if not "vhosts" in all_vhosts[ip.configtype]:
@@ -279,6 +257,8 @@ def v0_apache(request, server):
         
         # All VHosts which use this IP as an upstream parent (load balancer)
         children_hcs = HostConfig.objects.filter(ipport__parent_ip=ip)
+        if children_hcs.count() > 0:
+            raise PyskValidationException("HTTP forwarding using Apache is not supported anymore, please use nginx")
 
         # All VHosts which get directly served by this IP
         my_hcs = ip.hostconfig_set.all()
@@ -334,37 +314,8 @@ def v0_apache(request, server):
                     output.append("</VirtualHost>")
                     vhosts.append(("%s-%s-%s" % (vh.fqdn(), ip.ip, ip.port), "\n".join(output), username, htdocs_dir))
             
-            # Load-Balancer configs
-            for hc in children_hcs:
-                # We have to create a vhost which proxies requests made to
-                # hc.host.fqdn() to hc.ipport.ip:hc.ipport.port
-                vh = hc.host
-                child_ip = hc.ipport
-                parent_ip = child_ip.parent_ip
-                output = []
-                output.append("<VirtualHost %s:%s>" % (parent_ip.ip, parent_ip.port))
-                output.append("ServerName %s" % (vh.fqdn(),))
-                output.append("ServerAdmin philipp@igowo.de")
-                output.append("ServerAlias www.%s" % (vh.fqdn(),))
-                output.append("DocumentRoot /var/www/default/htdocs/")
-                output.append("<Directory /var/www/default/htdocs/>")
-                output.append("\tAllowOverride None")
-                output.append("\tOrder allow,deny")
-                output.append("\tallow from all")
-                output.append("</Directory>")
-                output.append("ProxyRequests Off")
-                output.append("<Proxy *>")
-                output.append("\tOrder deny,allow")
-                output.append("\tAllow from all")
-                output.append("</Proxy>")
-                output.append("ProxyPreserveHost On")
-                output.append("ProxyPass / http://%s:%s/ retry=1" % (child_ip.ip, child_ip.port))
-                output.append("ProxyPassReverse / http://%s:%s/" % (child_ip.ip, child_ip.port))
-                output.append("</VirtualHost>")
-                vhosts.append(("%s-%s-%s" % (vh.fqdn(), parent_ip.ip, parent_ip.port), "\n".join(output)))
-
     # For every IP of this server, which should be served by an nginx load-balancer
-    for ip in server.ipaddress_set.filter(configtype="nginx"):
+    for ip in IPAddress.objects.filter(configtype="nginx"):
         if not ip.configtype in all_vhosts:
             all_vhosts[ip.configtype] = {}
         if not "vhosts" in all_vhosts[ip.configtype]:
@@ -431,36 +382,7 @@ def v0_apache(request, server):
 
     return resp
 
-#@transaction.autocommit
 @user_passes_test(lambda u: u.is_superuser == True)
 def migrate(request):
-    #for m in Forwarding.objects.all():
-    #   if m.source.count("@") == 1:
-    #       print m.source
-    #       userpart = m.source.split("@")[0]
-    #       domainpart = m.source.split("@")[1]
-    #       m.domain = Domain.objects.get(name=domainpart)
-    #       m.source = userpart
-    #       m.save()
-
     return HttpResponseRedirect("/admin/")
-
-
-
-from pycpdf import PyCPDF
-
-def helloworld( request ):
-	response = HttpResponse( mimetype='application/pdf' );
-	response['Content-Disposition'] = 'attachment; filename=ohai.pdf'
-	
-	c = PyCPDF( response );
-	
-	c.setFont( "Helvetica-Bold", 20 );
-	c.cell( txt="Ohai!", border=True, ln=True, align="C" );
-	
-	c.setFont( "Helvetica", 14 );
-	c.cell( txt="I haz printed teh hello world PDF." );
-	
-	c.save();
-	return response;
 
