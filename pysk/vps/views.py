@@ -186,7 +186,7 @@ def bind(request):
     resp.write(cPickle.dumps(zonefiles, cPickle.HIGHEST_PROTOCOL))
     return resp
 
-def v0_aliases(request, server):
+def v0_aliases(request):
     """
     Wir generieren hier die Apache Config für die Weiterleitungen
     """
@@ -205,7 +205,7 @@ def v0_aliases(request, server):
 
     return resp
 
-def v0_aliases_nginx(request, server):
+def v0_aliases_nginx(request):
     """
     Wir generieren hier die nginx Config für die Weiterleitungen
     """
