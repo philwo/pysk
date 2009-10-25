@@ -61,7 +61,7 @@ def genentries(resp, d):
         output.append("")
 
     #output.append("; EMAIL")
-    #output.append("mail IN A %s" % (Server.objects.all()[0].main_ip.ip,))
+    #output.append("mail IN A %s" % (settings.MY_IP,))
     #output.append("imap IN CNAME mail")
     #output.append("smtp IN CNAME mail")
     #output.append("pop IN CNAME mail")

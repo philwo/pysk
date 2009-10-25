@@ -57,27 +57,13 @@ class NSEntryAdmin(admin.ModelAdmin):
         }),
     )
 
-class IPAddressInline(admin.StackedInline):
+class IPAddressAdmin(admin.ModelAdmin):
     def queryset(self, request):
         if request.user.is_superuser:
             return IPAddress.objects.all()
         return IPAddress.objects.filter(server__owner=request.user)
 
-    model = IPAddress
-    fk_name = "server"
-    extra = 1
-
-class ServerAdmin(admin.ModelAdmin):
-    def queryset(self, request):
-        if request.user.is_superuser:
-            return Server.objects.all()
-        return Server.objects.filter(owner=request.user)
-
-    list_display = ("owner", "id", "fqdn", "main_ip", "active")
-    list_display_links = ("id", "fqdn")
-    inlines = [
-        IPAddressInline,
-    ]
+    list_display = ("ip", "port", "sslcert", "sslca", "sslkey", "configtype", "parent_ip")
 
 class AliasAdmin(admin.ModelAdmin):
     def queryset(self, request):
@@ -137,7 +123,7 @@ class VirtualHostAdmin(admin.ModelAdmin):
 
 admin.site.register(Domain, DomainAdmin)
 admin.site.register(NSEntry, NSEntryAdmin)
-admin.site.register(Server, ServerAdmin)
+admin.site.register(IPAddress, IPAddressAdmin)
 admin.site.register(Alias, AliasAdmin)
 admin.site.register(Mailbox, MailboxAdmin)
 admin.site.register(Forwarding, ForwardingAdmin)

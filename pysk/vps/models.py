@@ -99,27 +99,6 @@ class NSEntry(models.Model):
         verbose_name = "Custom DNS record"
         verbose_name_plural = "Custom DNS records"
 
-class Server(models.Model):
-    id = models.IntegerField(primary_key=True, help_text="Muss immer &gt; 100 sein!")
-    hostname = models.CharField(max_length=64, unique=True)
-    owner = models.ForeignKey(User)
-    active = models.BooleanField(default=True)
-    main_ip = models.ForeignKey("IPAddress", unique=True, related_name="server_main_ips", blank=True, null=True)
-
-    def __unicode__(self):
-        return self.fqdn()
-
-    def fqdn(self):
-        return (u"%s.igowo.de." % (self.hostname, self.domain)).strip(".")
-    fqdn.short_description = "FQDN"
-    fqdn.admin_order_field = "domain"
-
-    def save(self, force_insert=False, force_update=False):
-        super(Server, self).save(force_insert, force_update)
-
-    class Meta:
-        ordering = ["id"]
-
 IP_CONFIG_CHOICES = (
     ("apache", "Apache Webserver"),
     ("nginx", "nginx (Load-Balancer only, at the moment)"),
