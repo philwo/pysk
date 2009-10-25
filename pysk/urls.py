@@ -29,6 +29,10 @@ urlpatterns += patterns("pysk.vps.views",
 	(r'^api/v0/dns/bind/', 'bind'),
 )
 
+urlpatterns += patterns("pysk.vps.views",
+    (r'^actions/save/', 'save'),
+)
+
 urlpatterns += patterns('django.views.generic.simple',
     (r'^$', 'direct_to_template', {'template': 'index.html'}),
 )
