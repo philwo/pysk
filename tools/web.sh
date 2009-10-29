@@ -26,7 +26,7 @@ echo
 echo "Starte Webserver neu ..."
 /usr/sbin/apachectl -t
 /usr/sbin/apachectl restart
-/etc/rc.d/nginx reload
+/etc/rc.d/nginx restart
 echo
 
 echo "Fertig!"
