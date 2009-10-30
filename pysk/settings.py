@@ -49,7 +49,7 @@ SECRET_KEY = 'xgYRsDMhGsnjubsP1JwT9b6ux6teGVLedHEJywNtIsMQKxgK'
 
 ROOT_URLCONF = 'pysk.urls'
 AUTH_PROFILE_MODULE = "app.customer"
-LOGIN_URL = "/login/"
+LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/admin/"
 ACCOUNT_ACTIVATION_DAYS = 14
 

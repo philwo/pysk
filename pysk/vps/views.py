@@ -4,7 +4,9 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_list_or_404, get_object_or_404, render_to_response
 from django.db import transaction
 from django.conf import settings
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import user_passes_test, login_required
+from django.shortcuts import render_to_response
+from django.template import RequestContext
 
 from pysk.vps.models import *
 import cPickle
@@ -186,7 +188,7 @@ def bind(request):
     resp.write(cPickle.dumps(zonefiles, cPickle.HIGHEST_PROTOCOL))
     return resp
 
-def v0_aliases(request, server):
+def v0_aliases(request):
     """
     Wir generieren hier die Apache Config für die Weiterleitungen
     """
@@ -205,7 +207,7 @@ def v0_aliases(request, server):
 
     return resp
 
-def v0_aliases_nginx(request, server):
+def v0_aliases_nginx(request):
     """
     Wir generieren hier die nginx Config für die Weiterleitungen
     """
@@ -294,6 +296,7 @@ def v0_apache(request):
 
                     output.append("ServerAlias www.%s %s" % (vh.fqdn(), extra_aliases.strip()))
                     output.append("DocumentRoot %s" % (htdocs_dir,))
+                    output.append("RewriteEngine On")
                     output.append("<Directory /home/%s/www/%s/htdocs/>" % (username, vh.fqdn()))
                     output.append("\tAllowOverride AuthConfig FileInfo Indexes Limit Options=FollowSymLinks,Indexes,MultiViews,SymLinksIfOwnerMatch")
                     output.append("\tOrder allow,deny")
@@ -384,4 +387,10 @@ def v0_apache(request):
 @user_passes_test(lambda u: u.is_superuser == True)
 def migrate(request):
     return HttpResponseRedirect("/admin/")
+
+@login_required
+def save(request):
+    from subprocess import Popen, PIPE
+    output = Popen(["/usr/bin/sudo", "/opt/pysk/tools/web.sh"], stdout=PIPE).communicate()[0]
+    return render_to_response("save.html", {"output": output}, context_instance=RequestContext(request))
 
