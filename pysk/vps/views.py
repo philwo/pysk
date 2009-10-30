@@ -296,6 +296,7 @@ def v0_apache(request):
 
                     output.append("ServerAlias www.%s %s" % (vh.fqdn(), extra_aliases.strip()))
                     output.append("DocumentRoot %s" % (htdocs_dir,))
+                    output.append("RewriteEngine On")
                     output.append("<Directory /home/%s/www/%s/htdocs/>" % (username, vh.fqdn()))
                     output.append("\tAllowOverride AuthConfig FileInfo Indexes Limit Options=FollowSymLinks,Indexes,MultiViews,SymLinksIfOwnerMatch")
                     output.append("\tOrder allow,deny")
