@@ -131,9 +131,14 @@ class VirtualHost(models.Model):
     owner = models.ForeignKey(User)
     ipports = models.ManyToManyField(IPAddress, through="HostConfig")
     active = models.BooleanField(default=True)
+    sortkey = models.CharField(max_length=255, blank=True, editable=False)
 
     def __unicode__(self):
         return u"%s.%s" % (self.name, self.domain)
+
+    def save(self, force_insert=False, force_update=False):
+        self.sortkey = "%s-%s-%s" % (self.owner, self.domain.name.replace(".", "-"), self.name.replace(".", "-"))
+        super(VirtualHost, self).save(force_insert, force_update)
 
     def fqdn(self):
         return (u"%s.%s." % (self.name, self.domain)).strip(".")
@@ -159,7 +164,7 @@ class VirtualHost(models.Model):
     check_availability.short_description = "HTTP Availability"
 
     class Meta:
-        ordering = ["owner", "domain__name", "name"]
+        ordering = ["sortkey", "owner", "domain__name", "name"]
         unique_together = (("name", "domain"),)
 
 class HostConfig(models.Model):
