@@ -3,118 +3,82 @@
 from django.contrib import admin
 from pysk.vps.models import *
 
-## Utility classes
-
-class ForeignKeyFilter(object):
-    def formfield_for_dbfield(self, db_field, **kwargs):
-        # Only show the foreign key objects from the rendered filter.
-        filters = getattr(self, 'foreignkey_filters', None)
-        if filters and db_field.name in filters:
-            kwargs['queryset'] = filters[db_field.name](get_current_user())
-        return admin.ModelAdmin.formfield_for_dbfield(self, db_field, **kwargs)
+from django.utils.translation import ugettext_lazy as _
 
 ## Admin classes
 
 class DomainAdmin(admin.ModelAdmin):
-    def queryset(self, request):
-        if request.user.is_superuser:
-            return Domain.objects.all()
-        return Domain.objects.filter(owner=request.user)
-
-    list_display = ("owner", "name", "mx1", "serial", "active")
+    list_display = ("name", "mx1", "serial", "active",)
     list_display_links = ("name",)
     fieldsets = (
         (None, {
-            "fields": ("name", "owner", "active")
+            "fields": ("name", "active")
         }),
-        ("Nameservers", {
+        (_(u"Nameservers"), {
             "fields": ("ns1", "ns2", "ns3", "ns4", "ns5", "ns6")
         }),
-        ("Mail Exchange", {
+        (_(u"Mail Exchange"), {
             "fields": ("mx1", "mx2", "mx3")
         }),
-        ("Special options", {
-            "fields": ("is_gafyd", )
+        (_(u"Jabber Server"), {
+            "fields": ("jabber",)
+        }),
+        (_(u"Special options"), {
+            "classes": ("collapse",),
+            "fields": ("is_gafyd",)
         })
     )
 
 class NSEntryAdmin(admin.ModelAdmin):
-    def queryset(self, request):
-        if request.user.is_superuser:
-            return NSEntry.objects.all()
-        return NSEntry.objects.filter(domain__owner=request.user)
-
-    list_display = ("owner", "fqdn", "type", "value")
-    #list_display = ("owner", "host", "domain", "type", "value")
+    list_display = ("fqdn", "type", "value",)
     list_display_links = ("fqdn",)
-    #list_display_links = ("host", "domain",)
     fieldsets = (
         (None, {
             "fields": ("host", "domain", "type", "value")
         }),
-        ("SRV records", {
+        (_(u"SRV records"), {
+            "classes": ("collapse",),
             "fields": ("port", "weight", "priority")
         }),
     )
 
 class IPAddressAdmin(admin.ModelAdmin):
-    list_display = ("ip", "port", "sslcert", "sslca", "sslkey", "configtype", "parent_ip")
+    list_display = ("ip",)
 
 class AliasAdmin(admin.ModelAdmin):
-    def queryset(self, request):
-        if request.user.is_superuser:
-            return Alias.objects.all()
-        return Alias.objects.filter(owner=request.user)
-
-    list_display = ("owner", "fqdn", "target", "active")
+    list_display = ("fqdn", "target", "active",)
     list_display_links = ("fqdn",)
 
 class MailboxAdmin(admin.ModelAdmin):
-    def queryset(self, request):
-        if request.user.is_superuser:
-            return Mailbox.objects.all()
-        return Mailbox.objects.filter(owner=request.user)
-
-    list_display = ("owner", "mail", "domain", "quota", "active")
-    list_display_links = ("mail", "domain")
+    list_display = ("mail", "domain", "quota", "active",)
+    list_display_links = ("mail", "domain",)
 
 class ForwardingAdmin(admin.ModelAdmin):
-    def queryset(self, request):
-        if request.user.is_superuser:
-            return Forwarding.objects.all()
-        return Forwarding.objects.filter(owner=request.user)
-
-    list_display = ("owner", "source", "domain", "target", "active")
-    list_display_links = ("source", "domain")
+    list_display = ("email", "target", "active",)
+    list_display_links = ("email",)
 
 class DirectAliasInline(admin.TabularInline):
-    def queryset(self, request):
-        if request.user.is_superuser:
-            return DirectAlias.objects.all()
-        return DirectAlias.objects.filter(host__owner=request.user)
-
     model = DirectAlias
     extra = 3
 
-class HostConfigInline(admin.StackedInline):
-    def queryset(self, request):
-        if request.user.is_superuser:
-            return HostConfig.objects.all()
-        return HostConfig.objects.filter(host__owner=request.user)
-
-    model = HostConfig
-    extra = 1
-
 class VirtualHostAdmin(admin.ModelAdmin):
-    def queryset(self, request):
-        if request.user.is_superuser:
-            return VirtualHost.objects.all()
-        return VirtualHost.objects.filter(owner=request.user)
-
-    list_display = ("owner", "fqdn", "dns_ip", "active")
-    #list_display = ("owner", "fqdn", "dns_ip", "active", "check_availability")
+    list_display = ("fqdn", "ipport", "ssl_cert", "ssl_key", "force_www", "ssl_enabled", "ssl_force", "apache_enabled", "active",)
     list_display_links = ("fqdn",)
-    inlines = [HostConfigInline, DirectAliasInline]
+    inlines = [DirectAliasInline]
+    fieldsets = (
+        (None, {
+            "fields": ("name", "domain", "ipport", "active")
+        }),
+        (_(u"nginx Webserver"), {
+            "fields": ("force_www", "nginx_config", )
+        }),
+        (_(u"Apache Webserver"), {
+            "fields": ("apache_enabled", "apache_config")
+        }),
+        (_(u"SSL"), {
+            "fields": ("ssl_enabled", "ssl_force", "ssl_cert", "ssl_key")
+        }),
+    )
 
 admin.site.register(Domain, DomainAdmin)
 admin.site.register(NSEntry, NSEntryAdmin)
@@ -123,4 +87,3 @@ admin.site.register(Alias, AliasAdmin)
 admin.site.register(Mailbox, MailboxAdmin)
 admin.site.register(Forwarding, ForwardingAdmin)
 admin.site.register(VirtualHost, VirtualHostAdmin)
-

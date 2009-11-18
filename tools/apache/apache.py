@@ -16,15 +16,13 @@ apacheroot = "/etc/httpd/conf"
 APIPASS = "W68p20YST5Iv6KGG"
 
 authhandler = urllib2.HTTPBasicAuthHandler()
-authhandler.add_password(realm="Pysk API", uri="https://%s/" % (hostname,), user="pysk", passwd=APIPASS)
+authhandler.add_password(realm="Pysk", uri="https://%s/" % (hostname,), user="pysk", passwd=APIPASS)
 
 opener = urllib2.build_opener(authhandler)
 urllib2.install_opener(opener)
 
 print "Getting config for %s ..." % (hostname,)
-configdata = cPickle.load(urllib2.urlopen("https://%s/api/v0/vz/apache/" % (hostname,)))
-vhosts = configdata["apache"]["vhosts"]
-ips = configdata["apache"]["ips"]
+vhosts = cPickle.load(urllib2.urlopen("https://%s/api/v0/vz/apache/" % (hostname,)))
 validDomain = re.compile("([a-zA-Z0-9-]+\.?)+")
 
 if os.path.exists("%s/sites-available/" % (apacheroot,)):
@@ -35,17 +33,13 @@ os.mkdir("%s/sites-available/" % (apacheroot,), 0755)
 os.mkdir("%s/sites-enabled/" % (apacheroot,), 0755)
 
 portsconf = open("%s/ports.conf" % (apacheroot,), "w")
+portsconf.write("Listen 127.0.0.1:80\n")
+portsconf.write("NameVirtualHost 127.0.0.1:80\n")
+portsconf.close()
+
 f = open("%s/sites-available/default" % (apacheroot,), "w")
-
-for (ip, namehost, port, sslcert, sslca, sslkey) in ips:
-    portsconf.write("Listen %(ip)s:%(port)s\n" % {"ip": ip, "port": port})
-
-    f.write("""
-NameVirtualHost %(ip)s:%(port)s
-""" % {"ip": ip, "port": port})
-    
-    f.write("""
-<VirtualHost %(ip)s:%(port)s>
+f.write("""
+<VirtualHost 127.0.0.1:80>
     ServerAdmin philipp@igowo.de
     DocumentRoot /srv/http/default/htdocs/
 
@@ -65,24 +59,8 @@ NameVirtualHost %(ip)s:%(port)s
         Deny from all
         Allow from 127.0.0.1
     </Location>
-""" % {"ip": ip, "port": port})
-
-    if sslcert != "" and sslkey != "":
-        f.write("""
-    SSLEngine on
-    SSLCertificateFile %(sslcert)s
-    SSLCertificateKeyFile %(sslkey)s""" % {"sslcert": sslcert, "sslkey": sslkey})
-        if sslca != "":
-            f.write("""
-    SSLCertificateChainFile %(sslca)s""" % {"sslca": sslca})
-        f.write("""
-    SetEnv HTTPS On
-    SetEnvIf User-Agent ".*MSIE.*" nokeepalive ssl-unclean-shutdown""")
-
-    f.write("""
 </VirtualHost>
 """)
-
 f.close()
 
 # Create default vhost directory
@@ -91,11 +69,8 @@ if not os.path.exists("/srv/http/default/htdocs/"):
 os.chown("/srv/http/default/htdocs/", 0, 0)
 subprocess.call(["/opt/pysk/tools/apache/a2ensite", "default"])
 
-for vhosttuple in vhosts:
-    key = vhosttuple[0]
-    value = vhosttuple[1]
-    username = vhosttuple[2]
-    htdocs_dir = vhosttuple[3]
+for key in vhosts:
+    (value, username, htdocs_dir) = vhosts[key]
 
     if validDomain.match(key).group(0) != key:
         raise Exception("Invalid domain name = '%s'!" % (key,))

@@ -1,0 +1,181 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-11-12 07:46+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: settings.py:33
+msgid "German"
+msgstr "Deutsch"
+
+#: settings.py:34
+msgid "English"
+msgstr "Englisch"
+
+#: vps/admin.py:17
+msgid "Nameservers"
+msgstr "DNS-Server"
+
+#: vps/admin.py:20
+msgid "Mail Exchange"
+msgstr "Mailserver"
+
+#: vps/admin.py:23
+msgid "Special options"
+msgstr "Spezielle Optionen"
+
+#: vps/admin.py:35
+msgid "SRV records"
+msgstr ""
+
+#: vps/admin.py:67
+msgid "nginx Webserver"
+msgstr ""
+
+#: vps/admin.py:70
+msgid "Apache Webserver"
+msgstr ""
+
+#: vps/admin.py:73
+msgid "SSL"
+msgstr ""
+
+#: vps/models.py:55
+msgid "Domain"
+msgstr ""
+
+#: vps/models.py:56
+msgid "Domains"
+msgstr ""
+
+#: vps/models.py:85
+msgid "Custom DNS record"
+msgstr "Eigener DNS Eintrag"
+
+#: vps/models.py:86
+msgid "Custom DNS records"
+msgstr "Eigene DNS Einträge"
+
+#: vps/models.py:97
+msgid "IP address"
+msgstr "IP Adresse"
+
+#: vps/models.py:98
+msgid "IP addresses"
+msgstr "IP Adressen"
+
+#: vps/models.py:101
+msgid "strip www subdomain"
+msgstr "immer ohne www anzeigen"
+
+#: vps/models.py:102
+msgid "force www subdomain"
+msgstr "immer mit www anzeigen"
+
+#: vps/models.py:103
+msgid "both is okay"
+msgstr "ignorieren"
+
+#: vps/models.py:108 vps/models.py:142 vps/models.py:163
+msgid "Hostname"
+msgstr ""
+
+#: vps/models.py:108 vps/models.py:163
+msgid "Sometimes also called 'subdomain' ..."
+msgstr "Manchmal auch 'subdomain' genannt ..."
+
+#: vps/models.py:110
+msgid "IP"
+msgstr "IP Adresse"
+
+#: vps/models.py:112
+msgid "Force WWW"
+msgstr "www in der Adresse anzeigen"
+
+#: vps/models.py:113
+msgid "SSL enabled"
+msgstr "SSL-Verschlüsselung aktiviert"
+
+#: vps/models.py:114
+msgid "Force SSL"
+msgstr "SSL-Verschlüsselung erzwingen"
+
+#: vps/models.py:115
+msgid "SSL certificate"
+msgstr "SSL-Zertifikat"
+
+#: vps/models.py:116
+msgid "SSL CA certificate"
+msgstr ""
+
+#: vps/models.py:117
+msgid "SSL Private Key"
+msgstr "SSL-Private-Key"
+
+#: vps/models.py:118
+msgid "Apache config"
+msgstr "Apache Konfiguration"
+
+#: vps/models.py:119
+msgid "Apache enabled"
+msgstr "Apache aktiviert"
+
+#: vps/models.py:120
+msgid "nginx config"
+msgstr "nginx Konfiguration"
+
+#: vps/models.py:137
+msgid "Webspace"
+msgstr ""
+
+#: vps/models.py:138
+msgid "Webspaces"
+msgstr ""
+
+#: vps/models.py:157
+msgid "HTTP forwarding"
+msgstr "Domain-Umleitung"
+
+#: vps/models.py:158
+msgid "HTTP forwardings"
+msgstr "Domain-Umleitungen"
+
+#: vps/models.py:171
+msgid "Direct alias"
+msgstr "Aliasname"
+
+#: vps/models.py:172
+msgid "Direct aliases"
+msgstr "Aliasnamen"
+
+#: vps/models.py:188
+msgid "Mailbox"
+msgstr "E-Mail Postfach"
+
+#: vps/models.py:189
+msgid "Mailboxes"
+msgstr "E-Mail Postfächer"
+
+#: vps/models.py:200
+msgid "E-Mail Address"
+msgstr "E-Mail Adresse"
+
+#: vps/models.py:208
+msgid "E-Mail forwarding"
+msgstr "E-Mail Weiterleitung"
+
+#: vps/models.py:209
+msgid "E-Mail forwardings"
+msgstr "E-Mail Weiterleitungen"

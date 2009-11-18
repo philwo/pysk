@@ -38,7 +38,11 @@ chown -R pysk:http /opt/pysk/run /opt/pysk/secret /opt/pysk/www
 echo "Fixing up configs"
 sed -i s/XXXMAINUSERXXX/$mainuser/g /etc/httpd/conf/httpd.conf
 sed -i s/XXXMAINUSERXXX/$mainuser/g /etc/php/php-fpm.conf
+sed -i s/XXXMAINUSERXXX/$mainuser/g /etc/monit.d/php-fpm
 sed -i s/XXXPHPCHILDRENXXX/5/g /etc/php/php-fpm.conf
 sed -i s/XXXIPXXX/$ipaddress/g /etc/nginx/conf/pysk.conf
 sed -i s/XXXHOSTNAMEXXX/$hostname/g /etc/nginx/conf/pysk.conf
+
+echo "Removing pacnew files"
+find /etc -name "*.pacnew" -delete
 

@@ -4,6 +4,7 @@
 from __future__ import with_statement
 import sys, os, os.path
 from os import chmod, chown, rename
+from stat import S_IMODE, ST_MODE
 from optparse import OptionParser
 from crypt import crypt
 from datetime import datetime
@@ -16,14 +17,25 @@ import psycopg2, psycopg2.extras
 import csv
 import socket
 
-def getsalt(chars = letters + digits, length=16):
-    """Generate a random salt. Default length is 16.
-       Originated from mkpasswd in Luma
-    """
-    salt = ""
-    for i in range(int(length)):
-        salt += choice(chars)
-    return salt
+def ensure_permissions(directory, perms):
+    if not os.path.exists(directory):
+        print "WARNING: directory did not exist: %s" % (directory,)
+        os.makedirs(directory, perms)
+    statinfo = os.stat(directory)
+    if not S_IMODE(statinfo[ST_MODE]) == perms:
+        print "WARNING: directory had wrong permissions: %s" % (directory,)
+        os.chmod(directory, perms)
+
+def ensure_uid_gid(directory, uid, gid):
+    statinfo = os.stat(directory)
+    if uid != -1:
+        if not statinfo.st_uid == uid:
+            print "WARNING: directory had wrong owner: %i != %i" % (uid, statinfo.st_uid)
+            os.chown(directory, uid, -1)
+    if gid != -1:
+        if not statinfo.st_gid == gid:
+            print "WARNING: directory had wrong group: %i != %i" % (gid, statinfo.st_gid)
+            os.chown(directory, -1, gid)
 
 def main(argv=None):
     if argv is None:
@@ -42,12 +54,15 @@ def main(argv=None):
     cursor = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     # /etc/passwd
-    #query = "SELECT DISTINCT p.username, p.password, p.uid, p.gid, p.gecos, p.home, p.shell FROM passwd_list p JOIN server_ip_user_list u ON p.username = u.username WHERE u.host = %s ORDER BY uid"
-    query = "SELECT DISTINCT p.username, p.password, p.uid, p.gid, p.gecos, p.home, p.shell FROM passwd_list_all p ORDER BY uid"
+    query = "SELECT u.username, u.password, c.kundennr AS uid, c.kundennr AS gid, 'igowo user' AS gecos, '/home/' || u.username AS home, '/bin/bash' AS shell FROM auth_user u, app_customer c WHERE u.id = c.user_id ORDER BY username" 
     cursor.execute(query, [socket.getfqdn()])
     users = cursor.fetchall()
     users_by_uid = dict([(x["uid"], x) for x in users])
     users_by_username = dict([(x["username"], x) for x in users])
+
+    # Check if all passwords are encrypted correctly
+    for u in users:
+        assert(u[1].startswith("crypt$$1$"))
   
     passwd_csv = csv.reader(open("/etc/passwd", "rb"), delimiter=":", quoting=csv.QUOTE_NONE)
     group_csv = csv.reader(open("/etc/group", "rb"), delimiter=":", quoting=csv.QUOTE_NONE)
@@ -106,14 +121,14 @@ def main(argv=None):
         fakepasswd = "x"
         gid = user_row[3]
         members = ""
-	userlist.append(groupname)
+        userlist.append(groupname)
         group_new.writerow((groupname, fakepasswd, gid, members))
     group_new.writerow(("users", "x", "100", ",".join(userlist)))
     
     # shadow.new
     for user_row in users:
         username = user_row[0]
-        password = crypt(user_row[1], "$1$" + getsalt())
+        password = user_row[1][6:]
         days_since_1970 = int(mktime(datetime.now().timetuple()) / 86400)
         days_before_change_allowed = 0
         days_after_change_necessesary = 99999
@@ -137,7 +152,23 @@ def main(argv=None):
 
     print Popen(["diff", "-u", "/etc/passwd.old", "/etc/passwd"], stdout=PIPE).communicate()[0]
     print Popen(["diff", "-u", "/etc/group.old", "/etc/group"], stdout=PIPE).communicate()[0]
-    #print Popen(["diff", "-u", "/etc/shadow.old", "/etc/shadow"], stdout=PIPE).communicate()[0]
+    print Popen(["diff", "-u", "/etc/shadow.old", "/etc/shadow"], stdout=PIPE).communicate()[0]
+    
+    for user_row in users:
+        user = user_row[0]
+        uid = user_row[2]
+        home = user_row[5]
+        gid = 100 # "users" group
+        
+        print "Fixing permissions for user %s ..." % (user,)
+
+        # /home/username
+        ensure_permissions(home, 0755)
+        ensure_uid_gid(home, uid, gid)
+
+        # /home/username/www
+        ensure_permissions(os.path.join(home, "www"), 0755)
+        ensure_uid_gid(os.path.join(home, "www"), uid, gid)
 
 if __name__ == "__main__":
   sys.exit(main())

@@ -31,7 +31,7 @@ _ = lambda s: s
 
 LANGUAGES = (
 	('de', _('German')),
-#	('en', _('English')),
+	('en', _('English')),
 )
 
 SITE_ID = 1
@@ -90,9 +90,15 @@ MIDDLEWARE_CLASSES = (
 	#'babeldjango.middleware.LocaleMiddleware',
 	'django.contrib.sessions.middleware.SessionMiddleware',
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
+    #'pysk.app.middleware.HttpAuthMiddleware',
+    'django.contrib.auth.middleware.RemoteUserMiddleware',
 	'django.middleware.http.ConditionalGetMiddleware',
 	'django.middleware.doc.XViewMiddleware',
 	'django.middleware.transaction.TransactionMiddleware',
+)
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.RemoteUserBackend',
 )
 
 INSTALLED_APPS = (
@@ -107,4 +113,3 @@ INSTALLED_APPS = (
 	'pysk.app',
 	'pysk.vps',
 )
-

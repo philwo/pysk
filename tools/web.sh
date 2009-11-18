@@ -21,12 +21,13 @@ echo
 
 echo "Verschiedenes ..."
 /opt/pysk/tools/passwd/passwd.py
+/opt/pysk/tools/passwd/pysk_secret.sh
 echo
 
 echo "Starte Webserver neu ..."
 /usr/sbin/apachectl -t
 /usr/sbin/apachectl restart
-/etc/rc.d/nginx restart
+/etc/rc.d/nginx reload
 echo
 
 echo "Fertig!"

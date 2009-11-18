@@ -63,18 +63,18 @@ def main(argv=None):
 
     if options.debug: print >> sys.stderr, "Debug mode activated"
 
-    OUTPUTDIR = "/root/logfiles2/logs"
+    OUTPUTDIR = "/opt/pysk/wwwlogs"
 
     # Get list of vhosts
-    db = psycopg2.connect("host='db1.igowo.de' user='pysk' password='z62VUW2m59Y69u99' dbname='pysk'")
+    db = psycopg2.connect("host='localhost' user='pysk' password='z62VUW2m59Y69u99' dbname='pysk'")
     cursor = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    query = "SELECT * FROM stats_vhost_auth_list"
+    query = "SELECT trim(both '.' from vh.name || '.' || d.name) as vhost FROM vps_virtualhost vh, vps_domain d WHERE vh.domain_id = d.id ORDER BY vhost"
     cursor.execute(query)
     rows = cursor.fetchall()
 
     vhosts = {}
     for row in rows:
-        vhosts[row["vhost"]] = {"username": row["username"], "logfile": None}
+        vhosts[row["vhost"]] = {"logfile": None}
 
     # RDNS
     exitEvent = threading.Event()
@@ -131,6 +131,9 @@ def main(argv=None):
 
                         if "%D" in data:
                             utime = data["%D"]
+                            # stored in milliseconds instead of microseconds?
+                            if '.' in utime:
+                                utime = int(float(utime)*1000)
                         else:
                             utime = None
                         r_host = data["%h"]
@@ -225,23 +228,13 @@ def main(argv=None):
             conffile = "/etc/awstats/awstats.%s.conf" % vhname
             with open(conffile + ".new", "w") as f:
                 logfilesdir = os.path.join(OUTPUTDIR, "pending", vhname, "*.log")
-                f.write('LogFile="/root/logfiles2/logmerge.py %s |"\n' % logfilesdir)
+                f.write('LogFile="/opt/pysk/tools/logfiles2/logmerge.py %s |"\n' % logfilesdir)
                 f.write('SiteDomain="%s"\n' % vhname)
                 f.write('HostAliases="www.%s"\n' % vhname)
                 f.write('DirData="/var/lib/awstats/%s/"\n' % vhname)
-                f.write('AllowAccessFromWebToFollowingAuthenticatedUsers="philwo %s"\n' % vh["username"])
                 f.write('Include "/etc/awstats/awstats.conf.local"\n')
             os.rename(conffile + ".new", conffile)
 
-    # Generate htdigest file
-    digest_already_written = {}
-    with open("/etc/awstats/htdigest.new", "w") as f:
-        for row in rows:
-            if not row["username"] in digest_already_written:
-                f.write("%s:stats:%s\n" % (row["username"], row["digest"]))
-                digest_already_written[row["username"]] = True
-        os.rename("/etc/awstats/htdigest.new", "/etc/awstats/htdigest")
-    
     # Preprocess pending logfiles before statistics run
 
     ## Delete empty logfiles
@@ -254,7 +247,7 @@ def main(argv=None):
 
     ## Run awstats for these vhosts
     for v in vhosts_with_logs:
-        call(["/usr/lib/cgi-bin/awstats.pl", "-config=%s" % (v,), "-showcorrupted"])
+        call(["/usr/local/awstats/wwwroot/cgi-bin/awstats.pl", "-config=%s" % (v,), "-showcorrupted"])
 
     # Finalize processed logfiles
     processed_logfiles = glob(os.path.join(OUTPUTDIR, "processed", "*", "*.log"))
@@ -265,12 +258,13 @@ def main(argv=None):
 
     # Fix permissions of awstats directory
     call("chmod 0750 /var/lib/awstats", shell=True)
-    call("chown philwo:philwo /var/lib/awstats", shell=True)
     call("chmod 0750 /var/lib/awstats/*", shell=True)
-    call("chown philwo:philwo /var/lib/awstats/*", shell=True)
     call("chmod 0660 /var/lib/awstats/*/*", shell=True)
-    call("chown philwo:philwo /var/lib/awstats/*/*", shell=True)
+    call("chown pysk:http /var/lib/awstats", shell=True)
+    call("chown pysk:http /var/lib/awstats/*", shell=True)
+    call("chown pysk:http /var/lib/awstats/*/*", shell=True)
     call("find /var/lib/awstats/ -name \"*.tmp.*\" -delete", shell=True)
         
 if __name__ == "__main__":
     sys.exit(main())
+

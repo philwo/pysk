@@ -29,7 +29,6 @@ class Customer(models.Model):
     telefax = models.CharField(max_length=20,blank=True)
 
     desc = models.CharField(max_length=255, default="", blank=True)
-    #unixuser = models.CharField(max_length=30, default="", blank=True)
     unixpw = models.CharField(max_length=255, default="", blank=True)
     statspw = models.CharField(max_length=255, default="", blank=True)
 
