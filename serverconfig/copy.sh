@@ -48,6 +48,7 @@ echo $MYSQLPW > /opt/pysk/secret/mysqlpw
 
 echo "Removing pacnew files"
 find /etc -name "*.pacnew" -delete
+find /etc -name "*.pacsave" -delete
 
 [ ! -f /usr/share/GeoIP/GeoIP.dat ] && /opt/pysk/tools/logfiles/update_geoip.sh
 
