@@ -3,6 +3,7 @@ syntax: glob
 *.swp
 .DS_Store
 secret/mysqlpw
+secret/htpasswd
 tools/logfiles2/logs/*
 tools/logfiles2/src/*
 wwwlogs/dnscache.txt
