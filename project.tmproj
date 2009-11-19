@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>pysk/templates/navigation.html</string>
+	<string>pysk/vps/models.py</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -49,6 +49,20 @@
 	<integer>200</integer>
 	<key>metaData</key>
 	<dict>
+		<key>pysk/app/models.py</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
 		<key>pysk/templates/index.html</key>
 		<dict>
 			<key>caret</key>
@@ -77,15 +91,31 @@
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
+		<key>pysk/vps/models.py</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>157</integer>
+		</dict>
 	</dict>
 	<key>openDocuments</key>
 	<array>
 		<string>pysk/templates/navigation.html</string>
+		<string>pysk/vps/models.py</string>
+		<string>pysk/app/models.py</string>
 		<string>pysk/templates/index.html</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{1102, 133}, {814, 942}}</string>
+	<string>{{914, 268}, {952, 991}}</string>
 </dict>
 </plist>
