@@ -188,6 +188,7 @@ formats = {
 	'vhcommon':r'%v %h %l %u %t \"%r\" %>s %b',
 
 	# igowo logformats
+    # igowo = LocalIP ServeTimeMikroSecs VirtualHost RemoteHost - RequestDateTime FirstLineOfRequest StatusCode BodySizeBytes Referer User-Agent InputBytes OutputBytes
 	'igowo':       r'%A %D %v %h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %I %O',
 	'vhextendedio':r'%v %h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %I %O',
 	'vhextended':  r'%v %h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"',
