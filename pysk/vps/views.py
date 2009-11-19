@@ -8,11 +8,15 @@ from django.contrib.auth.decorators import user_passes_test, login_required
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
+from pysk.app.models import *
 from pysk.vps.models import *
 import cPickle
 import hashlib
 from time import time
 from IPy import IP
+import re
+
+re_private_ip = re.compile(r'^(127\.|10\.)')
 
 class PyskValidationException(Exception):
     def __init__(self, value):
@@ -67,12 +71,12 @@ def genentries(resp, d):
         if (d.mx3 != ""): output.append("@ IN MX 30 %s" % (d.mx3,))
         output.append("")
 
-    #output.append("; EMAIL")
-    #output.append("mail IN A %s" % (settings.MY_IP,))
-    #output.append("imap IN CNAME mail")
-    #output.append("smtp IN CNAME mail")
-    #output.append("pop IN CNAME mail")
-    #output.append("")
+        if (d.jabber != ""):
+            output.append("; EJABBERD - SRV")
+            output.append("_xmpp-server._tcp IN SRV 5 0 5269 %s")
+            output.append("_xmpp-client._tcp IN SRV 5 0 5222 %s")
+            output.append("_jabber._tcp IN SRV 5 0 5269 %s")
+            output.append("")
 
     output.append("; ON APPEND CUT HERE")
 
@@ -106,25 +110,16 @@ def genentries(resp, d):
     if dataset.count() > 0:
         output.append("; HOSTS")
         for vh in dataset:
-            for ip in vh.ipports.all():
-                hc = HostConfig.objects.get(host=vh, ipport=ip)
-                if hc.publish_dns:
-                    host_ip = ip.parent_ip.ip if ip.parent_ip else ip.ip
-                    output.append("%s IN A %s" % (vh.name if vh.name else "@", host_ip))
-                    #output.append("%s IN A %s" % ("ftp."+vh.name if vh.name else "ftp", host_ip))
-                    output.append("%s IN A %s" % ("www."+vh.name if vh.name else "www", host_ip))
+            output.append("%s IN A %s" % (vh.name if vh.name else "@", vh.ipport.ip))
+            output.append("%s IN A %s" % ("www."+vh.name if vh.name else "www", vh.ipport.ip))
         output.append("")
 
     dataset = DirectAlias.objects.filter(active=True).filter(domain=d)
     if dataset.count() > 0:
         output.append("; DIRECT ALIASES")
         for da in dataset:
-            hc = HostConfig.objects.get(host=da.host, ipport=da.ipport)
-            if hc.publish_dns:
-                ip = hc.ipport
-                host_ip = ip.parent_ip.ip if ip.parent_ip else ip.ip
-                output.append("; %s -> %s" % (da.fqdn(), da.host.fqdn()))
-                output.append("%s IN A %s" % (da.name if da.name else "@", host_ip))
+            output.append("; %s -> %s" % (da.fqdn(), da.host.fqdn()))
+            output.append("%s IN A %s" % (da.name if da.name else "@", da.host.ipport.ip))
         output.append("")
         
     dataset = Domain.objects.filter(active=True).filter(name__endswith="."+d.name)
@@ -207,7 +202,6 @@ def v0_aliases(request):
             resp.write("\tServerAlias www.%s\n" % (a.fqdn(),))
         resp.write("\tServerAdmin support@igowo.de\n")
         resp.write("\tDocumentRoot /var/www/default/htdocs\n")
-        # TODO implement non-wildcard redirecting here
         resp.write("\tRedirect permanent / %s\n" % (a.target,))
         resp.write("</VirtualHost>\n\n");
 
@@ -239,164 +233,151 @@ def v0_aliases_nginx(request):
 
 def v0_apache(request):
     """
-    Apache configuration for vserver
+    Apache configuration
     """
     resp = HttpResponse(mimetype="text/plain")
 
-    #host = settings.MY_HOSTNAME.split(".")[0]
-    #domain = get_object_or_404(Domain, name=".".join(settings.MY_HOSTNAME.split(".")[1:]))
-
-    #ips = []
-    #vhosts = []
-    all_vhosts = {}
+    vhosts = {}
 
     # For every IP of this server, which should be served by an apache
-    for ip in IPAddress.objects.filter(configtype="apache"):
-        if not ip.configtype in all_vhosts:
-            all_vhosts[ip.configtype] = {}
-        if not "vhosts" in all_vhosts[ip.configtype]:
-            all_vhosts[ip.configtype]["vhosts"] = []
-        if not "ips" in all_vhosts[ip.configtype]:
-            all_vhosts[ip.configtype]["ips"] = set()
+    for vh in VirtualHost.objects.filter(active=True, apache_enabled=True):
+        username = Customer.objects.all()[0].user.username
+        htdocs_dir = "/home/%s/www/%s/htdocs/" % (username, vh.fqdn())
+
+        output = []
+        output.append("<VirtualHost 127.0.0.1:80>")
+        output.append("\tServerName %s" % (vh.fqdn(),))
+        output.append("\tServerAdmin philipp@igowo.de")
+
+        extra_aliases = ""
+        for da in DirectAlias.objects.filter(active=True).filter(host=vh):
+            extra_aliases += " %s" % (da.fqdn(),)
+
+        output.append("\tServerAlias www.%s %s" % (vh.fqdn(), extra_aliases.strip()))
+        output.append("\tDocumentRoot %s" % (htdocs_dir,))
+        output.append("\tRewriteEngine On")
+        output.append("\t<Directory /home/%s/www/%s/htdocs/>" % (username, vh.fqdn()))
+        output.append("\t\tAllowOverride AuthConfig FileInfo Indexes Limit Options=FollowSymLinks,Indexes,MultiViews,SymLinksIfOwnerMatch")
+        output.append("\t\tOrder allow,deny")
+        output.append("\t\tallow from all")
+        output.append("\t</Directory>")
         
-        vhosts = all_vhosts[ip.configtype]["vhosts"]
-        ips = all_vhosts[ip.configtype]["ips"]
+        # User config
+        output.append("\n".join(["\t"+x for x in vh.apache_config.replace("\r\n", "\n").split("\n")]))
+
+        # mod_rpaf
+        output.append("\tRPAFenable On")
+        output.append("\tRPAFsethostname On")
+        output.append("\tRPAFproxy_ips 127.0.0.1")
+
+        # PHP via mod_php
+        output.append("\tAddHandler application/x-httpd-php .php")
+        output.append("\tAddHandler application/x-httpd-php-source .phps")
+
+        output.append("</VirtualHost>")
+        vhosts[vh.fqdn()] = ["\n".join(output), username, htdocs_dir]
         
-        # All VHosts which use this IP as an upstream parent (load balancer)
-        children_hcs = HostConfig.objects.filter(ipport__parent_ip=ip)
-        if children_hcs.count() > 0:
-            raise PyskValidationException("HTTP forwarding using Apache is not supported anymore, please use nginx")
-
-        # All VHosts which get directly served by this IP
-        my_hcs = ip.hostconfig_set.all()
-        
-        # Get the number of VirtualHosts running on this IP
-        hostcount = my_hcs.count() + children_hcs.count()
-
-        if hostcount > 0:
-            # If more than one host uses this IP:Port combination, we need name-based vhosts
-            namehost = hostcount > 1
-            ips.add((ip.ip, namehost, ip.port, ip.sslcert, ip.sslca, ip.sslkey))
-
-            # For every virtualhost which uses this IP
-            for vh in ip.virtualhost_set.filter(active=True).order_by("domain__name", "name"):
-                # Associated host configuration
-                vh_hcs = HostConfig.objects.filter(host=vh,ipport=ip)
-                
-                # This should return exactly one 
-                if vh_hcs.count() > 1:
-                    raise PyskValidationException("More than one hostconfig for VH/IP pair (%s, %s) found!" % (vh, ip))
-                
-                for hc in vh_hcs:
-                    username = vh.owner.username
-                    htdocs_dir = "/home/%s/www/%s/htdocs/" % (username, vh.fqdn())
-
-                    output = []
-                    output.append("<VirtualHost %s:%s>" % (ip.ip, ip.port))
-                    output.append("ServerName %s" % (vh.fqdn(),))
-                    output.append("ServerAdmin philipp@igowo.de")
-
-                    extra_aliases = ""
-                    for da in DirectAlias.objects.filter(active=True).filter(host=hc.host, ipport=hc.ipport):
-                        extra_aliases += " %s" % (da.fqdn(),)
-
-                    output.append("ServerAlias www.%s %s" % (vh.fqdn(), extra_aliases.strip()))
-                    output.append("DocumentRoot %s" % (htdocs_dir,))
-                    output.append("RewriteEngine On")
-                    output.append("<Directory /home/%s/www/%s/htdocs/>" % (username, vh.fqdn()))
-                    output.append("\tAllowOverride AuthConfig FileInfo Indexes Limit Options=FollowSymLinks,Indexes,MultiViews,SymLinksIfOwnerMatch")
-                    output.append("\tOrder allow,deny")
-                    output.append("\tallow from all")
-                    output.append("</Directory>")
-                    output.append(hc.config.replace("\r\n", "\n"))
-                    if ip.parent_ip is not None:
-                        output.append("RPAFenable On")
-                        output.append("RPAFsethostname On")
-                        #output.append("RPAFproxy_ips 127.0.0.1 %s" % (ip.parent_ip.ip))
-                        output.append("RPAFproxy_ips 127.0.0.1")
-
-                    # PHP via mod_php
-                    output.append("AddHandler application/x-httpd-php .php")
-                    output.append("AddHandler application/x-httpd-php-source .phps")
-
-                    output.append("</VirtualHost>")
-                    vhosts.append(("%s-%s-%s" % (vh.fqdn(), ip.ip, ip.port), "\n".join(output), username, htdocs_dir))
-            
-    # For every IP of this server, which should be served by an nginx load-balancer
-    for ip in IPAddress.objects.filter(configtype="nginx"):
-        if not ip.configtype in all_vhosts:
-            all_vhosts[ip.configtype] = {}
-        if not "vhosts" in all_vhosts[ip.configtype]:
-            all_vhosts[ip.configtype]["vhosts"] = []
-        if not "ips" in all_vhosts[ip.configtype]:
-            all_vhosts[ip.configtype]["ips"] = set()
-        
-        vhosts = all_vhosts[ip.configtype]["vhosts"]
-        ips = all_vhosts[ip.configtype]["ips"]
-        
-        # All VHosts which use this IP as an upstream parent (load balancer)
-        children_hcs = HostConfig.objects.filter(ipport__parent_ip=ip)
-
-        # Get the number of VirtualHosts running on this IP
-        hostcount = children_hcs.count()
-
-        if hostcount > 0:
-            # If more than one host uses this IP:Port combination, we need name-based vhosts
-            namehost = hostcount > 1
-            ips.add((ip.ip, namehost, ip.port, ip.sslcert, ip.sslca, ip.sslkey))
-
-            # Load-Balancer configs
-            for hc in children_hcs:
-                # We have to create a vhost which proxies requests made to
-                # hc.host.fqdn() to hc.ipport.ip:hc.ipport.port
-                vh = hc.host
-                child_ip = hc.ipport
-                parent_ip = child_ip.parent_ip
-                output = []
-                output.append("server {")
-                output.append("\tlisten %s:%s;" % (parent_ip.ip, parent_ip.port))
-
-                extra_aliases = ""
-                for da in DirectAlias.objects.filter(active=True).filter(host=hc.host, ipport=hc.ipport):
-                    extra_aliases += " %s" % (da.fqdn(),)
-
-                output.append("\tserver_name %s www.%s %s;" % (vh.fqdn(), vh.fqdn(), extra_aliases.strip()))
-                #output.append("\taccess_log off;")
-                if parent_ip.sslcert:
-                    output.append("\tssl on;");
-                    output.append("\tssl_certificate %s;" % (parent_ip.sslcert, ));
-                    if parent_ip.sslkey:
-                        output.append("\tssl_certificate_key %s;" % (parent_ip.sslkey, ));
-                output.append("\tlocation / {")
-                output.append("\t\tproxy_pass http://%s:%s/;" % (child_ip.ip, child_ip.port))
-                output.append("\t\tproxy_redirect off;")
-                output.append("\t\tproxy_set_header   Host             $host;")
-                output.append("\t\tproxy_set_header   X-Real-IP        $remote_addr;")
-                output.append("\t\tproxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;")
-                output.append("\t\tclient_max_body_size       1024m;")
-                output.append("\t\tclient_body_buffer_size    128k;")
-                output.append("\t\tproxy_send_timeout         300;")
-                output.append("\t\tproxy_read_timeout         300;")
-                output.append("\t\tproxy_buffer_size          4k;")
-                output.append("\t\tproxy_buffers              4 32k;")
-                output.append("\t\tproxy_busy_buffers_size    64k;")
-                output.append("\t\tproxy_temp_file_write_size 64k;")
-                output.append("\t}")
-                output.append("}")
-                
-                vhosts.append(("%s-%s-%s" % (vh.fqdn(), parent_ip.ip, parent_ip.port), "\n".join(output)))
-        
-    resp.write(cPickle.dumps(all_vhosts, cPickle.HIGHEST_PROTOCOL))
-
+    resp.write(cPickle.dumps(vhosts, cPickle.HIGHEST_PROTOCOL))
     return resp
 
-@user_passes_test(lambda u: u.is_superuser == True)
-def migrate(request):
-    return HttpResponseRedirect("/admin/")
+def v0_nginx(request):
+    """
+    nginx configuration
+    """
+    resp = HttpResponse(mimetype="text/plain")
+
+    vhosts = {}
+
+    for vh in VirtualHost.objects.filter(active=True):
+        username = Customer.objects.all()[0].user.username
+        htdocs_dir = "/home/%s/www/%s/htdocs" % (username, vh.fqdn())
+
+        # Construct config common for both http and https server block
+        output_commonconfig = []
+
+        extra_aliases = ""
+        for da in DirectAlias.objects.filter(active=True).filter(host=vh):
+            extra_aliases += " %s" % (da.fqdn(),)
+        
+        output_commonconfig.append("\tserver_name %s www.%s %s;" % (vh.fqdn(), vh.fqdn(), extra_aliases.strip()))
+        output_commonconfig.append("\troot %s/;" % (htdocs_dir,))
+        output_commonconfig.append("\tindex index.php index.html index.htm;")
+        output_commonconfig.append("\t")
+        
+        if vh.force_www == "strip":
+            output_commonconfig.append("\t# Strip www from hostname")
+            output_commonconfig.append("\tif ($host ~* www\.(.*)) {")
+            output_commonconfig.append("\t\tset $host_without_www $1;")
+            output_commonconfig.append("\t\trewrite ^(.*)$ http://$host_without_www$1 permanent;")
+            output_commonconfig.append("\t}")
+            output_commonconfig.append("\t")
+        elif vh.force_www == "prepend":
+            output_commonconfig.append("\t# Force www prefix")
+            output_commonconfig.append("\tif ($host !~* www\.) {")
+            output_commonconfig.append("\t\trewrite ^(.*)$ http://www.$host$1 permanent;")
+            output_commonconfig.append("\t}")
+            output_commonconfig.append("\t")
+        
+        if not vh.apache_enabled:
+            output_commonconfig.append("\t# PHP (FastCGI)")
+            output_commonconfig.append("\tlocation ~ ^(.+\.php)(.*)$ {")
+            output_commonconfig.append("\t\tinclude /etc/nginx/conf/fastcgi_params;")
+            output_commonconfig.append("\t\tfastcgi_index index.php;");
+            output_commonconfig.append("\t\tfastcgi_split_path_info ^(.+\.php)(.*)$;");
+            output_commonconfig.append("\t\tfastcgi_param SCRIPT_FILENAME %s$fastcgi_script_name;" % (htdocs_dir,));
+            output_commonconfig.append("\t\tfastcgi_param PATH_INFO $fastcgi_path_info;");
+            output_commonconfig.append("\t\tfastcgi_param PATH_TRANSLATED $document_root$fastcgi_path_info;");
+            output_commonconfig.append("\t\tfastcgi_pass_header Authorization;");
+            output_commonconfig.append("\t\tfastcgi_intercept_errors off;");
+            output_commonconfig.append("\t\tif (-f $request_filename) {")
+            output_commonconfig.append("\t\t\tfastcgi_pass unix:/tmp/php-%s.sock;" % (username,))
+            output_commonconfig.append("\t\t}")
+            output_commonconfig.append("\t}")
+            output_commonconfig.append("\t")
+        
+        output_commonconfig.append("\n".join(["\t"+x for x in vh.nginx_config.replace("\r\n", "\n").split("\n")]))
+        output_commonconfig.append("\t")
+
+        if vh.apache_enabled:
+            output_commonconfig.append("\t# HTTP Proxy to Apache")
+            output_commonconfig.append("\tlocation / {")
+            output_commonconfig.append("\t\tproxy_pass http://127.0.0.1:80/;")
+            output_commonconfig.append("\t}")
+
+        # Construct http and https server block
+        output = []
+        output.append("server {")
+        output.append("\tlisten %s:80;" % (vh.ipport.ip,))
+        output.append("\t")
+        if vh.ssl_enabled and vh.ssl_force:
+            output.append("\t# Force SSL")
+            output.append("\trewrite ^(.*) https://$host$1 permanent;")
+            output.append("\t")
+        for line in output_commonconfig:
+            output.append(line)
+        output.append("}\n")
+        
+        if vh.ssl_enabled:
+            output.append("server {")
+            output.append("\tlisten %s:443;" % (vh.ipport.ip,))
+            output.append("\t")
+            output.append("\t# SSL support")
+            output.append("\tssl on;");
+            output.append("\tssl_certificate %s;" % (vh.ssl_cert, ));
+            if vh.ssl_key:
+                output.append("\tssl_certificate_key %s;" % (vh.ssl_key, ));
+            output.append("\t")
+            for line in output_commonconfig:
+                output.append(line)
+            output.append("}\n")
+
+        vhosts[vh.fqdn()] = ["\n".join(output), username, htdocs_dir]
+        
+    resp.write(cPickle.dumps(vhosts, cPickle.HIGHEST_PROTOCOL))
+    return resp
 
 @login_required
 def save(request):
     from subprocess import Popen, PIPE
     output = Popen(["/usr/bin/sudo", "/opt/pysk/tools/web.sh"], stdout=PIPE).communicate()[0]
     return render_to_response("save.html", {"output": output}, context_instance=RequestContext(request))
-

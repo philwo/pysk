@@ -18,11 +18,11 @@ def main(argv=None):
     (options, args) = parser.parse_args(argv)
     args = args[1:]
     
-    OUTPUTDIR = "/root/logfiles2/logs"
+    OUTPUTDIR = "/opt/pysk/wwwlogs"
 
     if options.debug: print >> sys.stderr, "Debug mode activated"
 
-    ret = call(["/root/logfiles2/logresolvemerge.pl"] + args)
+    ret = call(["/opt/pysk/tools/logfiles2/logresolvemerge.pl"] + args)
     
     if ret == 0:
         #print "Moving logfiles from pending to processed ..."

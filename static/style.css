@@ -1,0 +1,24 @@
+html * { font-size: 100.01% }
+
+body {
+    font-family: "Bitstream Vera Sans", "Lucida Grande", "Lucida Sans Unicode", Verdana, Helvetica, Arial, sans-serif;
+    font-size: 75.00%;
+    color: #444;
+}
+
+h1,h2,h3,h4,h5,h6 {
+    font-family: "Trebuchet MS", Helvetica, sans-serif;
+    font-weight:bold;
+    color:#182E7A;
+    margin: 0 0 0.25em 0;
+}
+
+h1 { font-size: 175% }
+h2 { font-size: 150% }
+h3 { font-size: 133.33% }
+h4 { font-size: 116.67% }
+
+p { line-height: 1.5em; margin: 0 0 1em 0; }
+
+ul, ol, dl { line-height: 1.5em; margin: 0 0 1em 1em }
+li { margin-left: 1.5em; line-height: 1.5em }

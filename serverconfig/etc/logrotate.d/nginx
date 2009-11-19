@@ -4,12 +4,11 @@
         rotate 7
         compress
         delaycompress
-        mail webstats@intra.igowo.de
-        mailfirst
         notifempty
         create 640 http log
         sharedscripts
         postrotate
                 [ ! -f /var/run/nginx.pid ] || kill -USR1 `cat /var/run/nginx.pid`
+                [ -f /var/log/nginx/access.log.1 ] && cp /var/log/nginx/access.log.1 /opt/pysk/wwwlogs/inbox/access.`date +%Y%m%d`.log
         endscript
 }

@@ -9,5 +9,5 @@ if [ -s $EXCLUDEFILE ] ; then
     done
 fi
 
-diff -ur -x php-fpm.conf -x known_hosts $EXCLUDES /opt/pysk/serverconfig/ / | grep -v 'Only in /' | less
+diff -wur -x php-fpm.conf -x known_hosts $EXCLUDES /opt/pysk/serverconfig/ / | grep -v 'Only in /' | less
 
