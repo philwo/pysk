@@ -71,11 +71,11 @@ def genentries(resp, d):
         if (d.mx3 != ""): output.append("@ IN MX 30 %s" % (d.mx3,))
         output.append("")
 
-        if (d.jabber != ""):
+        if (d.jabber != "" and d.jabber != None):
             output.append("; EJABBERD - SRV")
-            output.append("_xmpp-server._tcp IN SRV 5 0 5269 %s")
-            output.append("_xmpp-client._tcp IN SRV 5 0 5222 %s")
-            output.append("_jabber._tcp IN SRV 5 0 5269 %s")
+            output.append("_xmpp-server._tcp IN SRV 5 0 5269 %s" % (d.jabber,))
+            output.append("_xmpp-client._tcp IN SRV 5 0 5222 %s" % (d.jabber,))
+            output.append("_jabber._tcp IN SRV 5 0 5269 %s" % (d.jabber,))
             output.append("")
 
     output.append("; ON APPEND CUT HERE")
