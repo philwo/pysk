@@ -5,6 +5,6 @@ set -u
 
 cd /usr/share/GeoIP
 wget http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz
-rm GeoIP.dat
+rm -f GeoIP.dat
 gunzip GeoIP.dat.gz
 

@@ -1,0 +1,20 @@
+# You can overrides config directives here.
+# This is particularly useful for users with several configs for
+# different virtual servers, who want to reuse common parameters.
+# Also, this file is not updated with each new upstream release.
+
+LogFormat=1
+DNSLookup=2
+DNSStaticCacheFile="/etc/awstats/dnscache.txt"
+DirIcons="/awstats/icon"
+CreateDirDataIfNotExists=1
+BuildReportFormat=html
+DirLang="/usr/local/awstats/wwwroot/cgi-bin/lang/"
+#AllowAccessFromWebToAuthenticatedUsersOnly=1
+AllowFullYearView=3
+#ShowScreenSizeStats=1
+LoadPlugin="tooltips"
+LoadPlugin="decodeutfkeys"
+LoadPlugin="hashfiles"
+LoadPlugin="geoip GEOIP_STANDARD /usr/share/GeoIP/GeoIP.dat"
+
