@@ -37,6 +37,7 @@ urlpatterns += patterns("pysk.vps.views",
 
 urlpatterns += patterns('django.views.generic.simple',
     (r'^$', 'direct_to_template', {'template': 'index.html'}),
+    (r'^dashboard/$', 'direct_to_template', {'template': 'admin.html'}),
     (r'^navigation/$', 'direct_to_template', {'template': 'navigation.html'}),
 )
 

@@ -25,16 +25,6 @@ CREATE VIEW dovecot_passwd AS
 ALTER TABLE public.dovecot_passwd OWNER TO pysk;
 
 --
--- Name: passwd_list_all; Type: VIEW; Schema: public; Owner: pysk
---
-
-CREATE VIEW passwd_list_all AS
-    SELECT u.username, c.unixpw AS password, c.kundennr AS uid, c.kundennr AS gid, 'igowo user'::text AS gecos, ('/home/'::text || (u.username)::text) AS home, '/bin/bash'::text AS shell FROM auth_user u, app_customer c WHERE (u.id = c.user_id);
-
-
-ALTER TABLE public.passwd_list_all OWNER TO pysk;
-
---
 -- Name: postfix_virtual_domains; Type: VIEW; Schema: public; Owner: pysk
 --
 

@@ -39,9 +39,9 @@ USE_I18N = True
 
 # MEDIA_* settings are only relevant for uploaded files,
 # specifically fields of type FileField and ImageField!
-MEDIA_ROOT = os_path.join(PROJECT_PATH, 'uploads')
+MEDIA_ROOT = os_path.join(PROJECT_PATH, '../uploads')
 MEDIA_URL = '/uploads/'
-STATIC_ROOT = os_path.join(PROJECT_PATH, 'static')
+STATIC_ROOT = os_path.join(PROJECT_PATH, '../static')
 STATIC_URL = '/static/'
 ADMIN_MEDIA_PREFIX = '/static/admin/'
 

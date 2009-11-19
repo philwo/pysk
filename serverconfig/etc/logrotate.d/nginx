@@ -9,6 +9,6 @@
         sharedscripts
         postrotate
                 [ ! -f /var/run/nginx.pid ] || kill -USR1 `cat /var/run/nginx.pid`
-                [ -f /var/log/nginx/access.log.1 ] && echo cp /var/log/nginx/access.log.1 /opt/pysk/wwwlogs/inbox/access.`date +%Y%m%d`.log
+                [ -f /var/log/nginx/access.log.1 ] && cp /var/log/nginx/access.log.1 /opt/pysk/wwwlogs/inbox/access.`date +%Y%m%d`.log
         endscript
 }

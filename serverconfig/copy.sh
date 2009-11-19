@@ -31,9 +31,9 @@ chown -R pysk:pysk /opt/pysk
 chown -R root:root /opt/pysk/.hg
 chmod 0711 /opt/pysk
 chmod 0700 /opt/pysk/*
-chmod -R u=rwX,g=rX,o= /opt/pysk/run /opt/pysk/secret /opt/pysk/www
 chmod 0660 /opt/pysk/run/php.sock || /bin/true
-chown -R pysk:http /opt/pysk/run /opt/pysk/secret /opt/pysk/www
+chmod -R u=rwX,g=rX,o= /opt/pysk/run /opt/pysk/secret /opt/pysk/www /opt/pysk/static
+chown -R pysk:http /opt/pysk/run /opt/pysk/secret /opt/pysk/www /opt/pysk/static
 
 echo "Fixing up configs"
 sed -i s/XXXMAINUSERXXX/$mainuser/g /etc/httpd/conf/httpd.conf
@@ -42,6 +42,9 @@ sed -i s/XXXMAINUSERXXX/$mainuser/g /etc/monit.d/php-fpm
 sed -i s/XXXPHPCHILDRENXXX/5/g /etc/php/php-fpm.conf
 sed -i s/XXXIPXXX/$ipaddress/g /etc/nginx/conf/pysk.conf
 sed -i s/XXXHOSTNAMEXXX/$hostname/g /etc/nginx/conf/pysk.conf
+
+MYSQLPW=`grep password /root/.my.cnf | sort -u | cut -d"=" -f2 | tr -d " "`
+echo $MYSQLPW > /opt/pysk/secret/mysqlpw
 
 echo "Removing pacnew files"
 find /etc -name "*.pacnew" -delete

@@ -16,13 +16,16 @@ touch virtual_mailboxes.new virtual_forwardings.new virtual_domains.new
 postfix set-permissions 2>/dev/null || /bin/true
 
 # virtual_mailboxes
-psql -At -F $'\t' -U postgres -h localhost -c'SELECT * FROM postfix_virtual_mailboxes' pysk | sort > virtual_mailboxes.new
+QUERY="SELECT m.mail || '@' || d.name AS mail, d.name || '/' || m.mail || '/Maildir/' FROM vps_mailbox m, vps_domain d WHERE m.active = true AND m.domain_id = d.id"
+psql -At -F $'\t' -U postgres -h localhost -c"$QUERY" pysk | sort > virtual_mailboxes.new
 
 # virtual_domains
-psql -At -F $'\t' -U postgres -h localhost -c'SELECT * FROM postfix_virtual_domains' pysk | sort > virtual_domains.new
+QUERY="(SELECT DISTINCT d.name AS domain, 'dummy' AS target FROM vps_mailbox m, vps_domain d WHERE m.active = true AND m.domain_id = d.id ORDER BY d.name) UNION (SELECT DISTINCT d.name AS domain, 'dummy' AS target FROM vps_forwarding f, vps_domain d WHERE f.active = true AND f.domain_id = d.id ORDER BY d.name)"
+psql -At -F $'\t' -U postgres -h localhost -c"$QUERY" pysk | sort > virtual_domains.new
 
 # virtual_forwardings
-psql -At -F $'\t' -U postgres -h localhost -c'SELECT * FROM postfix_virtual_forwardings' pysk | sort > virtual_forwardings.new
+QUERY="( SELECT f.source || '@' || d.name AS source, f.target FROM vps_forwarding f, vps_domain d WHERE f.active = true AND f.domain_id = d.id ) UNION ( SELECT DISTINCT 'postmaster@' || d.name AS source, 'philipp@igowo.de' AS target FROM vps_mailbox m, vps_domain d WHERE m.domain_id = d.id ) UNION ( SELECT DISTINCT 'postmaster@' || d.name AS source, 'philipp@igowo.de' AS target FROM vps_forwarding f, vps_domain d WHERE f.domain_id = d.id ) UNION ( SELECT DISTINCT 'abuse@' || d.name AS source, 'philipp@igowo.de' AS target FROM vps_mailbox m, vps_domain d WHERE m.domain_id = d.id ) UNION ( SELECT DISTINCT 'abuse@' || d.name AS source, 'philipp@igowo.de' AS target FROM vps_forwarding f, vps_domain d WHERE f.domain_id = d.id )"
+psql -At -F $'\t' -U postgres -h localhost -c"$QUERY" pysk | sort -t '@' -k 2 > virtual_forwardings.new
 
 diff -Bu virtual_mailboxes virtual_mailboxes.new ||
 if [ -s "virtual_mailboxes.new" ]; then
