@@ -38,6 +38,8 @@ ALTER TABLE "vps_virtualhost" ADD "apache_config" text;
 ALTER TABLE "vps_virtualhost" ADD "apache_enabled" boolean;
 ALTER TABLE "vps_virtualhost" ADD "nginx_config" text;
 
+UPDATE "vps_virtualhost" SET nginx_config = '';
+
 CREATE INDEX "vps_virtualhost_ipport_id_idx"
 	ON "vps_virtualhost" ("ipport_id");
 
@@ -75,6 +77,6 @@ DROP TABLE IF EXISTS voip_destination;
 DROP TABLE IF EXISTS voip_sipaccount;
 
 DELETE FROM auth_permission USING django_content_type WHERE auth_permission.content_type_id = django_content_type.id AND django_content_type.app_label = 'voip';
-DELETE FROM django_content_type WHERE app_label = 'voip';DELETE 3
+DELETE FROM django_content_type WHERE app_label = 'voip';
 
 COMMIT;
