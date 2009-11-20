@@ -20,8 +20,12 @@ echo "Fixing permissions"
 chown root:root /
 chmod 0755 /
 chmod 0700 /root /root/.ssh /etc/monit.d
-chmod 0600 /etc/monitrc /root/.pgpass /root/.ssh/* /etc/ssl/private/*
+chmod 0600 /etc/monitrc /root/.pgpass /root/.ssh/*
 chmod 0440 /etc/sudoers
+
+chmod 0640 /etc/ssl/private/*
+chmod 0600 /etc/ssl/private/star_igowo_de_combined.crt
+chown root:sslkeys /etc/ssl/private/*
 
 chown -R postgres:postgres /var/lib/postgres/data
 chmod 0600 /var/lib/postgres/data/server.{crt,key}
