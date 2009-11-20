@@ -7,4 +7,5 @@ secret/htpasswd
 tools/logfiles2/logs/*
 tools/logfiles2/src/*
 wwwlogs/dnscache.txt
+wwwlogs/inbox/*.log
 wwwlogs/processed/*/*
