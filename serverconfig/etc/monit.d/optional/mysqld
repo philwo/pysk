@@ -1,7 +1,7 @@
-check process mysqld with pidfile /var/run/mysqld.pid
+check process mysqld with pidfile /var/run/mysqld/mysqld.pid
     group database
     start program = "/etc/rc.d/mysqld start"
     stop program = "/etc/rc.d/mysqld stop"
-    if failed port 3306 protocol mysql then restart
+    if failed unixsocket /tmp/mysql.sock protocol mysql then restart
     if 5 restarts within 5 cycles then timeout
 
