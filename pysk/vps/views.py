@@ -270,6 +270,11 @@ def v0_apache(request):
         output.append("\tRPAFsethostname On")
         output.append("\tRPAFproxy_ips 127.0.0.1")
 
+        # HTTPS header variable
+        output.append("\tSetEnvIf HTTPS off HTTPS=off")
+        output.append("\tSetEnvIf HTTPS on HTTPS=on")
+        output.append("\tRequestHeader unset HTTPS")
+
         # PHP via mod_php
         output.append("\tAddHandler application/x-httpd-php .php")
         output.append("\tAddHandler application/x-httpd-php-source .phps")
@@ -341,6 +346,7 @@ def v0_nginx(request):
         if vh.apache_enabled:
             output_commonconfig.append("\t# HTTP Proxy to Apache")
             output_commonconfig.append("\tlocation / {")
+            output_commonconfig.append("\t\tinclude /etc/nginx/conf/proxy_params;")
             output_commonconfig.append("\t\tproxy_pass http://127.0.0.1:80/;")
             output_commonconfig.append("\t}")
 

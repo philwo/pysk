@@ -1,0 +1,10 @@
+proxy_set_header Host $host;
+proxy_set_header Connection Close;
+
+set $https off;
+if ($scheme = "https") {
+    set $https on;
+}
+
+proxy_set_header HTTPS $https;
+
