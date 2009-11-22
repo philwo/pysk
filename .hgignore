@@ -6,6 +6,7 @@ secret/mysqlpw
 secret/htpasswd
 tools/logfiles2/logs/*
 tools/logfiles2/src/*
+www/roundcube/logs/*
 wwwlogs/dnscache.txt
 wwwlogs/inbox/*.log
 wwwlogs/processed/*/*
