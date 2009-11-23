@@ -14,7 +14,7 @@ def main(argv=None):
     M.select()
     typ, data = M.sort("DATE", "UTF-8", "UNSEEN")
 
-    OUTPUTDIR = "/root/logfiles2/logs"
+    OUTPUTDIR = "/opt/pysk/wwwlogs"
 
     for num in data[0].split():
         typ, data = M.fetch(num, "(BODY.PEEK[])")

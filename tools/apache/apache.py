@@ -35,11 +35,37 @@ os.mkdir("%s/sites-enabled/" % (apacheroot,), 0755)
 portsconf = open("%s/ports.conf" % (apacheroot,), "w")
 portsconf.write("Listen 127.0.0.1:80\n")
 portsconf.write("NameVirtualHost 127.0.0.1:80\n")
+portsconf.write("\n")
+portsconf.write("# Pseudo SSL listener\n")
+portsconf.write("Listen 127.0.0.1:81\n")
+portsconf.write("NameVirtualHost 127.0.0.1:81\n")
 portsconf.close()
 
 f = open("%s/sites-available/default" % (apacheroot,), "w")
 f.write("""
 <VirtualHost 127.0.0.1:80>
+    ServerAdmin philipp@igowo.de
+    DocumentRoot /srv/http/default/htdocs/
+
+    #CustomLog /dev/null common env=DOES_NOT_EXIST
+    DirectoryIndex index.html index.htm
+
+    <Directory /srv/http/default/htdocs/>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride None
+        Order allow,deny
+        allow from all
+    </Directory>
+
+    <Location /server-status>
+        SetHandler server-status
+        Order Deny,Allow
+        Deny from all
+        Allow from 127.0.0.1
+    </Location>
+</VirtualHost>
+
+<VirtualHost 127.0.0.1:81>
     ServerAdmin philipp@igowo.de
     DocumentRoot /srv/http/default/htdocs/
 

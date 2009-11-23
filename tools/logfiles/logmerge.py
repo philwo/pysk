@@ -22,7 +22,7 @@ def main(argv=None):
 
     if options.debug: print >> sys.stderr, "Debug mode activated"
 
-    ret = call(["/opt/pysk/tools/logfiles2/logresolvemerge.pl"] + args)
+    ret = call(["/opt/pysk/tools/logfiles/logresolvemerge.pl"] + args)
     
     if ret == 0:
         #print "Moving logfiles from pending to processed ..."

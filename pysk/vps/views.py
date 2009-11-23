@@ -245,36 +245,42 @@ def v0_apache(request):
         htdocs_dir = "/home/%s/www/%s/htdocs/" % (username, vh.fqdn())
 
         output = []
-        output.append("<VirtualHost 127.0.0.1:80>")
-        output.append("\tServerName %s" % (vh.fqdn(),))
-        output.append("\tServerAdmin philipp@igowo.de")
+        ports = (80,) if not vh.ssl_enabled else (80, 81)
+        for port in ports:
+            output.append("<VirtualHost 127.0.0.1:%s>" % (port,))
+            output.append("\tServerName %s" % (vh.fqdn(),))
+            output.append("\tServerAdmin philipp@igowo.de")
 
-        extra_aliases = ""
-        for da in DirectAlias.objects.filter(active=True).filter(host=vh):
-            extra_aliases += " %s" % (da.fqdn(),)
+            extra_aliases = ""
+            for da in DirectAlias.objects.filter(active=True).filter(host=vh):
+                extra_aliases += " %s" % (da.fqdn(),)
 
-        output.append("\tServerAlias www.%s %s" % (vh.fqdn(), extra_aliases.strip()))
-        output.append("\tDocumentRoot %s" % (htdocs_dir,))
-        output.append("\tRewriteEngine On")
-        output.append("\t<Directory /home/%s/www/%s/htdocs/>" % (username, vh.fqdn()))
-        output.append("\t\tAllowOverride AuthConfig FileInfo Indexes Limit Options=FollowSymLinks,Indexes,MultiViews,SymLinksIfOwnerMatch")
-        output.append("\t\tOrder allow,deny")
-        output.append("\t\tallow from all")
-        output.append("\t</Directory>")
+            output.append("\tServerAlias www.%s %s" % (vh.fqdn(), extra_aliases.strip()))
+            output.append("\tDocumentRoot %s" % (htdocs_dir,))
+            output.append("\tRewriteEngine On")
+            output.append("\t<Directory /home/%s/www/%s/htdocs/>" % (username, vh.fqdn()))
+            output.append("\t\tAllowOverride AuthConfig FileInfo Indexes Limit Options=FollowSymLinks,Indexes,MultiViews,SymLinksIfOwnerMatch")
+            output.append("\t\tOrder allow,deny")
+            output.append("\t\tallow from all")
+            output.append("\t</Directory>")
         
-        # User config
-        output.append("\n".join(["\t"+x for x in vh.apache_config.replace("\r\n", "\n").split("\n")]))
+            # User config
+            output.append("\n".join(["\t"+x for x in vh.apache_config.replace("\r\n", "\n").split("\n")]))
 
-        # mod_rpaf
-        output.append("\tRPAFenable On")
-        output.append("\tRPAFsethostname On")
-        output.append("\tRPAFproxy_ips 127.0.0.1")
+            # mod_rpaf
+            output.append("\tRPAFenable On")
+            output.append("\tRPAFsethostname On")
+            output.append("\tRPAFproxy_ips 127.0.0.1")
 
-        # PHP via mod_php
-        output.append("\tAddHandler application/x-httpd-php .php")
-        output.append("\tAddHandler application/x-httpd-php-source .phps")
+            # HTTPS header variable
+            if (port == 81):
+                output.append("\tSetEnv HTTPS on")
 
-        output.append("</VirtualHost>")
+            # PHP via mod_php
+            output.append("\tAddHandler application/x-httpd-php .php")
+            output.append("\tAddHandler application/x-httpd-php-source .phps")
+
+            output.append("</VirtualHost>")
         vhosts[vh.fqdn()] = ["\n".join(output), username, htdocs_dir]
         
     resp.write(cPickle.dumps(vhosts, cPickle.HIGHEST_PROTOCOL))
@@ -335,15 +341,6 @@ def v0_nginx(request):
             output_commonconfig.append("\t}")
             output_commonconfig.append("\t")
         
-        output_commonconfig.append("\n".join(["\t"+x for x in vh.nginx_config.replace("\r\n", "\n").split("\n")]))
-        output_commonconfig.append("\t")
-
-        if vh.apache_enabled:
-            output_commonconfig.append("\t# HTTP Proxy to Apache")
-            output_commonconfig.append("\tlocation / {")
-            output_commonconfig.append("\t\tproxy_pass http://127.0.0.1:80/;")
-            output_commonconfig.append("\t}")
-
         # Construct http and https server block
         output = []
         output.append("server {")
@@ -355,6 +352,14 @@ def v0_nginx(request):
             output.append("\t")
         for line in output_commonconfig:
             output.append(line)
+        if vh.apache_enabled:
+            output.append("\t# HTTP Proxy to Apache")
+            output.append("\tlocation / {")
+            output.append("\t\tinclude /etc/nginx/conf/proxy_params;")
+            output.append("\t\tproxy_pass http://127.0.0.1:80/;")
+            output.append("\t}")
+        output.append("\n".join(["\t"+x for x in vh.nginx_config.replace("\r\n", "\n").split("\n")]))
+        output.append("\t")
         output.append("}\n")
         
         if vh.ssl_enabled:
@@ -369,6 +374,14 @@ def v0_nginx(request):
             output.append("\t")
             for line in output_commonconfig:
                 output.append(line)
+            if vh.apache_enabled:
+                output.append("\t# HTTP Proxy to Apache")
+                output.append("\tlocation / {")
+                output.append("\t\tinclude /etc/nginx/conf/proxy_params;")
+                output.append("\t\tproxy_pass http://127.0.0.1:81/;")
+                output.append("\t}")
+            output.append("\n".join(["\t"+x for x in vh.nginx_config.replace("\r\n", "\n").split("\n")]))
+            output.append("\t")
             output.append("}\n")
 
         vhosts[vh.fqdn()] = ["\n".join(output), username, htdocs_dir]

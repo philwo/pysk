@@ -175,6 +175,8 @@ def main(argv=None):
                             logline += " %s %s" % (bytes_recv, bytes_sent,)
 
                         logfile.write(logline.encode("utf-8") + "\n")
+                except UnicodeDecodeError:
+                    if options.debug: print >> sys.stderr, "UnicodeDecodeError on line %s" % line
                 except apachelog.ApacheLogParserError:
                     if options.debug: print >> sys.stderr, "ApacheLogParserError on line %s" % line
                 except:
@@ -228,7 +230,7 @@ def main(argv=None):
             conffile = "/etc/awstats/awstats.%s.conf" % vhname
             with open(conffile + ".new", "w") as f:
                 logfilesdir = os.path.join(OUTPUTDIR, "pending", vhname, "*.log")
-                f.write('LogFile="/opt/pysk/tools/logfiles2/logmerge.py %s |"\n' % logfilesdir)
+                f.write('LogFile="/opt/pysk/tools/logfiles/logmerge.py %s |"\n' % logfilesdir)
                 f.write('SiteDomain="%s"\n' % vhname)
                 f.write('HostAliases="www.%s"\n' % vhname)
                 f.write('DirData="/var/lib/awstats/%s/"\n' % vhname)
