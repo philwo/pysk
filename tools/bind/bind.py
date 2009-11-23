@@ -18,35 +18,39 @@ urllib2.install_opener(opener)
 
 conf = {}
 for s in servers:
-    print "Fetching zones from %s ..." % (s["name"],)
-    zonefiles = cPickle.load(urllib2.urlopen("https://%s.igowo.de/api/v0/dns/bind/" % (s["name"],)))
-    for key, value in zonefiles.iteritems():
-        print "-> Generating zone '%s' ... " % (key,),
+    try:
+        print "Fetching zones from %s ..." % (s["name"],)
+        zonefiles = cPickle.load(urllib2.urlopen("https://%s.igowo.de/api/v0/dns/bind/" % (s["name"],)))
+        for key, value in zonefiles.iteritems():
+            print "-> Generating zone '%s' ... " % (key,),
 
-        parent = key
-        while parent.count(".") > 1 and not parent in conf:
-            parent = ".".join(parent.split(".")[1:])
-        if parent in conf and key != parent:
-            print "-> Found parent zone for %s: %s" % (key, parent)
+            parent = key
+            while parent.count(".") > 1 and not parent in conf:
+                parent = ".".join(parent.split(".")[1:])
+            if parent in conf and key != parent:
+                print "-> Found parent zone for %s: %s" % (key, parent)
 
-        outpath = "/var/named/pysk/db.%s" % (parent,)
-        if not parent in conf:
-            print "new"
-            f = open(outpath, "w")
-            f.writelines(value)
-            conf[parent] = 'zone "%s" { type master; file "%s"; allow-query { any; }; };' % (parent, outpath)
-        else:
-            print "appending"
-            f = open(outpath, "a")
-            f.write("\n; APPENDING FROM %s\n" % (s["name"],))
-            f.write("$ORIGIN %s.\n\n" % (key,))
-            lines = value.split("\n")
-            if "; ON APPEND CUT HERE" in lines:
-                while (lines[0] != "; ON APPEND CUT HERE"):
+            outpath = "/var/named/pysk/db.%s" % (parent,)
+            if not parent in conf:
+                print "new"
+                f = open(outpath, "w")
+                f.writelines(value)
+                conf[parent] = 'zone "%s" { type master; file "%s"; allow-query { any; }; };' % (parent, outpath)
+            else:
+                print "appending"
+                f = open(outpath, "a")
+                f.write("\n; APPENDING FROM %s\n" % (s["name"],))
+                f.write("$ORIGIN %s.\n\n" % (key,))
+                lines = value.split("\n")
+                if "; ON APPEND CUT HERE" in lines:
+                    while (lines[0] != "; ON APPEND CUT HERE"):
+                        del lines[0]
                     del lines[0]
-                del lines[0]
-            f.writelines("\n".join(lines))
-        f.close()
+                f.writelines("\n".join(lines))
+            f.close()
+    except urllib2.URLError:
+        print "ERROR: Could not get zones from %s !!!" % (s["name"],)
+        pass
 
 # Add servers to igowo.de zone
 zonefile = open("/var/named/pysk/db.igowo.de", "a")
