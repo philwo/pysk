@@ -46,7 +46,7 @@ class Customer(models.Model):
         return self.user.is_active
 
     def __unicode__(self):
-        return u"%s: %s, %s-%s %s" % (self.user, self.name(), self.land, self.plz, self.ort)
+        return u"%s: %s" % (self.user, self.name())
 
     class Meta:
         ordering = ["user"]

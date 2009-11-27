@@ -11,7 +11,7 @@ rm -f passwd.new passwd.sort
 touch passwd passwd.new passwd.sort
 
 IFS=`echo -e "\t\n"`
-QUERY="SELECT m.mail || '@' || d.name AS mail, m.password, 'user_quota=maildir:storage=' || m.quota AS quota, '/home/vmail/' || d.name || '/' || m.mail || '/' AS home FROM vps_mailbox m, vps_domain d WHERE m.domain_id = d.id AND m.active = true"
+QUERY="SELECT m.mail || '@' || d.name AS mail, m.password, 'user_quota=maildir:storage=' || m.quota * 1024 AS quota, '/home/vmail/' || d.name || '/' || m.mail || '/' AS home FROM vps_mailbox m, vps_domain d WHERE m.domain_id = d.id AND m.active = true"
 psql -At -F $'\t' -U postgres -h localhost -c$QUERY pysk  | while read USER PASSWORD QUOTA HOME; do
 	echo "$USER:$PASSWORD:$VMAILUID:$VMAILGID::$HOME::$QUOTA" >> passwd.new
 done

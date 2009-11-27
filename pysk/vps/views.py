@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_list_or_404, get_object_or_404, render_to_response
-from django.db import transaction
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test, login_required
-from django.shortcuts import render_to_response
+from django.db import transaction
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_list_or_404, get_object_or_404, render_to_response
 from django.template import RequestContext
+from django.template.loader import render_to_string
 
 from pysk.app.models import *
 from pysk.vps.models import *
@@ -40,28 +40,22 @@ def genentries(resp, d):
         output.append("@ IN MX 30 ASPMX5.GOOGLEMAIL.COM.")
         output.append("")
 
-        #output.append("; GOOGLE APPS - SRV")
-        #output.append("_xmpp-server._tcp IN SRV 5 0 5269 xmpp-server.l.google.com.")
-        #output.append("_xmpp-server._tcp IN SRV 20 0 5269 xmpp-server1.l.google.com.")
-        #output.append("_xmpp-server._tcp IN SRV 20 0 5269 xmpp-server2.l.google.com.")
-        #output.append("_xmpp-server._tcp IN SRV 20 0 5269 xmpp-server3.l.google.com.")
-        #output.append("_xmpp-server._tcp IN SRV 20 0 5269 xmpp-server4.l.google.com.")
-        #output.append("_xmpp-client._tcp IN SRV 5 0 5222 xmpp-server.l.google.com.")
-        #output.append("_xmpp-client._tcp IN SRV 20 0 5222 xmpp-server1.l.google.com.")
-        #output.append("_xmpp-client._tcp IN SRV 20 0 5222 xmpp-server2.l.google.com.")
-        #output.append("_xmpp-client._tcp IN SRV 20 0 5222 xmpp-server3.l.google.com.")
-        #output.append("_xmpp-client._tcp IN SRV 20 0 5222 xmpp-server4.l.google.com.")
-        #output.append("_jabber._tcp IN SRV 5 0 5269 xmpp-server.l.google.com.")
-        #output.append("_jabber._tcp IN SRV 20 0 5269 xmpp-server1.l.google.com.")
-        #output.append("_jabber._tcp IN SRV 20 0 5269 xmpp-server2.l.google.com.")
-        #output.append("_jabber._tcp IN SRV 20 0 5269 xmpp-server3.l.google.com.")
-        #output.append("_jabber._tcp IN SRV 20 0 5269 xmpp-server4.l.google.com.")
-        #output.append("")
-
-        output.append("; EJABBERD - SRV")
-        output.append("_xmpp-server._tcp IN SRV 5 0 5269 mikuru.igowo.de.")
-        output.append("_xmpp-client._tcp IN SRV 5 0 5222 mikuru.igowo.de.")
-        output.append("_jabber._tcp IN SRV 5 0 5269 mikuru.igowo.de.")
+        output.append("; GOOGLE APPS - SRV")
+        output.append("_xmpp-server._tcp IN SRV 5 0 5269 xmpp-server.l.google.com.")
+        output.append("_xmpp-server._tcp IN SRV 20 0 5269 xmpp-server1.l.google.com.")
+        output.append("_xmpp-server._tcp IN SRV 20 0 5269 xmpp-server2.l.google.com.")
+        output.append("_xmpp-server._tcp IN SRV 20 0 5269 xmpp-server3.l.google.com.")
+        output.append("_xmpp-server._tcp IN SRV 20 0 5269 xmpp-server4.l.google.com.")
+        output.append("_xmpp-client._tcp IN SRV 5 0 5222 xmpp-server.l.google.com.")
+        output.append("_xmpp-client._tcp IN SRV 20 0 5222 xmpp-server1.l.google.com.")
+        output.append("_xmpp-client._tcp IN SRV 20 0 5222 xmpp-server2.l.google.com.")
+        output.append("_xmpp-client._tcp IN SRV 20 0 5222 xmpp-server3.l.google.com.")
+        output.append("_xmpp-client._tcp IN SRV 20 0 5222 xmpp-server4.l.google.com.")
+        output.append("_jabber._tcp IN SRV 5 0 5269 xmpp-server.l.google.com.")
+        output.append("_jabber._tcp IN SRV 20 0 5269 xmpp-server1.l.google.com.")
+        output.append("_jabber._tcp IN SRV 20 0 5269 xmpp-server2.l.google.com.")
+        output.append("_jabber._tcp IN SRV 20 0 5269 xmpp-server3.l.google.com.")
+        output.append("_jabber._tcp IN SRV 20 0 5269 xmpp-server4.l.google.com.")
         output.append("")
     else:
         # MX records
@@ -71,7 +65,7 @@ def genentries(resp, d):
         if (d.mx3 != ""): output.append("@ IN MX 30 %s" % (d.mx3,))
         output.append("")
 
-        if (d.jabber != "" and d.jabber != None):
+        if d.jabber != "":
             output.append("; EJABBERD - SRV")
             output.append("_xmpp-server._tcp IN SRV 5 0 5269 %s" % (d.jabber,))
             output.append("_xmpp-client._tcp IN SRV 5 0 5222 %s" % (d.jabber,))
@@ -231,61 +225,6 @@ def v0_aliases_nginx(request):
         resp.write("}\n\n")
     return resp
 
-def v0_apache(request):
-    """
-    Apache configuration
-    """
-    resp = HttpResponse(mimetype="text/plain")
-
-    vhosts = {}
-
-    # For every IP of this server, which should be served by an apache
-    for vh in VirtualHost.objects.filter(active=True, apache_enabled=True):
-        username = Customer.objects.all()[0].user.username
-        htdocs_dir = "/home/%s/www/%s/htdocs/" % (username, vh.fqdn())
-
-        output = []
-        ports = (80,) if not vh.ssl_enabled else (80, 81)
-        for port in ports:
-            output.append("<VirtualHost 127.0.0.1:%s>" % (port,))
-            output.append("\tServerName %s" % (vh.fqdn(),))
-            output.append("\tServerAdmin philipp@igowo.de")
-
-            extra_aliases = ""
-            for da in DirectAlias.objects.filter(active=True).filter(host=vh):
-                extra_aliases += " %s" % (da.fqdn(),)
-
-            output.append("\tServerAlias www.%s %s" % (vh.fqdn(), extra_aliases.strip()))
-            output.append("\tDocumentRoot %s" % (htdocs_dir,))
-            output.append("\tRewriteEngine On")
-            output.append("\t<Directory /home/%s/www/%s/htdocs/>" % (username, vh.fqdn()))
-            output.append("\t\tAllowOverride AuthConfig FileInfo Indexes Limit Options=FollowSymLinks,Indexes,MultiViews,SymLinksIfOwnerMatch")
-            output.append("\t\tOrder allow,deny")
-            output.append("\t\tallow from all")
-            output.append("\t</Directory>")
-        
-            # User config
-            output.append("\n".join(["\t"+x for x in vh.apache_config.replace("\r\n", "\n").split("\n")]))
-
-            # mod_rpaf
-            output.append("\tRPAFenable On")
-            output.append("\tRPAFsethostname On")
-            output.append("\tRPAFproxy_ips 127.0.0.1")
-
-            # HTTPS header variable
-            if (port == 81):
-                output.append("\tSetEnv HTTPS on")
-
-            # PHP via mod_php
-            output.append("\tAddHandler application/x-httpd-php .php")
-            output.append("\tAddHandler application/x-httpd-php-source .phps")
-
-            output.append("</VirtualHost>")
-        vhosts[vh.fqdn()] = ["\n".join(output), username, htdocs_dir]
-        
-    resp.write(cPickle.dumps(vhosts, cPickle.HIGHEST_PROTOCOL))
-    return resp
-
 def v0_nginx(request):
     """
     nginx configuration
@@ -295,7 +234,9 @@ def v0_nginx(request):
     vhosts = {}
 
     for vh in VirtualHost.objects.filter(active=True):
-        username = Customer.objects.all()[0].user.username
+        username = vh.owner.user.username
+        ipoffset = vh.owner.kundennr - 10000
+        assert(ipoffset >= 0)
         htdocs_dir = "/home/%s/www/%s/htdocs" % (username, vh.fqdn())
 
         # Construct config common for both http and https server block
@@ -324,7 +265,7 @@ def v0_nginx(request):
             output_commonconfig.append("\t}")
             output_commonconfig.append("\t")
         
-        if not vh.apache_enabled:
+        if not vh.apache_enabled and vh.enable_php:
             output_commonconfig.append("\t# PHP (FastCGI)")
             output_commonconfig.append("\tlocation ~ ^(.+\.php)(.*)$ {")
             output_commonconfig.append("\t\tinclude /etc/nginx/conf/fastcgi_params;")
@@ -356,7 +297,7 @@ def v0_nginx(request):
             output.append("\t# HTTP Proxy to Apache")
             output.append("\tlocation / {")
             output.append("\t\tinclude /etc/nginx/conf/proxy_params;")
-            output.append("\t\tproxy_pass http://127.0.0.1:80/;")
+            output.append("\t\tproxy_pass http://127.0.%s.1:80/;" % (ipoffset,))
             output.append("\t}")
         output.append("\n".join(["\t"+x for x in vh.nginx_config.replace("\r\n", "\n").split("\n")]))
         output.append("\t")
@@ -378,7 +319,7 @@ def v0_nginx(request):
                 output.append("\t# HTTP Proxy to Apache")
                 output.append("\tlocation / {")
                 output.append("\t\tinclude /etc/nginx/conf/proxy_params;")
-                output.append("\t\tproxy_pass http://127.0.0.1:81/;")
+                output.append("\t\tproxy_pass http://127.0.%s.1:81/;" % (ipoffset,))
                 output.append("\t}")
             output.append("\n".join(["\t"+x for x in vh.nginx_config.replace("\r\n", "\n").split("\n")]))
             output.append("\t")
@@ -393,4 +334,5 @@ def v0_nginx(request):
 def save(request):
     from subprocess import Popen, PIPE
     output = Popen(["/usr/bin/sudo", "/opt/pysk/tools/web.sh"], stdout=PIPE).communicate()[0]
+    output += Popen(["/usr/bin/sudo", "/opt/pysk/tools/try.py"], stdout=PIPE).communicate()[0]
     return render_to_response("save.html", {"output": output}, context_instance=RequestContext(request))

@@ -1,0 +1,7 @@
+check process httpd-{{username}} with pidfile /var/run/httpd-{{username}}/httpd.pid
+    group www
+    start "/usr/sbin/apachectl-{{username}} start"
+    stop  "/usr/sbin/apachectl-{{username}} stop"
+    if failed host 127.0.{{ipoffset}}.1 port 80
+        protocol HTTP request "/server-status"
+        then restart

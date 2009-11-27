@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Philipp Wollermann <philipp@igowo.de>, 2009.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-12 07:46+0100\n"
+"POT-Creation-Date: 2009-11-27 23:42+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,149 +33,197 @@ msgid "Mail Exchange"
 msgstr "Mailserver"
 
 #: vps/admin.py:23
+msgid "Jabber Server"
+msgstr ""
+
+#: vps/admin.py:26
 msgid "Special options"
 msgstr "Spezielle Optionen"
 
-#: vps/admin.py:35
+#: vps/admin.py:39
 msgid "SRV records"
 msgstr ""
 
-#: vps/admin.py:67
+#: vps/admin.py:63
+msgid "Source"
+msgstr "Quelle"
+
+#: vps/admin.py:66
+msgid "Destination"
+msgstr "Ziel"
+
+#: vps/admin.py:82
+msgid "Features"
+msgstr ""
+
+#: vps/admin.py:85
 msgid "nginx Webserver"
 msgstr ""
 
-#: vps/admin.py:70
+#: vps/admin.py:88
 msgid "Apache Webserver"
 msgstr ""
 
-#: vps/admin.py:73
+#: vps/admin.py:91
 msgid "SSL"
 msgstr ""
 
-#: vps/models.py:55
+#: vps/models.py:57
 msgid "Domain"
 msgstr ""
 
-#: vps/models.py:56
+#: vps/models.py:58
 msgid "Domains"
 msgstr ""
 
-#: vps/models.py:85
+#: vps/models.py:87
 msgid "Custom DNS record"
 msgstr "Eigener DNS Eintrag"
 
-#: vps/models.py:86
+#: vps/models.py:88
 msgid "Custom DNS records"
 msgstr "Eigene DNS Einträge"
 
-#: vps/models.py:97
+#: vps/models.py:99
 msgid "IP address"
 msgstr "IP Adresse"
 
-#: vps/models.py:98
+#: vps/models.py:100
 msgid "IP addresses"
 msgstr "IP Adressen"
 
-#: vps/models.py:101
+#: vps/models.py:103
 msgid "strip www subdomain"
 msgstr "immer ohne www anzeigen"
 
-#: vps/models.py:102
+#: vps/models.py:104
 msgid "force www subdomain"
 msgstr "immer mit www anzeigen"
 
-#: vps/models.py:103
+#: vps/models.py:105
 msgid "both is okay"
 msgstr "ignorieren"
 
-#: vps/models.py:108 vps/models.py:142 vps/models.py:163
+#: vps/models.py:111 vps/models.py:145 vps/models.py:166
 msgid "Hostname"
 msgstr ""
 
-#: vps/models.py:108 vps/models.py:163
+#: vps/models.py:111 vps/models.py:166
 msgid "Sometimes also called 'subdomain' ..."
 msgstr "Manchmal auch 'subdomain' genannt ..."
 
-#: vps/models.py:110
+#: vps/models.py:113
 msgid "IP"
 msgstr "IP Adresse"
 
-#: vps/models.py:112
+#: vps/models.py:115
 msgid "Force WWW"
 msgstr "www in der Adresse anzeigen"
 
-#: vps/models.py:113
+#: vps/models.py:116
 msgid "SSL enabled"
 msgstr "SSL-Verschlüsselung aktiviert"
 
-#: vps/models.py:114
+#: vps/models.py:117
 msgid "Force SSL"
 msgstr "SSL-Verschlüsselung erzwingen"
 
-#: vps/models.py:115
+#: vps/models.py:118
 msgid "SSL certificate"
 msgstr "SSL-Zertifikat"
 
-#: vps/models.py:116
-msgid "SSL CA certificate"
-msgstr ""
-
-#: vps/models.py:117
+#: vps/models.py:119
 msgid "SSL Private Key"
 msgstr "SSL-Private-Key"
 
-#: vps/models.py:118
+#: vps/models.py:120
+msgid "Enable PHP"
+msgstr ""
+
+#: vps/models.py:121
 msgid "Apache config"
 msgstr "Apache Konfiguration"
 
-#: vps/models.py:119
+#: vps/models.py:122
 msgid "Apache enabled"
 msgstr "Apache aktiviert"
 
-#: vps/models.py:120
+#: vps/models.py:123
 msgid "nginx config"
 msgstr "nginx Konfiguration"
 
-#: vps/models.py:137
+#: vps/models.py:140
 msgid "Webspace"
 msgstr ""
 
-#: vps/models.py:138
+#: vps/models.py:141
 msgid "Webspaces"
 msgstr ""
 
-#: vps/models.py:157
+#: vps/models.py:160
 msgid "HTTP forwarding"
 msgstr "Domain-Umleitung"
 
-#: vps/models.py:158
+#: vps/models.py:161
 msgid "HTTP forwardings"
 msgstr "Domain-Umleitungen"
 
-#: vps/models.py:171
+#: vps/models.py:174
 msgid "Direct alias"
 msgstr "Aliasname"
 
-#: vps/models.py:172
+#: vps/models.py:175
 msgid "Direct aliases"
 msgstr "Aliasnamen"
 
-#: vps/models.py:188
+#: vps/models.py:179 vps/models.py:196
+msgid "Username"
+msgstr "Benutzername"
+
+#: vps/models.py:179 vps/models.py:196
+msgid "This is the username, the part before the @ sign!"
+msgstr "Das ist der Benutzername, also der Teil vor dem @-Zeichen!"
+
+#: vps/models.py:180 vps/models.py:197
+msgid ""
+"Which domain should become part of the e-mail address? (This is the part "
+"after the @ sign!)"
+msgstr ""
+"Welche Domain soll Teil dieser E-Mail Adresse werden? "
+"(Das ist der Teil nach dem @-Zeichen!)"
+
+#: vps/models.py:182
+msgid "Quota"
+msgstr "Speicherplatz"
+
+#: vps/models.py:182
+msgid "Specify the quota of this mail account in megabytes"
+msgstr "Geben Sie den Speicherplatz dieses Mail-Postfachs an (in Megabyte)"
+
+#: vps/models.py:191
 msgid "Mailbox"
 msgstr "E-Mail Postfach"
 
-#: vps/models.py:189
+#: vps/models.py:192
 msgid "Mailboxes"
 msgstr "E-Mail Postfächer"
 
-#: vps/models.py:200
+#: vps/models.py:198
+msgid "Destination address"
+msgstr "Ziel-Adresse"
+
+#: vps/models.py:198
+msgid "To which destination address shall the mail be forwarded?"
+msgstr "Zu welcher Ziel-Adresse sollen die E-Mails weitergeleitet werden?"
+
+#: vps/models.py:203
 msgid "E-Mail Address"
 msgstr "E-Mail Adresse"
 
-#: vps/models.py:208
+#: vps/models.py:211
 msgid "E-Mail forwarding"
 msgstr "E-Mail Weiterleitung"
 
-#: vps/models.py:209
+#: vps/models.py:212
 msgid "E-Mail forwardings"
 msgstr "E-Mail Weiterleitungen"

@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from django.db import models
-from django.contrib.auth.models import User
 from time import time
 from math import floor
 
+from django.contrib.auth.models import User
+from app.models import Customer
 from django.utils.translation import ugettext_lazy as _
 
 ## Model classes
@@ -106,6 +107,7 @@ CHOICES_FORCE_WWW = (
 
 class VirtualHost(models.Model):
     id = models.AutoField(primary_key=True)
+    owner = models.ForeignKey(Customer)
     name = models.CharField(max_length=255, blank=True, verbose_name=_(u"Hostname"), help_text=_(u"Sometimes also called 'subdomain' ..."))
     domain = models.ForeignKey(Domain)
     ipport = models.ForeignKey(IPAddress, verbose_name=_(u"IP"))
@@ -115,6 +117,7 @@ class VirtualHost(models.Model):
     ssl_force = models.BooleanField(default=False, verbose_name=_(u"Force SSL"))
     ssl_cert = models.CharField(max_length=250, blank=True, verbose_name=_(u"SSL certificate"))
     ssl_key = models.CharField(max_length=250, blank=True, verbose_name=_(u"SSL Private Key"))
+    enable_php = models.BooleanField(default=True, verbose_name=_(u"Enable PHP"))
     apache_config = models.TextField(blank=True, verbose_name=_(u"Apache config"))
     apache_enabled = models.BooleanField(default=True, verbose_name=_(u"Apache enabled"))
     nginx_config = models.TextField(blank=True, verbose_name=_(u"nginx config"))
@@ -173,10 +176,10 @@ class DirectAlias(models.Model):
 
 class Mailbox(models.Model):
     id = models.AutoField(primary_key=True)
-    mail = models.CharField(max_length=75)
-    domain = models.ForeignKey(Domain)
+    mail = models.CharField(max_length=75, verbose_name=_(u"Username"), help_text=_(u"This is the username, the part before the @ sign!"))
+    domain = models.ForeignKey(Domain, help_text=_(u"Which domain should become part of the e-mail address? (This is the part after the @ sign!)"))
     password = models.CharField(max_length=64)
-    quota = models.IntegerField()
+    quota = models.IntegerField(verbose_name=_(u"Quota"), help_text=_(u"Specify the quota of this mail account in megabytes"))
     active = models.BooleanField(default=True)
 
     def __unicode__(self):
@@ -190,9 +193,9 @@ class Mailbox(models.Model):
 
 class Forwarding(models.Model):
     id = models.AutoField(primary_key=True)
-    source = models.CharField(max_length=75)
-    domain = models.ForeignKey(Domain)
-    target = models.CharField(max_length=200)
+    source = models.CharField(max_length=75, verbose_name=_(u"Username"), help_text=_(u"This is the username, the part before the @ sign!"))
+    domain = models.ForeignKey(Domain, help_text=_(u"Which domain should become part of the e-mail address? (This is the part after the @ sign!)"))
+    target = models.CharField(max_length=200, verbose_name=_(u"Destination address"), help_text=_(u"To which destination address shall the mail be forwarded?"))
     active = models.BooleanField(default=True)
 
     def email(self):

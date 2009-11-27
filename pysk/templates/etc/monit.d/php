@@ -1,0 +1,6 @@
+check process php-{{username}} with pidfile /var/run/php-{{username}}.pid
+    group www
+    start program = "/etc/php/php-{{username}}.sh"
+    stop program = "/bin/bash -c '/usr/bin/test -s /var/run/php-{{username}}.pid && /bin/kill -TERM `cat /var/run/php-{{username}}.pid` && /bin/rm -f /var/run/php-{{username}}.pid'"
+    if failed unixsocket /tmp/php-{{username}}.sock then restart
+    if 5 restarts within 5 cycles then timeout

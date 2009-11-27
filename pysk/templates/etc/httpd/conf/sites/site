@@ -1,0 +1,35 @@
+<VirtualHost 127.0.{{ipoffset}}.1:{{port}}>
+    ServerName {{fqdn}}
+    ServerAdmin philipp@igowo.de
+    ServerAlias www.{{fqdn}} {{extra_aliases}}
+
+    RewriteEngine On
+    DocumentRoot {{htdocsdir}}
+
+    <Directory {{htdocsdir}}>
+        AllowOverride AuthConfig FileInfo Indexes Limit Options=FollowSymLinks,Indexes,MultiViews,SymLinksIfOwnerMatch
+        Order allow,deny
+        allow from all
+    </Directory>
+
+    {% if apache_config %}
+    # User config
+{{apache_config|safe}}
+    {% endif %}
+
+    # mod_rpaf
+    RPAFenable On
+    RPAFsethostname On
+    RPAFproxy_ips 127.0.0.1
+
+    {% ifequal port "81" %}
+    # HTTPS header variable
+    SetEnv HTTPS on
+    {% endifequal %}
+
+    {% if enable_php %}
+    # PHP via mod_php
+    AddHandler application/x-httpd-php .php
+    AddHandler application/x-httpd-php-source .phps
+    {% endif %}
+</VirtualHost>
