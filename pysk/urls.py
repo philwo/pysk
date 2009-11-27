@@ -24,7 +24,6 @@ urlpatterns = patterns("",
 
 # Muss per HTTP Auth abgesichert werden!
 urlpatterns += patterns("pysk.vps.views",
-	(r'^api/v0/vz/apache/$', 'v0_apache'),
 	(r'^api/v0/vz/nginx/$', 'v0_nginx'),
 	(r'^api/v0/vz/aliases/$', 'v0_aliases'),
 	(r'^api/v0/vz/aliases_nginx/$', 'v0_aliases_nginx'),

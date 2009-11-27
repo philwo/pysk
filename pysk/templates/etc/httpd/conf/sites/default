@@ -1,0 +1,43 @@
+<VirtualHost 127.0.{{ipoffset}}.1:80>
+    ServerName localhost
+    ServerAdmin philipp@igowo.de
+    DocumentRoot /srv/http/default/htdocs/
+
+    DirectoryIndex index.html index.htm
+
+    <Directory /srv/http/default/htdocs/>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride None
+        Order allow,deny
+        allow from all
+    </Directory>
+
+    <Location /server-status>
+        SetHandler server-status
+        Order Deny,Allow
+        Deny from all
+        Allow from 127.0.0.1/8
+    </Location>
+</VirtualHost>
+
+<VirtualHost 127.0.{{ipoffset}}.1:81>
+    ServerName localhost
+    ServerAdmin philipp@igowo.de
+    DocumentRoot /srv/http/default/htdocs/
+
+    DirectoryIndex index.html index.htm
+
+    <Directory /srv/http/default/htdocs/>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride None
+        Order allow,deny
+        allow from all
+    </Directory>
+
+    <Location /server-status>
+        SetHandler server-status
+        Order Deny,Allow
+        Deny from all
+        Allow from 127.0.0.1/8
+    </Location>
+</VirtualHost>

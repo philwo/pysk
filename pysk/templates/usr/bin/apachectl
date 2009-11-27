@@ -1,0 +1,45 @@
+#!/bin/sh
+
+ARGV="$@"
+
+HTTPD='/usr/sbin/httpd -f /etc/httpd-{{username}}/conf/httpd.conf'
+
+if test -f /usr/sbin/envvars; then
+  . /usr/sbin/envvars
+fi
+
+LYNX="lynx -dump"
+STATUSURL="http://127.0.{{ipoffset}}.1:80/server-status"
+ULIMIT_MAX_FILES="ulimit -S -n `ulimit -H -n`"
+
+# Set the maximum number of file descriptors allowed per child process.
+if [ "x$ULIMIT_MAX_FILES" != "x" ] ; then
+    $ULIMIT_MAX_FILES
+fi
+
+ERROR=0
+if [ "x$ARGV" = "x" ] ; then 
+    ARGV="-h"
+fi
+
+case $ARGV in
+start|stop|restart|graceful|graceful-stop)
+    $HTTPD -k $ARGV
+    ERROR=$?
+    ;;
+configtest)
+    $HTTPD -t
+    ERROR=$?
+    ;;
+status)
+    $LYNX $STATUSURL | awk ' /process$/ { print; exit } { print } '
+    ;;
+fullstatus)
+    $LYNX $STATUSURL
+    ;;
+*)
+    $HTTPD $ARGV
+    ERROR=$?
+esac
+
+exit $ERROR

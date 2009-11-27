@@ -56,18 +56,32 @@ class MailboxAdmin(admin.ModelAdmin):
 class ForwardingAdmin(admin.ModelAdmin):
     list_display = ("email", "target", "active",)
     list_display_links = ("email",)
+    fieldsets = (
+        (None, {
+            "fields": ("active",)
+        }),
+        (_(u"Source"), {
+            "fields": ("source", "domain")
+        }),
+        (_(u"Destination"), {
+            "fields": ("target",)
+        }),
+    )
 
 class DirectAliasInline(admin.TabularInline):
     model = DirectAlias
     extra = 3
 
 class VirtualHostAdmin(admin.ModelAdmin):
-    list_display = ("fqdn", "ipport", "ssl_cert", "ssl_key", "force_www", "ssl_enabled", "ssl_force", "apache_enabled", "active",)
+    list_display = ("fqdn", "owner", "ipport", "ssl_cert", "ssl_key", "force_www", "ssl_enabled", "ssl_force", "apache_enabled", "active",)
     list_display_links = ("fqdn",)
     inlines = [DirectAliasInline]
     fieldsets = (
         (None, {
-            "fields": ("name", "domain", "ipport", "active")
+            "fields": ("name", "domain", "owner", "ipport", "active")
+        }),
+        (_(u"Features"), {
+            "fields": ("enable_php", )
         }),
         (_(u"nginx Webserver"), {
             "fields": ("force_www", "nginx_config", )
