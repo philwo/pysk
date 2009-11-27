@@ -136,3 +136,5 @@ for customer in set([x.owner for x in VirtualHost.objects.filter(enable_php=True
 
 makefile("/etc/php/php-pysk.sh", render_to_string("etc/php/php.sh", {"username": "pysk", "php_instances": 1}), 0755)
 makefile("/etc/monit.d/php-pysk", render_to_string("etc/monit.d/php", {"username": "pysk"}))
+
+subprocess.call(["/usr/bin/monit", "reload"])
