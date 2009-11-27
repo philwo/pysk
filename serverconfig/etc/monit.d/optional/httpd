@@ -1,9 +1,0 @@
-check process httpd with pidfile /var/run/httpd/httpd.pid
-    group www
-    start "/etc/rc.d/httpd start"
-    stop  "/etc/rc.d/httpd stop"
-    if failed port 80 
-        protocol HTTP request "/server-status"
-        then restart
-    if 5 restarts within 5 cycles then timeout
-

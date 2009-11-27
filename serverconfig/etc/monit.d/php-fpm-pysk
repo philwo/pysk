@@ -1,8 +1,0 @@
-check process php-fpm-pysk with pidfile /var/run/php-fpm-pysk.pid
-    group www
-    start program = "/usr/bin/php-cgi --fpm --fpm-config /etc/php/php-fpm-pysk.conf"
-    stop program = "/bin/bash -c '/usr/bin/test -s /var/run/php-fpm-pysk.pid && /bin/kill -TERM `cat /var/run/php-fpm-pysk.pid` && /bin/rm -f /var/run/php-fpm-pysk.pid'"
-    if failed unixsocket /opt/pysk/run/php.sock
-        then restart
-    if 5 restarts within 5 cycles then timeout
-
