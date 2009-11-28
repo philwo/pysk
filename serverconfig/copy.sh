@@ -43,7 +43,6 @@ chmod 0711 /opt/pysk
 chmod 0700 /opt/pysk/*
 chmod -R u=rwX,g=rX,o= /opt/pysk/run /opt/pysk/secret /opt/pysk/www /opt/pysk/static
 chown -R pysk:http /opt/pysk/run /opt/pysk/secret /opt/pysk/www /opt/pysk/static
-chmod 0660 /opt/pysk/run/php.sock || /bin/true
 
 echo "Fixing up configs"
 sed -i s/XXXIPXXX/$ipaddress/g /etc/nginx/conf/pysk.conf
