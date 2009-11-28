@@ -8,14 +8,14 @@
 # The following options will be passed to all MySQL clients
 [client]
 port		= 3306
-socket		= /tmp/mysql.sock
+socket		= /var/run/mysqld/mysqld.sock
 character_set           = utf8
 loose-default-character-set = utf8
 
 # The MySQL server
 [mysqld]
 port		= 3306
-socket		= /tmp/mysql.sock
+socket		= /var/run/mysqld/mysqld.sock
 datadir		= /var/lib/mysql
 
 skip-locking
