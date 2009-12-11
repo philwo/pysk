@@ -81,16 +81,54 @@ class VirtualHostAdmin(admin.ModelAdmin):
             "fields": ("name", "domain", "owner", "ipport", "active")
         }),
         (_(u"Features"), {
-            "fields": ("enable_php", )
+            "fields": ("enable_php", "php_config")
         }),
         (_(u"nginx Webserver"), {
-            "fields": ("force_www", "nginx_config", )
+            "fields": ("force_www", "nginx_config")
         }),
         (_(u"Apache Webserver"), {
             "fields": ("apache_enabled", "apache_config")
         }),
         (_(u"SSL"), {
             "fields": ("ssl_enabled", "ssl_force", "ssl_cert", "ssl_key")
+        }),
+    )
+
+class PHPExtensionInline(admin.TabularInline):
+    model = PHPExtension
+    extra = 1
+    
+class PHPConfigInline(admin.StackedInline):
+    model = PHPConfig
+    extra = 1
+
+class PHPExtensionAdmin(admin.ModelAdmin):
+    list_display = ("enabled","name",)
+    list_editable = ("enabled",)
+    list_display_links = ("name",)
+
+class PHPConfigAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+    list_display_links = ("name",)
+    fieldsets = (
+        (None, {
+            "fields": ("name",)
+        }),
+        (_(u"Language features"), {
+            "fields": ("short_open_tag", "allow_call_time_pass_reference", "session_bug_compat_42", "session_bug_compat_warn")
+        }),
+        (_(u"Limits"), {
+            "fields": ("max_execution_time", "max_input_time", "memory_limit", "post_max_size", "upload_max_filesize")
+        }),
+        (_(u"Error reporting"), {
+            "fields": ("error_reporting", "display_errors", "display_startup_errors", "log_errors", "track_errors", "html_errors")
+        }),
+    )
+
+class ServerConfigAdmin(admin.ModelAdmin):
+    fieldsets = (
+        (_(u"PHP config"), {
+            "fields": ("default_php_config",)
         }),
     )
 
@@ -101,3 +139,6 @@ admin.site.register(Alias, AliasAdmin)
 admin.site.register(Mailbox, MailboxAdmin)
 admin.site.register(Forwarding, ForwardingAdmin)
 admin.site.register(VirtualHost, VirtualHostAdmin)
+admin.site.register(PHPExtension, PHPExtensionAdmin)
+admin.site.register(PHPConfig, PHPConfigAdmin)
+admin.site.register(ServerConfig, ServerConfigAdmin)

@@ -5,7 +5,7 @@
 
 LogFormat=1
 DNSLookup=2
-DNSStaticCacheFile="/etc/awstats/dnscache.txt"
+DNSStaticCacheFile="/opt/pysk/wwwlogs/dnscache.txt"
 DirIcons="/awstats/icon"
 CreateDirDataIfNotExists=1
 BuildReportFormat=html

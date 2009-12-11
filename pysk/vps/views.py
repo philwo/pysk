@@ -183,48 +183,6 @@ def bind(request):
     resp.write(cPickle.dumps(zonefiles, cPickle.HIGHEST_PROTOCOL))
     return resp
 
-def v0_aliases(request):
-    """
-    Wir generieren hier die Apache Config für die Weiterleitungen
-    """
-    resp = HttpResponse(mimetype="text/plain")
-
-    for a in Alias.objects.filter(active=True):
-        resp.write("<VirtualHost %s:80>\n" % (settings.MY_IP,))
-        resp.write("\tServerName %s\n" % (a.fqdn(),))
-        if a.www_alias:
-            resp.write("\tServerAlias www.%s\n" % (a.fqdn(),))
-        resp.write("\tServerAdmin support@igowo.de\n")
-        resp.write("\tDocumentRoot /var/www/default/htdocs\n")
-        resp.write("\tRedirect permanent / %s\n" % (a.target,))
-        resp.write("</VirtualHost>\n\n");
-
-    return resp
-
-def v0_aliases_nginx(request):
-    """
-    Wir generieren hier die nginx Config für die Weiterleitungen
-    """
-    resp = HttpResponse(mimetype="text/plain")
-
-    for a in Alias.objects.filter(active=True):
-        if a.www_alias:
-            server_name = "%s www.%s" % (a.fqdn(), a.fqdn())
-        else:
-            server_name = a.fqdn()
-
-        # Append / if missing from target
-        if not a.target.endswith("/"):
-            a.target += "/"
-
-        resp.write("server {\n")
-        resp.write("\tlisten %s:80;\n" % (settings.MY_IP,))
-        resp.write("\tserver_name %s;\n" % (server_name,))
-        resp.write("\taccess_log off;\n")
-        resp.write("\trewrite ^/(.*)$ %s$1 permanent;\n" % (a.target,))
-        resp.write("}\n\n")
-    return resp
-
 def v0_nginx(request):
     """
     nginx configuration

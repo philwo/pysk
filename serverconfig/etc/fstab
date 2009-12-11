@@ -1,0 +1,10 @@
+# 
+# /etc/fstab: static file system information
+#
+# <file system>        <dir>         <type>    <options>                                                       <dump> <pass>
+none                   /dev/pts      devpts    defaults                                                        0      0
+none                   /dev/shm      tmpfs     defaults                                                        0      0
+
+/dev/cdrom             /media/cd     auto      ro,user,noauto,unhide                                           0      0
+/dev/vda               /             ext4      defaults,noatime,journal_async_commit,nobarrier,user_xattr,acl  0      1
+

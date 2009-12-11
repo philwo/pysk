@@ -4,7 +4,7 @@ set -e
 set -u
 
 excludefile="/opt/pysk/etc/serverconfig/exclude/`hostname`"
-rsyncopts="-rltDv --exclude copy.sh --exclude diff.sh"
+rsyncopts="-rltD --exclude copy.sh --exclude diff.sh"
 mainuser=`grep "igowo user" /etc/passwd | head -n1 | cut -d":" -f1`
 hostname=`hostname --fqdn`
 ipaddress=`python -c "import socket;print socket.gethostbyaddr(socket.gethostname())[2][0]"`

@@ -8,8 +8,8 @@ PROJECT_PATH = os_path.abspath(os_path.split(__file__)[0])
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-#if TEMPLATE_DEBUG == True:
-#	TEMPLATE_STRING_IF_INVALID = "TEMPLATE_INVALID"
+if TEMPLATE_DEBUG == True:
+	TEMPLATE_STRING_IF_INVALID = "TEMPLATE_INVALID"
 
 ADMINS = (
 	("Philipp Wollermann", "philipp@igowo.de"),
