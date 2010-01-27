@@ -65,6 +65,7 @@ class NSEntry(models.Model):
         ("MX", "MX"),
         ("TXT", "TXT"),
         ("SRV", "SRV"),
+        ("NS", "NS"),
     )
     id = models.AutoField(primary_key=True)
     host = models.CharField(max_length=64)

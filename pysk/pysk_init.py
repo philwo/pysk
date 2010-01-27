@@ -10,7 +10,7 @@ d = Domain.objects.create(name="megowo.de")
 d.save()
 ip = IPAddress.objects.create(ip='YYYIPYYY')
 ip.save()
-vh = VirtualHost.objects.create(name='YYYUSERNAMEYYY', domain=d, ipport=ip, force_www="strip")
+vh = VirtualHost.objects.create(owner=c, name='YYYUSERNAMEYYY', domain=d, ipport=ip, force_www="strip")
 vh.save()
 exit()
 
