@@ -7,7 +7,7 @@ import yaml
 
 APIPASS = "W68p20YST5Iv6KGG"
 
-servers = [host for host in yaml.load_all(open("/opt/pysk/etc/hosts.yml", "r"))]
+servers = [host for host in yaml.load_all(open("/var/named/hosts.yml", "r"))]
 
 authhandler = urllib2.HTTPBasicAuthHandler()
 for s in servers:
