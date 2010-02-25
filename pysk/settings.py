@@ -5,7 +5,7 @@
 from os import path as os_path
 PROJECT_PATH = os_path.abspath(os_path.split(__file__)[0])
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 if TEMPLATE_DEBUG == True:

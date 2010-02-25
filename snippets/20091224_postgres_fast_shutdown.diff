@@ -1,0 +1,11 @@
+--- postgresql~	2009-12-24 14:56:51.426806634 +0100
++++ postgresql	2009-12-24 14:56:45.490142602 +0100
+@@ -40,7 +40,7 @@
+   stop)
+     stat_busy "Stopping PostgreSQL"
+     su - postgres -c \
+-      "/usr/bin/pg_ctl -D $PGROOT/data -l /var/log/postgresql.log -w stop"
++      "/usr/bin/pg_ctl -D $PGROOT/data -l /var/log/postgresql.log -w stop -m fast"
+     if [ $? -gt 0 ]; then
+       stat_fail
+     else

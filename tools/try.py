@@ -129,6 +129,12 @@ if os.path.exists("/etc/nginx/conf/sites-available"):
 if os.path.exists("/etc/nginx/conf/sites-enabled"):
     rmtree("/etc/nginx/conf/sites-enabled")
 
+### GLOBALS
+
+fqdn = socket.getfqdn()
+ip = socket.gethostbyname_ex(socket.gethostname())[2][0]
+hypervisor_ip = "188.40.56.202"
+
 ### STARTUP
 monit_list = [os.path.basename(x) for x in glob("/opt/pysk/serverconfig/etc/monit.d/*")]
 monit_list += [os.path.basename(x) for x in glob("/opt/pysk/serverconfig/etc/monit.d/optional/*")]
@@ -136,6 +142,8 @@ monit_restart_list = []
 
 ### SERVER CONFIG
 runprog(["/opt/pysk/serverconfig/copy.sh"])
+
+makefile("/etc/rc.conf", render_to_string("etc/rc.conf", {"hostname": fqdn, "ip": ip, "hypervisor_ip": hypervisor_ip}))
 
 ### DOVECOT
 statinfo = os.stat("/home/vmail/")
@@ -332,6 +340,16 @@ sync(glob("/etc/php/php-*.sh"), ["/etc/php/php-%s.sh" % (c.user.username,) for c
 sync(glob("/etc/php/php-*.ini"), ["/etc/php/php-%s.ini" % (c.user.username,) for c in customers] + ["/etc/php/php-pysk.ini"], start_func=None, stop_func=remove)
 
 for x in glob("/etc/php/conf.d/*"): remove(x)
+
+### TARTARUS
+if not os.path.exists("/var/spool/tartarus"):
+    mkdir("/var/spool/tartarus", 0755)
+if not os.path.exists("/etc/tartarus"):
+    mkdir("/etc/tartarus", 0755)
+makefile("/etc/tartarus/secret.key", render_to_string("etc/tartarus/secret.key"), 0700)
+makefile("/etc/tartarus/home.conf", render_to_string("etc/tartarus/home.conf"), 0700)
+makefile("/etc/tartarus/etc.conf", render_to_string("etc/tartarus/etc.conf"), 0700)
+makefile("/etc/cron.d/tartarus", render_to_string("etc/cron.d/tartarus"), 0644)
 
 ### MONIT
 def monit_kill(id):
