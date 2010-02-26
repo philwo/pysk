@@ -31,7 +31,7 @@ import time
 import difflib
 
 validDomain = re.compile("([a-zA-Z0-9-]+\.?)+")
-DEBUG = True
+DEBUG = False
 POSTMASTER_ADDRESS = "philipp@igowo.de"
 ABUSE_ADDRESS = "philipp@igowo.de"
 HYPERVISOR_IP = "188.40.56.202"
@@ -78,16 +78,23 @@ def chown(path, user, group=None):
     if statinfo.st_uid != uid or statinfo.st_gid != gid:
         print "chown         %s:%s  %s" % (user, group if group else user, path)
         os.chown(path, uid, gid)
+    elif DEBUG:
+        print "chown SKIP    %s:%s  %s" % (user, group if group else user, path)
 
 def chmod(path, mode):
     statinfo = os.stat(path)
     if S_IMODE(statinfo[ST_MODE]) != mode:
         print "chmod    %o  %s" % (mode, path)
+        os.chmod(path, mode)
+    elif DEBUG:
+        print "chmod SKIP %o  %s" % (mode, path)
 
 def mkdir(path, mode, user, group=None):
     if not os.path.exists(path):
         print "mkdir    %o  %s" % (mode, path)
         os.makedirs(path, mode)
+    elif DEBUG:
+        print "mkdir SKIP %o  %s" % (mode, path)
     chmod(path, mode)
     chown(path, user, group)
 
@@ -291,9 +298,9 @@ for vh in VirtualHost.objects.filter(active=True):
             "ipoffset": ipoffset,
         })
         makefile("/etc/nginx/conf/sites/%s-%s" % (vh.fqdn(), port), config, strip_emptylines=True)
-
+     
     # Fixup htdocs dir
-    vh_dir = "/home/%s/www/%s" % (username, vh.fqdn())
+    vh_dir = "/home/%s/www/%s" % (vh.owner.user.username, vh.fqdn())
     mkdir(vh_dir, 0755, vh.owner.user.username, "users")
     mkdir(os.path.join(vh_dir, "htdocs"), 0755, vh.owner.user.username, "users")
 
@@ -356,3 +363,6 @@ sync([os.path.basename(x) for x in glob("/etc/monit.d/*")], monit_list, monit_st
 runprog(["/usr/bin/monit", "reload"])
 sleep(3)
 for x in monit_restart_list: runprog(["/usr/bin/monit", "restart", x])
+
+print "FINISHED!"
+
