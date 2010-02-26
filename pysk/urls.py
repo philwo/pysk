@@ -17,7 +17,7 @@ def redirect(url):
     return inner
 
 urlpatterns = patterns("",
-	(r'^admin/(.*)', admin.site.root),
+	(r'^admin/', include(admin.site.urls)),
 	(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     (r'^accounts/login/$', 'django.contrib.auth.views.login'),
 )
@@ -25,8 +25,6 @@ urlpatterns = patterns("",
 # Muss per HTTP Auth abgesichert werden!
 urlpatterns += patterns("pysk.vps.views",
 	(r'^api/v0/vz/nginx/$', 'v0_nginx'),
-	(r'^api/v0/vz/aliases/$', 'v0_aliases'),
-	(r'^api/v0/vz/aliases_nginx/$', 'v0_aliases_nginx'),
 	(r'^api/v0/dns/bind/$', 'bind'),
 )
 

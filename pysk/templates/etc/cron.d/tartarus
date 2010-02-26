@@ -1,0 +1,5 @@
+PATH=/bin/:/sbin/:/usr/bin/:/usr/sbin/:/usr/local/sbin/:/usr/local/bin
+# m    h       dom     mon     dow     command
+0      1       *       *       mon-sat /opt/pysk/tools/tartarus.sh -i
+0      1       *       *       sun     /opt/pysk/tools/tartarus.sh
+

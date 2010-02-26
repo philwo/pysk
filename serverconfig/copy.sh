@@ -4,7 +4,7 @@ set -e
 set -u
 
 excludefile="/opt/pysk/etc/serverconfig/exclude/`hostname`"
-rsyncopts="-rltDv --exclude copy.sh --exclude diff.sh"
+rsyncopts="-rltD --exclude copy.sh --exclude diff.sh"
 mainuser=`grep "igowo user" /etc/passwd | head -n1 | cut -d":" -f1`
 hostname=`hostname --fqdn`
 ipaddress=`python -c "import socket;print socket.gethostbyaddr(socket.gethostname())[2][0]"`
@@ -41,14 +41,19 @@ chown -R pysk:pysk /opt/pysk
 chown -R root:root /opt/pysk/.hg
 chmod 0711 /opt/pysk
 chmod 0700 /opt/pysk/*
-chmod -R u=rwX,g=rX,o= /opt/pysk/run /opt/pysk/secret /opt/pysk/www /opt/pysk/static
-chown -R pysk:http /opt/pysk/run /opt/pysk/secret /opt/pysk/www /opt/pysk/static
+chmod -R u=rwX,g=rX,o= /opt/pysk/secret /opt/pysk/www /opt/pysk/static
+chown -R pysk:http /opt/pysk/secret /opt/pysk/www /opt/pysk/static
 
 echo "Fixing up configs"
 sed -i s/XXXIPXXX/$ipaddress/g /etc/nginx/conf/pysk.conf
 sed -i s/XXXHOSTNAMEXXX/$hostname/g /etc/nginx/conf/pysk.conf
 
 ln -sf /etc/mysql/$mysql_conf /etc/mysql/my.cnf
+
+echo -n "Enabling postgresql fast shutdown... "
+cd /etc/rc.d
+fgrep -- '-w stop"' postgresql >/dev/null && patch -p0 < /opt/pysk/snippets/20100117_postgres_fast_shutdown.diff &>/dev/null
+fgrep -- '-w stop -m fast"' postgresql >/dev/null && echo "OK" || echo "FAIL"
 
 MYSQLPW=`grep password /root/.my.cnf | sort -u | cut -d"=" -f2 | tr -d " "`
 echo $MYSQLPW > /opt/pysk/secret/mysqlpw

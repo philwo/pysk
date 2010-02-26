@@ -1,0 +1,73 @@
+server {
+    listen {{vh.ipport}}:{{port}};
+
+    {% ifequal port "443" %}
+    # SSL support
+    ssl on;
+    ssl_certificate {{vh.ssl_cert}};
+    {% if vh.ssl_key %}
+    ssl_certificate_key {{vh.ssl_key}};
+    {% endif %}
+    {% endifequal %}
+    
+    server_name {{vh.fqdn}} www.{{vh.fqdn}} {{extra_aliases}};
+    root /home/{{vh.owner.user.username}}/www/{{vh.fqdn}}/htdocs/;
+    index index.php index.html index.htm;
+    
+    {% ifequal vh.force_www "strip" %}
+    # Strip www from hostname
+    if ($host ~* www\.(.*)) {
+        set $host_without_www $1;
+        rewrite ^(.*)$ http://$host_without_www$1 permanent;
+    }
+    {% endifequal %}
+    {% ifequal vh.force_www "prepend" %}
+    # Force www prefix
+    if ($host !~* www\.) {
+        rewrite ^(.*)$ http://www.$host$1 permanent;
+    }
+    {% endifequal %}        
+    
+    {% ifequal port "80"  %}
+    {% if vh.ssl_enabled %}
+    {% if vh.ssl_force %}
+    # Force SSL
+    rewrite ^(.*) https://$host$1 permanent;
+    {% endif %}
+    {% endif %}
+    {% endifequal %}
+    
+    {% if not vh.apache_enabled %}
+    {% if vh.enable_php %}
+    # PHP (FastCGI)
+    location ~ ^(.+\.php)(.*)$ {
+        include /etc/nginx/conf/fastcgi_params;
+        fastcgi_index index.php;
+        fastcgi_split_path_info ^(.+\.php)(.*)$;
+        fastcgi_param SCRIPT_FILENAME /home/{{vh.owner.user.username}}/www/{{vh.fqdn}}/htdocs$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+        fastcgi_param PATH_TRANSLATED $document_root$fastcgi_path_info;
+        fastcgi_pass_header Authorization;
+        fastcgi_intercept_errors off;
+        if (-f $request_filename) {
+            fastcgi_pass unix:/tmp/php-{{vh.owner.user.username}}.sock;
+        }
+    }
+    {% endif %}
+    {% endif %}
+
+    {% if vh.apache_enabled %}
+    # HTTP Proxy to Apache
+    location / {
+        include /etc/nginx/conf/proxy_params;
+        {% ifequal port "80" %}
+        proxy_pass http://127.0.{{ipoffset}}.1:80/;
+        {% endifequal %}
+        {% ifequal port "443" %}
+        proxy_pass http://127.0.{{ipoffset}}.1:81/;
+        {% endifequal %}
+    }
+    {% endif %}
+
+{{nginx_config}}
+}

@@ -16,6 +16,7 @@ loose-default-character-set = latin1
 [mysqld]
 port		= 3306
 socket		= /var/run/mysqld/mysqld.sock
+pid-file    = /var/run/mysqld/mysqld.pid
 datadir		= /var/lib/mysql
 
 skip-locking

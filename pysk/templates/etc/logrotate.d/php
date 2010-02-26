@@ -1,0 +1,5 @@
+/var/log/php-{{username}}/*log {
+   postrotate
+      /usr/bin/monit restart php-{{username}} 2>/dev/null` 2> /dev/null || true
+   endscript
+}

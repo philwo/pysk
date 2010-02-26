@@ -13,4 +13,3 @@ mysql -e "CREATE USER 'root'@'localhost' IDENTIFIED BY '$password';"
 mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' IDENTIFIED BY '$password' WITH GRANT OPTION;"
 mysql -e "DELETE FROM mysql.user WHERE User='root' AND Host!='localhost';"
 mysql -e "FLUSH PRIVILEGES;"
-

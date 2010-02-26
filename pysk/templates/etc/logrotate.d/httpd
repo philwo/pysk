@@ -1,0 +1,5 @@
+/var/log/httpd-{{username}}/*log {
+   postrotate
+      /bin/kill -HUP `cat /var/run/httpd-{{username}}/httpd.pid 2>/dev/null` 2> /dev/null || true
+   endscript
+}
