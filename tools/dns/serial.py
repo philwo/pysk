@@ -68,12 +68,20 @@ def main(argv=None):
     parser.add_option("-u", "--update", action="store_true", dest="update", default=False)
     parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
     parser.add_option("-q", "--quiet", action="store_false", dest="verbose")
-    (opts, args) = parser.parse_args(argv)
+    (opts, args) = parser.parse_args(argv[1:])
     
     if opts.update:
         update(zones)
     
-    print args
+    assert(len(args) <= 1)
+    if len(args) == 1:
+        if args[1] in zones:
+            print zones[args[1]]["serial"]
+        else:
+            print >>sys.stderr, "Zone not found!"
+            return 1
+    
+    return 0
     
 if __name__ == "__main__":
     sys.exit(main())
