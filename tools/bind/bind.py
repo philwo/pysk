@@ -40,7 +40,11 @@ for s in servers:
                 print "appending"
                 f = open(outpath, "a")
                 f.write("\n; APPENDING FROM %s\n" % (s["name"],))
-                f.write("$ORIGIN %s.\n\n" % (key,))
+                f.write("$ORIGIN %s.\n" % (key,))
+                # FIXME quickhack for MX at megowo.de
+                if parent == "megowo.de" and key != parent:
+                    f.write("@ IN MX 10 %s.igowo.de.\n" % (s["name"],))
+                f.write("\n")
                 lines = value.split("\n")
                 if "; ON APPEND CUT HERE" in lines:
                     while (lines[0] != "; ON APPEND CUT HERE"):
