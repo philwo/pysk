@@ -3,7 +3,7 @@
 set -e
 set -u
 
-backup_root="/var/backup/mysql"
+backup_root="/root/backup/mysql"
 date=`date +%Y%m%d`
 
 mkdir -p ${backup_root}/${date}/

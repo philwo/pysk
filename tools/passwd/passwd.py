@@ -41,14 +41,6 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv
 
-    parser = OptionParser()
-    #parser.add_option("-r", "--rdns", action="store_true", dest="rdns", help="Get logs with IPs resolved via RDNS", default=False)
-    (options, args) = parser.parse_args(argv)
-
-    #if len(args) != 2:
-    #   print >> sys.stderr, "Usage: traffic.py <VirtualHost>"
-    #   return 1
-
     DATABASE_PASSWORD = 'z62VUW2m59Y69u99'
     db = psycopg2.connect("host='localhost' user='pysk' password='%s' dbname='pysk'" % (DATABASE_PASSWORD,))
     cursor = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
