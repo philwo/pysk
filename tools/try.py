@@ -174,6 +174,17 @@ runprog(["/opt/pysk/serverconfig/copy.sh"])
 makefile("/etc/rc.conf", render_to_string("etc/rc.conf", {"hostname": fqdn, "ip": ip, "hypervisor_ip": HYPERVISOR_IP}))
 
 ### DOVECOT
+for m in Mailbox.objects.all():
+    if m.password.startswith("{PLAIN}"):
+        m.password = m.password[7:]
+    if not m.password.startswith("{"):
+        passwordCommand = "/usr/sbin/dovecotpw -p %s -s CRAM-MD5 -u %s@%s" % (m.password, m.mail, m.domain)
+        encPassword = subprocess.Popen(passwordCommand.split(), stdout=subprocess.PIPE).communicate()[0].rstrip()
+        # Verify that password was correctly encrypted, like: {CRAM-MD5}e0f147599c6c470d0a65b20c4d01c9d17f561558348052aec052a3974ca990de
+        assert(len(encPassword) == 74)
+        m.password = encPassword
+        m.save()
+
 statinfo = os.stat("/home/vmail/")
 vmail_uid = statinfo.st_uid
 vmail_gid = statinfo.st_gid

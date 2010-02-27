@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 from pysk.vps.models import *
-
+from django import forms
 from django.utils.translation import ugettext_lazy as _
 
 ## Admin classes
@@ -49,9 +49,16 @@ class AliasAdmin(admin.ModelAdmin):
     list_display = ("fqdn", "target", "active",)
     list_display_links = ("fqdn",)
 
+class MailboxAdminForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput())
+
+    class Meta:
+        model = Mailbox
+
 class MailboxAdmin(admin.ModelAdmin):
     list_display = ("mail", "domain", "quota", "active",)
     list_display_links = ("mail", "domain",)
+    form = MailboxAdminForm
 
 class ForwardingAdmin(admin.ModelAdmin):
     list_display = ("email", "target", "active",)

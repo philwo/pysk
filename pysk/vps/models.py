@@ -180,7 +180,7 @@ class Mailbox(models.Model):
     id = models.AutoField(primary_key=True)
     mail = models.CharField(max_length=75, verbose_name=_(u"Username"), help_text=_(u"This is the username, the part before the @ sign!"))
     domain = models.ForeignKey(Domain, help_text=_(u"Which domain should become part of the e-mail address? (This is the part after the @ sign!)"))
-    password = models.CharField(max_length=64)
+    password = models.CharField(max_length=256)
     quota = models.IntegerField(verbose_name=_(u"Quota"), help_text=_(u"Specify the quota of this mail account in megabytes"))
     active = models.BooleanField(default=True)
 
