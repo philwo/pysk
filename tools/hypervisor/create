@@ -1,0 +1,361 @@
+#!/bin/bash
+
+set -e
+set -u
+
+name=$1
+size=$2
+ram=$3
+username=$4
+password=$5
+serverid=$6
+ip=$7
+mac=$8
+workdir="/mnt/${name}-work"
+
+# mikuru.igowo.de  188.40.56.251   ca:18:31:8d:a0:0a   Arch Linux
+# yuki.igowo.de    188.40.56.252   ca:18:31:8d:a0:0b   Arch Linux
+# kyon.igowo.de    188.40.56.253   ca:18:31:8d:a0:0c   Windows Server 2008
+# c-ds.igowo.de    188.40.198.34   02:3d:88:c0:65:84   Arch Linux
+# c-ps1-1.igowo.de 188.40.198.35   02:a3:51:57:4a:c7   Arch Linux
+
+### Create virtual disk and filesystem
+lvcreate -L${size} -n${name} haruhi_vg
+mke2fs -t ext4 /dev/haruhi_vg/${name}
+
+### Create monit file
+cat > /etc/monit.d/disabled/kvm-${serverid}-${name} <<EOF
+check process kvm-${serverid}-${name} with pidfile /var/run/kvm/${name}.pid
+    start program = "/usr/bin/qemu-kvm
+        -pidfile /var/run/kvm/${name}.pid
+        -drive file=/dev/haruhi_vg/${name},if=virtio,boot=on
+        -m ${ram}
+        -k de
+        -vnc 127.0.0.1:${serverid}
+        -net nic,macaddr=${mac},model=virtio
+        -net tap,script=/etc/qemu-ifup-private,downscript=/etc/qemu-ifdown-private
+        -kernel /boot/vmlinuz26
+        -initrd /boot/kernel26-virtio.img
+        -append 'root=/dev/vda ro'"
+    stop program = "/bin/true"
+    if failed host ${ip} port 22
+        protocol SSH
+        then alert
+    depends on kvm-0-mikuru
+EOF
+
+### Update DHCP
+fgrep "${mac}" /etc/dhcpd.conf > /dev/null || (echo "host ${name} { hardware ethernet ${mac}; fixed-address ${ip}; }" >> /etc/dhcpd.conf; /etc/rc.d/dhcpd restart)
+
+### Bootstrap system
+mkdir ${workdir}
+mount /dev/haruhi_vg/${name} ${workdir}
+mkarchroot -f ${workdir} base
+
+cat > ${workdir}/sbin/first_start <<'EOF'
+#!/bin/bash
+
+set -e
+set -u
+set -x
+
+# Upgrade package database and system
+pacman -Syu --noconfirm
+pacman -Syu --noconfirm
+pacman -Syu --noconfirm
+
+# Install all of core
+#pacman -S --noconfirm --needed `pacman -S -l core -q | tr "\r\n" " "`
+
+# Install some basic services
+pacman -S --noconfirm --needed base-devel \
+    apache \
+    aspell \
+    awstats \
+    bash-completion \
+    dovecot \
+    git \
+    imap \
+    iftop iotop htop \
+    jdk \
+    libjpeg \
+    libmcrypt \
+    libpng \
+    libxslt \
+    lynx \
+    mercurial \
+    mhash \
+    mod_fastcgi \
+    mod_rpaf \
+    mod_wsgi \
+    monit \
+    mysql \
+    mysql-python \
+    net-snmp \
+    nginx \
+    openntpd \
+    openssh \
+    perl-yaml perl-libwww \
+    php \
+    php-apc \
+    php-apache php-cgi php-curl php-enchant php-gd php-gmp php-intl php-mcrypt php-pgsql php-pspell php-sqlite php-tidy php-xsl \
+    postfix \
+    postgresql \
+    python \
+    python-dateutil \
+    python-flup \
+    python-psycopg2 \
+    python-genshi \
+    python-reportlab \
+    python-lxml \
+    python-imaging \
+    rsync \
+    screen \
+    subversion \
+    swig \
+    tidyhtml \
+    vsftpd \
+    whois \
+    unzip zip \
+    bc \
+    ruby1.8 \
+    rubygems1.8 \
+    gnupg \
+    geoip iproute2 iptables pwgen recode spawn-fcgi sudo inetutils dnsutils
+
+# Remove crap
+pacman -Rcs --noconfirm wpa_supplicant xfsprogs reiserfsprogs rp-pppoe ppp pcmciautils mlocate mdadm jfsutils
+#pacman -Rcs --noconfirm kernel26-lts
+#pacman -Rs --noconfirm b43-fwcutter crda dmraid ifenslave ipw2100-fw ipw2200-fw isdn4k-utils iw iwlwifi-3945-ucode iwlwifi-4965-ucode iwlwifi-5000-ucode iwlwifi-5150-ucode jfsutils lilo mdadm mlocate ndiswrapper ndiswrapper-utils openvpn pcmciautils ppp pptpclient reiserfsprogs rp-pppoe rt2x00-rt61-fw rt2x00-rt71w-fw tiacx tiacx-firmware wireless-regdb wireless_tools wlan-ng26-utils wpa_supplicant xfsprogs xinetd zd1211-firmware netcfg
+
+easy_install ipy
+easy_install smartypants
+easy_install m2crypto
+easy_install pyyaml
+
+#gem-1.8 install juicer
+
+ln -s /opt/java/bin/java /usr/bin/java
+
+# Install trac
+cd /opt
+svn co http://svn.edgewall.org/repos/trac/branches/0.11-stable trac
+cd trac
+python setup.py install
+
+# Install Django
+cd /opt
+svn co http://code.djangoproject.com/svn/django/branches/releases/1.1.X django
+SITEPACKAGES=`python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`
+ln -s `pwd`/django/django $SITEPACKAGES/django
+ln -s `pwd`/django/django/bin/django-admin.py /usr/local/bin
+
+git clone git://github.com/django-extensions/django-extensions.git
+ln -s `pwd`/django-extensions/django_extensions $SITEPACKAGES/django_extensions
+
+# Checkout pysk
+cd /opt
+hg clone https://pysk:w8FCg611fpHS@bitbucket.org/philwo/pysk/
+chmod 0700 pysk
+
+# Change repository path to use SSH
+cat > /opt/pysk/.hg/hgrc <<'OMG'
+[paths]
+default = ssh://hg@bitbucket.org/philwo/pysk/
+OMG
+
+# Setup user
+username="XXXUSERNAMEXXX"
+password="XXXPASSWORDXXX"
+name="XXXNAMEXXX"
+serverid="XXXSERVERIDXXX"
+ip="XXXIPXXX"
+
+echo "username = $username, password = $password, name = $name, serverid = $serverid, ip = $ip"
+
+groupadd -g 10000 $username
+useradd -c "igowo user" -g 10000 -m -u 10000 $username
+#find / \( \( -uid 33 -o -gid 33 \) -not -wholename "/proc/*" \) -print0 2> /dev/null | xargs -0 chown $username:$username
+
+cat > /home/$username/startup.sh <<'OMG'
+#!/bin/bash
+#
+# System startup file
+#
+# This file gets executed on every startup of your VPS, running with the permissions of your user
+# It can be used to start a service which needs to run all the time (mongrel server, etc.)
+#
+# Example:
+#
+# If you want to start the program "/usr/bin/myserver --yadda --run=/tmp", you could use:
+#
+# /usr/bin/screen -d -m -S myserver /usr/bin/myserver --yadda --run=/tmp
+#
+
+OMG
+chmod +x /home/$username/startup.sh
+chown $username:$username /home/$username/startup.sh
+
+# Setup MySQL
+/etc/rc.d/mysqld start
+sleep 3
+/opt/pysk/tools/mysql/setup.sh
+#mysql -e "DELETE FROM mysql.user WHERE User='root' AND Host!='localhost';"
+#mysql -e "FLUSH PRIVILEGES;"
+/etc/rc.d/mysqld stop
+
+# Setup Postgres
+/opt/pysk/tools/postgres/setup.sh
+/etc/rc.d/postgresql restart
+sleep 3
+/opt/pysk/tools/postgres/new_singledbuser.sh pysk z62VUW2m59Y69u99
+
+# Setup Mail
+mkdir /home/vmail
+chown mail:mail /home/vmail
+/usr/sbin/postfix set-permissions || /bin/true
+touch /etc/dovecot/passwd /etc/postfix/{virtual_mailboxes,virtual_domains,virtual_forwardings,roleaccounts}
+postmap /etc/postfix/virtual_mailboxes
+postmap /etc/postfix/virtual_domains
+postmap /etc/postfix/virtual_forwardings
+postmap /etc/postfix/roleaccounts
+
+# Configure pysk
+groupadd --system -g 200 pysk
+useradd -d /opt/pysk -s /bin/false --system -M -g 200 -u 200 pysk
+
+cd /opt/pysk/pysk
+python manage.py syncdb --noinput
+sed -e "s/YYYUSERNAMEYYY/$username/g" \
+    -e "s/YYYPASSWORDYYY/$password/g" \
+    -e "s/YYYNAMEYYY/$name/g" \
+    -e "s/YYYSERVERIDYYY/$serverid/g" \
+    -e "s/YYYIPYYY/$ip/g" \
+    /opt/pysk/tools/pysk_firsttime.py | python /opt/pysk/pysk/manage.py shell_plus
+
+# Configure this server
+groupadd -g 201 sslkeys
+usermod -a -G sslkeys mysql
+/opt/pysk/snippets/20091025_replace_vi_with_vim.sh
+/opt/pysk/serverconfig/copy.sh # <-- hier nach gehts irgendwie nicht weiter
+/opt/pysk/tools/passwd/passwd.py
+/opt/pysk/tools/passwd/pysk_secret.sh
+
+rm $0
+sleep 10
+
+/sbin/reboot
+EOF
+sed -i -e "s/XXXUSERNAMEXXX/$username/" \
+       -e "s/XXXPASSWORDXXX/$password/" \
+       -e "s/XXXNAMEXXX/$name/" \
+       -e "s/XXXSERVERIDXXX/$serverid/" \
+       -e "s/XXXIPXXX/$ip/" \
+       ${workdir}/sbin/first_start
+chmod +x ${workdir}/sbin/first_start
+
+cat > ${workdir}/etc/rc.local <<'EOF'
+#!/bin/bash
+#
+# /etc/rc.local: Local multi-user startup script.
+#
+
+username=`grep "igowo user" /etc/passwd | cut -d":" -f1`
+
+if [ -x /sbin/first_start ]; then
+    /sbin/first_start 2>&1 | tee /root/first_start.log
+fi
+
+# USER STARTUP
+[ -x /home/$username/startup.sh ] && su -c"/home/$username/startup.sh" $username &
+EOF
+
+### Fix-up config
+
+# Correct /etc/group so grpck is quiet
+sed -i -e 's/::/:x:/' ${workdir}/etc/group
+
+# Set rc.conf variables
+sed -i  -e "s:TIMEZONE=\"Canada/Pacific\":TIMEZONE=\"Europe/Berlin\":" \
+    -e "s:KEYMAP=\"us\":KEYMAP=\"de\":" \
+    -e "s:HOSTNAME=\"myhost\":HOSTNAME=\"${name}.igowo.de\":" \
+    -e "s:DAEMONS=(syslog-ng network netfs crond):DAEMONS=(network netfs):" \
+    -e "s:eth0=\"dhcp\":eth0=\"eth0 ${ip} netmask 255.255.255.255 pointopoint 188.40.56.202\":" \
+    -e "s:gateway=\"default gw 192.168.0.1\":gateway=\"default gw 188.40.56.202\":" \
+    -e 's:ROUTES=(!gateway):ROUTES=(gateway):' \
+    ${workdir}/etc/rc.conf
+
+echo "exit 0" > ${workdir}/sbin/hwclock
+chmod +x ${workdir}/sbin/hwclock
+chattr +i ${workdir}/sbin/hwclock
+
+cat > ${workdir}/etc/resolv.conf <<EOF
+# Preliminary bootstrap resolv.conf
+
+search igowo.de
+nameserver 188.40.56.202
+
+# End of file
+EOF
+
+cat > ${workdir}/etc/hosts <<EOF
+#
+# /etc/hosts: static lookup table for host names
+#
+
+#<ip-address>   <hostname.domain.org>   <hostname>
+$ip     $name.igowo.de
+127.0.0.1   localhost.localdomain   localhost db1.igowo.de mysql.vz.igowo.de
+
+# End of file
+EOF
+
+# Set root password
+sed -i  -e 's|root::99999::::::|root:$1$k9YWgchg$sdhkVQUebdenb9/RMDCO3.:14486::::::|' \
+    ${workdir}/etc/shadow
+
+# Setup pacman
+cat > ${workdir}/etc/pacman.conf <<'EOF'
+#
+# /etc/pacman.conf
+#
+
+# GENERAL OPTIONS
+[options]
+HoldPkg     = pacman glibc
+SyncFirst   = pacman
+
+# REPOSITORIES
+[igowo]
+Server = http://files.igowo.de/repo/
+
+[core]
+Include = /etc/pacman.d/mirrorlist
+
+[extra]
+Include = /etc/pacman.d/mirrorlist
+
+[community]
+Include = /etc/pacman.d/mirrorlist
+
+[archlinuxfr]
+Server = http://repo.archlinux.fr/x86_64
+EOF
+
+cat > ${workdir}/etc/pacman.d/mirrorlist <<'EOF'
+# Germany
+Server = http://files.igowo.de/arch/$repo/os/x86_64
+#Server = http://ftp.hosteurope.de/mirror/ftp.archlinux.org/$repo/os/x86_64
+EOF
+
+# Setup fstab
+echo "/dev/vda  /  ext4  defaults,noatime  0  1" >> ${workdir}/etc/fstab
+
+# Setup swap space
+dd if=/dev/zero of=${workdir}/swapfile bs=1M count=${ram}
+mkswap ${workdir}/swapfile
+echo "/swapfile none swap sw 0 0" >> ${workdir}/etc/fstab
+
+# Finished
+umount ${workdir}
+
