@@ -85,7 +85,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 MIDDLEWARE_CLASSES = (
 	'django.middleware.gzip.GZipMiddleware',
 	'django.middleware.http.ConditionalGetMiddleware',
-	'django.contrib.csrf.middleware.CsrfMiddleware',
+    #'django.contrib.csrf.middleware.CsrfMiddleware',
 	'django.middleware.common.CommonMiddleware',
 	#'babeldjango.middleware.LocaleMiddleware',
 	'django.contrib.sessions.middleware.SessionMiddleware',
