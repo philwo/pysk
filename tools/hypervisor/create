@@ -44,9 +44,6 @@ check process kvm-${serverid}-${name} with pidfile /var/run/kvm/${name}.pid
     depends on kvm-0-mikuru
 EOF
 
-### Update DHCP
-fgrep "${mac}" /etc/dhcpd.conf > /dev/null || (echo "host ${name} { hardware ethernet ${mac}; fixed-address ${ip}; }" >> /etc/dhcpd.conf; /etc/rc.d/dhcpd restart)
-
 ### Bootstrap system
 mkdir ${workdir}
 mount /dev/haruhi_vg/${name} ${workdir}

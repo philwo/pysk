@@ -1,0 +1,205 @@
+#!/bin/bash
+
+set -e
+set -u
+
+name=$1
+size=$2
+ram=$3
+username=$4
+password=$5
+serverid=$6
+ip=$7
+mac=$8
+workdir="/mnt/${name}-work"
+
+# mikuru.igowo.de  188.40.56.251   ca:18:31:8d:a0:0a   Arch Linux
+# yuki.igowo.de    188.40.56.252   ca:18:31:8d:a0:0b   Arch Linux
+# kyon.igowo.de    188.40.56.253   ca:18:31:8d:a0:0c   Windows Server 2008
+# c-ds.igowo.de    188.40.198.34   02:3d:88:c0:65:84   Arch Linux
+# c-ps1-1.igowo.de 188.40.198.35   02:a3:51:57:4a:c7   Arch Linux
+
+### Create virtual disk and filesystem
+lvcreate -L${size} -n${name} haruhi_vg
+mke2fs -t ext4 /dev/haruhi_vg/${name}
+
+### Create monit file
+cat > /etc/monit.d/disabled/kvm-${serverid}-${name} <<EOF
+check process kvm-${serverid}-${name} with pidfile /var/run/kvm/${name}.pid
+    start program = "/usr/bin/qemu-kvm
+        -pidfile /var/run/kvm/${name}.pid
+        -drive file=/dev/haruhi_vg/${name},if=virtio,boot=on
+        -m ${ram}
+        -k de
+        -vnc 127.0.0.1:${serverid}
+        -net nic,macaddr=${mac},model=virtio
+        -net tap,script=/etc/qemu-ifup-private,downscript=/etc/qemu-ifdown-private
+        -kernel /boot/vmlinuz26
+        -initrd /boot/kernel26-virtio.img
+        -append 'root=/dev/vda ro'"
+    stop program = "/bin/true"
+    if failed host ${ip} port 22
+        protocol SSH
+        then alert
+    depends on kvm-0-mikuru
+EOF
+
+### Bootstrap system
+mkdir ${workdir}
+mount /dev/haruhi_vg/${name} ${workdir}
+
+export DEBOOTSTRAP_DIR=/root/debootstrap
+/root/debootstrap/debootstrap --arch=amd64 --include=openssh-server,vim,locales lenny ${workdir} http://ftp2.de.debian.org/debian/
+
+rsync -av --delete -e ssh root@mikuru:/lib/modules/ ${workdir}/lib/modules/
+
+echo ${name}.igowo.de > ${workdir}/etc/hostname
+echo "Europe/Berlin" > ${workdir}/etc/timezone
+echo "source /etc/bash.bashrc" >> ${workdir}/etc/profile
+
+cat > ${workdir}/etc/locale.gen <<'EOF'
+# This file lists locales that you wish to have built. You can find a list
+# of valid supported locales at /usr/share/i18n/SUPPORTED, and you can add
+# user defined locales to /usr/local/share/i18n/SUPPORTED. If you change
+# this file, you need to rerun locale-gen.
+
+en_US.UTF-8 UTF-8
+de_DE.UTF-8 UTF-8
+EOF
+
+cat > ${workdir}/etc/bash.bashrc <<'EOF'
+# System-wide .bashrc file for interactive bash(1) shells.
+
+# If not running interactively, don't do anything
+[ -z "$PS1" ] && return
+
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# set variable identifying the chroot you work in (used in the prompt below)
+if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# set a fancy prompt (non-color, overwrite the one in /etc/profile)
+PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+
+# enable bash completion in interactive shells
+if [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+fi
+
+# if the command-not-found package is installed, use it
+if [ -x /usr/lib/command-not-found ]; then
+        function command_not_found_handle {
+                # check because c-n-f could've been removed in the meantime
+                if [ -x /usr/lib/command-not-found ]; then
+                   /usr/bin/python /usr/lib/command-not-found -- $1
+                   return $?
+                else
+                   return 127
+                fi
+        }
+fi
+
+alias ls="ls --color"
+EOF
+
+cat > ${workdir}/etc/rc.local <<'EOF'
+#!/bin/bash
+#
+# /etc/rc.local: Local multi-user startup script.
+#
+
+if [ -x /sbin/first_start ]; then
+    /sbin/first_start 2>&1 | tee /root/first_start.log
+fi
+EOF
+
+cat > ${workdir}/etc/network/interfaces <<EOF
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# Internet
+auto eth0
+iface eth0 inet static
+    address ${ip}
+    netmask 255.255.255.255
+    gateway 188.40.56.202
+    pointopoint 188.40.56.202
+EOF
+
+cat > ${workdir}/sbin/first_start <<'EOF'
+#!/bin/bash
+
+set -e
+set -u
+
+/usr/sbin/locale-gen
+
+rm $0
+EOF
+
+# Correct /etc/group so grpck is quiet
+#sed -i -e 's/::/:x:/' ${workdir}/etc/group
+
+# Set rc.conf variables
+#sed -i  -e "s:TIMEZONE=\"Canada/Pacific\":TIMEZONE=\"Europe/Berlin\":" \
+#    -e "s:KEYMAP=\"us\":KEYMAP=\"de\":" \
+#    -e "s:HOSTNAME=\"myhost\":HOSTNAME=\"${name}.igowo.de\":" \
+#    -e "s:DAEMONS=(syslog-ng network netfs crond):DAEMONS=(network netfs):" \
+#    -e "s:eth0=\"dhcp\":eth0=\"eth0 ${ip} netmask 255.255.255.255 pointopoint 188.40.56.202\":" \
+#    -e "s:gateway=\"default gw 192.168.0.1\":gateway=\"default gw 188.40.56.202\":" \
+#    -e 's:ROUTES=(!gateway):ROUTES=(gateway):' \
+#    ${workdir}/etc/rc.conf
+
+echo "exit 0" > ${workdir}/sbin/hwclock
+chmod +x ${workdir}/sbin/hwclock
+chattr +i ${workdir}/sbin/hwclock
+
+cat > ${workdir}/etc/resolv.conf <<EOF
+# Preliminary bootstrap resolv.conf
+
+search igowo.de
+nameserver 188.40.56.202
+
+# End of file
+EOF
+
+cat > ${workdir}/etc/hosts <<EOF
+#
+# /etc/hosts: static lookup table for host names
+#
+
+#<ip-address>   <hostname.domain.org>   <hostname>
+$ip     $name.igowo.de
+127.0.0.1   localhost.localdomain   localhost db1.igowo.de mysql.vz.igowo.de
+
+# End of file
+EOF
+
+# Set root password
+(echo 'root:$1$k9YWgchg$sdhkVQUebdenb9/RMDCO3.:14486::::::'; grep -v "^root" ${workdir}/etc/shadow) > ${workdir}/etc/shadow.new
+mv ${workdir}/etc/shadow.new ${workdir}/etc/shadow
+
+# Set root SSH authorized_keys
+mkdir -p ${workdir}/root/.ssh
+chmod 0700 ${workdir}/root ${workdir}/root/.ssh
+cp -a /root/.ssh/authorized_keys ${workdir}/root/.ssh/
+
+# Setup fstab
+echo "/dev/vda  /  ext4  defaults,noatime  0  1" >> ${workdir}/etc/fstab
+
+# Setup swap space
+dd if=/dev/zero of=${workdir}/swapfile bs=1M count=${ram}
+mkswap ${workdir}/swapfile
+echo "/swapfile none swap sw 0 0" >> ${workdir}/etc/fstab
+
+# Finished
+umount ${workdir}
+

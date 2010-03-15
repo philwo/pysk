@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -e
+set -u
+set -x
+
+#rm -f /etc/monit.d/c-ph-1
+#monit reload
+#ps axu | grep c-ph-1
+#kill ...
+#dmsetup remove haruhi_vg-c--ph--1
+#lvremove /dev/haruhi_vg/c-ph-1
+
