@@ -318,6 +318,20 @@ for vh in VirtualHost.objects.filter(active=True):
 runprog(["/etc/rc.d/nginx", "reload"])
 
 ### PHP
+# Update PHP extensions
+for ext in [os.path.basename(filename) for filename in glob("/usr/lib/php/modules/*.so")]:
+    try:
+        e = PHPExtension.objects.get(name=ext)
+    except PHPExtension.DoesNotExist:
+        print "New PHPExtension(%s)" % (ext,)
+        e = PHPExtension(name=ext, enabled=True)
+    e.save()
+
+for ext in PHPExtension.objects.all():
+    if not os.path.exists("/usr/lib/php/modules/%s" % (ext.name,)):
+        print "Deleting PHPExtension(%s)" % (ext.name,)
+        ext.delete()
+
 # Generate a PHP config + monit-conf for every user who uses PHP
 for customer in set([x.owner for x in VirtualHost.objects.filter(enable_php=True)]):
     username = customer.user.username
