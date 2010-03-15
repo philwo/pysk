@@ -45,6 +45,7 @@ chmod -R u=rwX,g=rX,o= /opt/pysk/secret /opt/pysk/www /opt/pysk/static
 chown -R pysk:http /opt/pysk/secret /opt/pysk/www /opt/pysk/static
 
 echo "Fixing up configs"
+newaliases
 sed -i s/XXXIPXXX/$ipaddress/g /etc/nginx/conf/pysk.conf
 sed -i s/XXXHOSTNAMEXXX/$hostname/g /etc/nginx/conf/pysk.conf
 

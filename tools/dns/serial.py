@@ -14,9 +14,7 @@ from glob import glob
 import hashlib
 import pprint
 
-opts = None
-
-def update():
+def update(opts, zones):
     t = date.today().strftime("%Y%m%d")
     
     for zonefile in glob("/var/named/pysk/db.*"):
@@ -71,12 +69,12 @@ def main(argv=None):
     (opts, args) = parser.parse_args(argv[1:])
     
     if opts.update:
-        update(zones)
+        update(opts, zones)
     
     assert(len(args) <= 1)
     if len(args) == 1:
-        if args[1] in zones:
-            print zones[args[1]]["serial"]
+        if args[0] in zones:
+            print zones[args[0]]["serial"]
         else:
             print >>sys.stderr, "Zone not found!"
             return 1
