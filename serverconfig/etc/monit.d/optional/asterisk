@@ -1,0 +1,6 @@
+check process asterisk with pidfile /var/run/asterisk/asterisk.pid
+    group voip
+    start program = "/etc/rc.d/asterisk start"
+    stop program = "/etc/rc.d/asterisk stop"
+    if 5 restarts within 5 cycles then timeout
+
