@@ -8,6 +8,7 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "pysk.settings"
 
 from django.conf import settings
 from django.db import transaction
+from django.template import Context
 from django.template.loader import render_to_string
 
 from pysk.app.models import *
@@ -162,6 +163,8 @@ rmtree("/etc/nginx/conf/sites-enabled")
 ### GLOBALS
 fqdn = socket.getfqdn()
 ip = socket.gethostbyname_ex(socket.gethostname())[2][0]
+ctx = Context()
+ctx.autoescape = False
 
 ### STARTUP
 monit_list = [os.path.basename(x) for x in glob("/opt/pysk/serverconfig/etc/monit.d/*")]
@@ -171,7 +174,7 @@ monit_restart_list = []
 ### SERVER CONFIG
 runprog(["/opt/pysk/serverconfig/copy.sh"])
 
-makefile("/etc/rc.conf", render_to_string("etc/rc.conf", {"hostname": fqdn, "ip": ip, "hypervisor_ip": HYPERVISOR_IP}))
+makefile("/etc/rc.conf", render_to_string("etc/rc.conf", {"hostname": fqdn, "ip": ip, "hypervisor_ip": HYPERVISOR_IP}, ctx))
 
 ### DOVECOT
 for m in Mailbox.objects.all():
@@ -250,13 +253,13 @@ for customer in customers:
     
     makefile(os.path.join(apacheroot, "conf", "httpd.conf"),                                # /etc/httpd-philwo/conf/httpd.conf
                             render_to_string("etc/httpd/conf/httpd.conf",
-                            {"username": username, "ipoffset": ipoffset}))
+                            {"username": username, "ipoffset": ipoffset}, ctx))
     makefile(os.path.join(apacheroot, "conf", "sites", "000-default"),                      # /etc/httpd-philwo/conf/sites/000-default
                             render_to_string("etc/httpd/conf/sites/default",
-                            {"ipoffset": ipoffset}))
+                            {"ipoffset": ipoffset}, ctx))
     makefile("/etc/monit.d/httpd-%s" % (username,),                                         # /etc/monit.d/httpd-philwo
                             render_to_string("etc/monit.d/httpd",
-                            {"username": username, "ipoffset": ipoffset}))
+                            {"username": username, "ipoffset": ipoffset}, ctx))
     monit_list += ["httpd-%s" % (username,)]
     
     # For every IP of this server, which should be served by an apache
@@ -280,17 +283,17 @@ for customer in customers:
                 "htdocsdir": htdocs_dir,
                 "apache_config": apache_config,
                 "enable_php": vh.enable_php,
-            }))
+            }, ctx))
         makefile(os.path.join(apacheroot, "conf", "sites", vh.fqdn()), "\n".join(output))
 
-    makefile("/etc/logrotate.d/httpd-%s" % (username,), render_to_string("etc/logrotate.d/httpd", {"username": username}), 0755)
-    makefile("/usr/sbin/apachectl-%s" % (username,), render_to_string("usr/bin/apachectl", {"username": username, "ipoffset": ipoffset}), 0755)
+    makefile("/etc/logrotate.d/httpd-%s" % (username,), render_to_string("etc/logrotate.d/httpd", {"username": username}, ctx), 0755)
+    makefile("/usr/sbin/apachectl-%s" % (username,), render_to_string("usr/bin/apachectl", {"username": username, "ipoffset": ipoffset}, ctx), 0755)
     runprog(["/usr/sbin/apachectl-%s" % (username,), "restart"])
 
 sync(glob("/etc/logrotate.d/httpd-*"), ["/etc/logrotate.d/httpd-%s" % (c.user.username,) for c in customers], start_func=None, stop_func=remove)
 
 ### NGINX
-makefile("/etc/nginx/conf/aliases", render_to_string("etc/nginx/conf/aliases", {"my_ip": settings.MY_IP, "aliases": Alias.objects.filter(active=True)}))
+makefile("/etc/nginx/conf/aliases", render_to_string("etc/nginx/conf/aliases", {"my_ip": settings.MY_IP, "aliases": Alias.objects.filter(active=True)}, ctx))
 
 if os.path.exists("/etc/nginx/conf/sites"):
     rmtree("/etc/nginx/conf/sites")
@@ -307,7 +310,7 @@ for vh in VirtualHost.objects.filter(active=True):
             "extra_aliases": " ".join([da.fqdn() for da in DirectAlias.objects.filter(active=True).filter(host=vh)]),
             "nginx_config": "\n".join(["    "+x for x in vh.nginx_config.replace("\r\n", "\n").split("\n")]),
             "ipoffset": ipoffset,
-        })
+        }, ctx)
         makefile("/etc/nginx/conf/sites/%s-%s" % (vh.fqdn(), port), config, strip_emptylines=True)
      
     # Fixup htdocs dir
@@ -335,29 +338,29 @@ for ext in PHPExtension.objects.all():
 # Generate a PHP config + monit-conf for every user who uses PHP
 for customer in set([x.owner for x in VirtualHost.objects.filter(enable_php=True)]):
     username = customer.user.username
-    makefile("/etc/php/php-%s.sh" % (username,), render_to_string("etc/php/php.sh", {"username": username, "php_instances": 5}), 0755)
+    makefile("/etc/php/php-%s.sh" % (username,), render_to_string("etc/php/php.sh", {"username": username, "php_instances": 5}, ctx), 0755)
     makefile("/etc/php/php-%s.ini" % (username,), render_to_string("etc/php/php.ini", {
         "username": username,
         "sc": ServerConfig.objects.get(active=True),
         "virtualhosts": VirtualHost.objects.filter(owner=customer, enable_php=True),
         "extensions": PHPExtension.objects.all(),
-    }))
+    }, ctx))
     mkdir("/var/log/php-%s" % (username,), 0755, username)
-    makefile("/etc/logrotate.d/php-%s" % (username,), render_to_string("etc/logrotate.d/php", {"username": username}))
-    makefile("/etc/monit.d/php-%s" % (username,), render_to_string("etc/monit.d/php", {"username": username}))
+    makefile("/etc/logrotate.d/php-%s" % (username,), render_to_string("etc/logrotate.d/php", {"username": username}, ctx))
+    makefile("/etc/monit.d/php-%s" % (username,), render_to_string("etc/monit.d/php", {"username": username}, ctx))
     monit_list += ["php-%s" % (username,)]
     monit_restart_list += ["php-%s" % (username,)]
 
-makefile("/etc/php/php-pysk.sh", render_to_string("etc/php/php.sh", {"username": "pysk", "php_instances": 1}), 0755)
+makefile("/etc/php/php-pysk.sh", render_to_string("etc/php/php.sh", {"username": "pysk", "php_instances": 1}, ctx), 0755)
 makefile("/etc/php/php-pysk.ini", render_to_string("etc/php/php.ini", {
     "username": "pysk",
     "sc": ServerConfig(default_php_config=PHPConfig.objects.get(name="production")),
     "virtualhosts": None,
     "extensions": PHPExtension.objects.all(),
-}))
+}, ctx))
 mkdir("/var/log/php-pysk", 0755, "pysk")
-makefile("/etc/logrotate.d/php-pysk", render_to_string("etc/logrotate.d/php", {"username": "pysk"}))
-makefile("/etc/monit.d/php-pysk", render_to_string("etc/monit.d/php", {"username": "pysk"}))
+makefile("/etc/logrotate.d/php-pysk", render_to_string("etc/logrotate.d/php", {"username": "pysk"}, ctx))
+makefile("/etc/monit.d/php-pysk", render_to_string("etc/monit.d/php", {"username": "pysk"}, ctx))
 monit_list += ["php-pysk"]
 monit_restart_list += ["php-pysk"]
 
@@ -368,14 +371,6 @@ sync(glob("/etc/php/php-*.ini"), ["/etc/php/php-%s.ini" % (c.user.username,) for
 
 # Remove interfering config files (possibly installed by PHP distribution)
 for x in glob("/etc/php/conf.d/*"): remove(x)
-
-### TARTARUS
-#mkdir("/var/spool/tartarus", 0755)
-#mkdir("/etc/tartarus", 0755)
-#makefile("/etc/tartarus/secret.key", render_to_string("etc/tartarus/secret.key"), 0700)
-#makefile("/etc/tartarus/home.conf", render_to_string("etc/tartarus/home.conf"), 0700)
-#makefile("/etc/tartarus/etc.conf", render_to_string("etc/tartarus/etc.conf"), 0700)
-#makefile("/etc/cron.d/tartarus", render_to_string("etc/cron.d/tartarus"), 0644)
 
 ### MONIT
 def monit_kill(id):
