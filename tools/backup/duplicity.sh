@@ -18,8 +18,10 @@ FTP_PASSWORD=$FTP_PASSWORD PASSPHRASE=$PASSPHRASE duplicity --full-if-older-than
     --exclude /bin --exclude /boot --exclude /dev --exclude /lib --exclude /lib64 \
     --exclude /lost+found --exclude /media --exclude /mnt --exclude /opt \
     --exclude /proc --exclude /sbin --exclude /srv --exclude /sys --exclude /tmp \
-    --exclude /usr --exclude /var \
-    --exclude /home/mirror --exclude /root/.cache/duplicity/ \
+    --exclude /usr --exclude /var/cache --exclude /var/lib/mysql --exclude /var/lib/postgres \
+    --exclude /var/lib/postgres-8.3 --exclude /var/lock --exclude /var/tmp \
+    --exclude "/var/log/*log.*" --exclude "/var/log/**/*log.*" --exclude /var/log/btmp \
+    --exclude /var/lib/pacman --exclude /home/mirror --exclude /root/.cache/duplicity/ \
     / ${FTP_URL}
 FTP_PASSWORD=$FTP_PASSWORD PASSPHRASE=$PASSPHRASE duplicity remove-all-but-n-full 2 --force ${FTP_URL}
 FTP_PASSWORD=$FTP_PASSWORD PASSPHRASE=$PASSPHRASE duplicity cleanup --extra-clean --force ${FTP_URL}
