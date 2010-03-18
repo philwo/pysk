@@ -20,7 +20,7 @@ for db in $databases; do
     #done
     
     echo "Dumping ${db} ..."
-    pg_dump -Fc -Z9 -bcC -f ${backup_root}/${date}/${db}.dump ${db}
+    pg_dump -h localhost -U postgres -Fc -Z9 -bcC -f ${backup_root}/${date}/${db}.dump ${db}
 done
 
 oldbackups=`ls -1rd ${backup_root}/???????? | sed 1,2d`
