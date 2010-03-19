@@ -59,6 +59,9 @@ fgrep -- '-w stop -m fast"' postgresql >/dev/null && echo "OK" || echo "FAIL"
 MYSQLPW=`grep password /root/.my.cnf | sort -u | cut -d"=" -f2 | tr -d " "`
 echo $MYSQLPW > /opt/pysk/secret/mysqlpw
 
+[ -e /swapfile ] && echo "/swapfile              none          swap      sw                                                              0      0" >> /etc/fstab
+swapon -a
+
 echo "Removing pacnew files"
 find /etc -name "*.pacnew" -delete
 find /etc -name "*.pacsave" -delete
