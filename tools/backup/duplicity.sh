@@ -13,7 +13,7 @@ set -x
 
 lftp -c "open $FTP_HOST && login $FTP_USER $FTP_PASSWORD && cd duplicity && mkdir `hostname`" &> /dev/null || /bin/true
 
-FTP_PASSWORD=$FTP_PASSWORD PASSPHRASE=$PASSPHRASE duplicity --full-if-older-than 6D --encrypt-key "FA3B07B8" --sign-key "FA3B07B8" -v8 \
+FTP_PASSWORD=$FTP_PASSWORD PASSPHRASE=$PASSPHRASE duplicity --full-if-older-than 14D --encrypt-key "FA3B07B8" --sign-key "FA3B07B8" -v8 \
     --gpg-options='--compress-algo=bzip2 --bzip2-compress-level=9' --asynchronous-upload \
     --exclude /bin --exclude /boot --exclude /dev --exclude /lib --exclude /lib64 \
     --exclude /lost+found --exclude /media --exclude /mnt --exclude /opt \
@@ -24,6 +24,6 @@ FTP_PASSWORD=$FTP_PASSWORD PASSPHRASE=$PASSPHRASE duplicity --full-if-older-than
     --exclude /var/lib/pacman --exclude /home/mirror --exclude /root/.cache/duplicity/ \
     --exclude /var/abs --exclude /swapfile \
     / ${FTP_URL}
-FTP_PASSWORD=$FTP_PASSWORD PASSPHRASE=$PASSPHRASE duplicity remove-all-but-n-full 2 --force ${FTP_URL}
+FTP_PASSWORD=$FTP_PASSWORD PASSPHRASE=$PASSPHRASE duplicity remove-all-but-n-full 1 --force ${FTP_URL}
 FTP_PASSWORD=$FTP_PASSWORD PASSPHRASE=$PASSPHRASE duplicity cleanup --extra-clean --force ${FTP_URL}
 
