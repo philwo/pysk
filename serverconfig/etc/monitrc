@@ -3,7 +3,7 @@
 set daemon 60
 set logfile syslog facility log_daemon
 set idfile /var/.monit.id
-set statefile /var/.monit.state
+set statefile /dev/shm/.monit.state
 set mailserver localhost
 set mail-format { from: philipp@igowo.de }
 #set alert philipp@igowo.de
