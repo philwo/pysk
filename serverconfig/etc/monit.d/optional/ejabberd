@@ -1,0 +1,7 @@
+check process ejabberd with pidfile /var/run/ejabberd.pid
+    start program = "/etc/rc.d/ejabberd start"
+    stop program  = "/etc/rc.d/ejabberd stop"
+    if failed port 5222 use type tcp then restart
+    if failed port 5269 use type tcp then restart
+    if 5 restarts within 5 cycles then timeout
+
