@@ -22,8 +22,3 @@ for db in $databases; do
     pg_dump -h localhost -U postgres -Fc -Z9 -bcC -f ${backup_root}/${db}.dump ${db}
 done
 
-oldbackups=`ls -1rd ${backup_root}/???????? | sed 1,2d`
-for oldbackup in $oldbackups; do
-    rm -r $oldbackups
-done
-

@@ -20,11 +20,6 @@ for db in $databases; do
     
     echo "Dumping ${db} ..."
     #mysqldump --add-drop-database --lock-all-tables --events --routines --triggers --allow-keywords ${db} | xz -7 > ${backup_root}/${db}.sql.xz
-    mysqldump --add-drop-database --lock-all-tables --events --routines --triggers --allow-keywords ${db} | bzip2 -9 > ${backup_root}/${db}.sql.bz2
-done
-
-oldbackups=`ls -1rd ${backup_root}/???????? | sed 1,2d`
-for oldbackup in $oldbackups; do
-    rm -r $oldbackups
+    mysqldump --add-drop-database --lock-all-tables --events --routines --triggers --allow-keywords ${db} | gzip -9 > ${backup_root}/${db}.sql.bz2
 done
 
