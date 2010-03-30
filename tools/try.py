@@ -364,7 +364,7 @@ makefile("/etc/monit.d/php-pysk", render_to_string("etc/monit.d/php", {"username
 monit_list += ["php-pysk"]
 monit_restart_list += ["php-pysk"]
 
-customers = set([x.owner for x in VirtualHost.objects.filter(apache_enabled=True, enable_php=True)])
+customers = set([x.owner for x in VirtualHost.objects.filter(enable_php=True)])
 sync(glob("/etc/logrotate.d/php-*"), ["/etc/logrotate.d/php-%s" % (c.user.username,) for c in customers] + ["/etc/logrotate.d/php-pysk"], start_func=None, stop_func=remove)
 sync(glob("/etc/php/php-*.sh"), ["/etc/php/php-%s.sh" % (c.user.username,) for c in customers] + ["/etc/php/php-pysk.sh"], start_func=None, stop_func=remove)
 sync(glob("/etc/php/php-*.ini"), ["/etc/php/php-%s.ini" % (c.user.username,) for c in customers] + ["/etc/php/php-pysk.ini"], start_func=None, stop_func=remove)
