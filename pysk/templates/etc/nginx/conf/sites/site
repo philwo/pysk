@@ -37,6 +37,8 @@ server {
     {% endif %}
     {% endifequal %}
     
+{{nginx_config}}
+
     {% if not vh.apache_enabled %}
     {% if vh.enable_php %}
     # PHP (FastCGI)
@@ -68,6 +70,4 @@ server {
         {% endifequal %}
     }
     {% endif %}
-
-{{nginx_config}}
 }
