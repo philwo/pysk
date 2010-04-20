@@ -118,7 +118,8 @@ pacman -S --noconfirm --needed base-devel \
     ruby1.8 \
     rubygems1.8 \
     gnupg \
-    geoip iproute2 iptables pwgen recode spawn-fcgi sudo inetutils dnsutils
+    geoip iproute2 iptables pwgen recode spawn-fcgi sudo inetutils dnsutils \
+    lftp duplicity
 
 # Remove crap
 pacman -Rcs --noconfirm wpa_supplicant xfsprogs reiserfsprogs rp-pppoe ppp pcmciautils mlocate mdadm jfsutils
@@ -335,8 +336,9 @@ Include = /etc/pacman.d/mirrorlist
 [community]
 Include = /etc/pacman.d/mirrorlist
 
-[archlinuxfr]
-Server = http://repo.archlinux.fr/x86_64
+[testing]
+Include = /etc/pacman.d/mirrorlist
+
 EOF
 
 cat > ${workdir}/etc/pacman.d/mirrorlist <<'EOF'

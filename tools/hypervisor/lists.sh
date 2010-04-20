@@ -3,6 +3,7 @@
 set -e
 set -u
 
+cd /root/pacman
 rm -f lists/*
 pacman -Q > lists/haruhi
 

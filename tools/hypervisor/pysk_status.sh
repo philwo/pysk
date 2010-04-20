@@ -1,4 +1,4 @@
 #!/bin/bash
 
-./se.sh "cd /opt/pysk && hg st"
+./se.sh "cd /opt/pysk && hg st && hg outgoing"
 
