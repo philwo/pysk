@@ -86,6 +86,8 @@ def genentries(resp, d):
                 output.append("%s IN CNAME %s" % (n.host if n.host else "@", n.value))
             elif n.type == "MX":
                 output.append("%s IN MX %s %s" % (n.host if n.host else "@", n.priority, n.value))
+            elif n.type == "TXT":
+                output.append("%s IN TXT \"%s\"" % (n.host if n.host else "@", n.value.replace(r'"', r'\"')))
             else:
                 raise ValueError("Unknown NSEntry type %s" % (n.type,))
         output.append("")

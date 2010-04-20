@@ -93,6 +93,7 @@ smtpd_recipient_restrictions =
     reject_non_fqdn_helo_hostname,
     #reject_unknown_helo_hostname,
     reject_unknown_reverse_client_hostname,
+    check_client_access hash:/etc/postfix/rbl_override,
     reject_rbl_client zen.spamhaus.org,
     reject_rbl_client ix.dnsbl.manitu.net,
 #   check_policy_service inet:127.0.0.1:12525,

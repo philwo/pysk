@@ -68,10 +68,10 @@ class NSEntry(models.Model):
         ("NS", "NS"),
     )
     id = models.AutoField(primary_key=True)
-    host = models.CharField(max_length=64)
+    host = models.CharField(max_length=64, blank=True)
     domain = models.ForeignKey(Domain)
     type = models.CharField(max_length=16, choices=NSENTRY_TYPE_CHOICES, default="A")
-    value = models.CharField(max_length=64)
+    value = models.CharField(max_length=512)
     port = models.IntegerField(null=True, blank=True)
     weight = models.IntegerField(null=True, blank=True)
     priority = models.IntegerField(null=True, blank=True)

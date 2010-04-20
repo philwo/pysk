@@ -46,6 +46,7 @@ chown -R pysk:http /opt/pysk/secret /opt/pysk/www /opt/pysk/static
 
 echo "Fixing up configs"
 newaliases
+postmap /etc/postfix/rbl_override
 sed -i s/XXXIPXXX/$ipaddress/g /etc/nginx/conf/pysk.conf
 sed -i s/XXXHOSTNAMEXXX/$hostname/g /etc/nginx/conf/pysk.conf
 
