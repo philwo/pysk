@@ -2,10 +2,15 @@
 
 # Django settings for pysk project.
 
-from os import path as os_path
-PROJECT_PATH = os_path.abspath(os_path.split(__file__)[0])
+import sys
+import os
+import os.path
+import socket
 
-DEBUG = False
+PROJECT_PATH = os.path.abspath(os.path.split(__file__)[0])
+MY_HOSTNAME = socket.gethostbyaddr(socket.gethostname())[0]
+
+DEBUG = False # False
 TEMPLATE_DEBUG = DEBUG
 
 if TEMPLATE_DEBUG == True:
@@ -16,6 +21,9 @@ ADMINS = (
 )
 
 MANAGERS = ADMINS
+
+DEFAULT_FROM_EMAIL = "pysk@%s" % (MY_HOSTNAME,)
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 DATABASE_ENGINE = 'postgresql_psycopg2' # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
 DATABASE_NAME = 'pysk'                  # Or path to database file if using sqlite3.
@@ -34,44 +42,47 @@ LANGUAGES = (
 	('en', _('English')),
 )
 
-SITE_ID = 1
 USE_I18N = True
 
 # MEDIA_* settings are only relevant for uploaded files,
 # specifically fields of type FileField and ImageField!
-MEDIA_ROOT = os_path.join(PROJECT_PATH, '../uploads')
+MEDIA_ROOT = os.path.join(PROJECT_PATH, '../uploads')
 MEDIA_URL = '/uploads/'
-STATIC_ROOT = os_path.join(PROJECT_PATH, '../static')
+STATIC_ROOT = os.path.join(PROJECT_PATH, '../static')
 STATIC_URL = '/static/'
 ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 SECRET_KEY = 'xgYRsDMhGsnjubsP1JwT9b6ux6teGVLedHEJywNtIsMQKxgK'
 
-ROOT_URLCONF = 'pysk.urls'
-AUTH_PROFILE_MODULE = "app.customer"
-LOGIN_URL = "/accounts/login/"
-LOGIN_REDIRECT_URL = "/admin/"
-ACCOUNT_ACTIVATION_DAYS = 14
-
-DEFAULT_FROM_EMAIL = "support@igowo.de"
 SEND_BROKEN_LINK_EMAILS = not DEBUG
 APPEND_SLASH = False
 PREPEND_WWW = False
 USE_ETAGS = True
+
+ROOT_URLCONF = 'pysk.urls'
+
+AUTH_PROFILE_MODULE = "app.customer"
+LOGIN_URL = "/accounts/login/"
+LOGIN_REDIRECT_URL = "/admin/"
+ACCOUNT_ACTIVATION_DAYS = 14
 
 # Hostname and IP of this server
 import socket
 MY_IP = socket.gethostbyaddr(socket.gethostname())[2][0]
 MY_HOSTNAME = socket.gethostbyaddr(socket.gethostname())[0]
 
-TEMPLATE_DIRS = (
-	"/opt/pysk/pysk/templates",
-)
-
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
 	'django.template.loaders.filesystem.load_template_source',
 	'django.template.loaders.app_directories.load_template_source',
+)
+
+MIDDLEWARE_CLASSES = (
+	'django.middleware.common.CommonMiddleware',
+	'django.contrib.sessions.middleware.SessionMiddleware',
+	'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.RemoteUserMiddleware',
+	'django.middleware.transaction.TransactionMiddleware',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -82,19 +93,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 	"django.core.context_processors.request",
 )
 
-MIDDLEWARE_CLASSES = (
-	'django.middleware.gzip.GZipMiddleware',
-	'django.middleware.http.ConditionalGetMiddleware',
-    #'django.contrib.csrf.middleware.CsrfMiddleware',
-	'django.middleware.common.CommonMiddleware',
-	#'babeldjango.middleware.LocaleMiddleware',
-	'django.contrib.sessions.middleware.SessionMiddleware',
-	'django.contrib.auth.middleware.AuthenticationMiddleware',
-    #'pysk.app.middleware.HttpAuthMiddleware',
-    'django.contrib.auth.middleware.RemoteUserMiddleware',
-	'django.middleware.http.ConditionalGetMiddleware',
-	'django.middleware.doc.XViewMiddleware',
-	'django.middleware.transaction.TransactionMiddleware',
+TEMPLATE_DIRS = (
+	"/opt/pysk/pysk/templates",
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -105,11 +105,10 @@ INSTALLED_APPS = (
 	'django.contrib.auth',
 	'django.contrib.contenttypes',
 	'django.contrib.sessions',
-	'django.contrib.sites',
 	'django.contrib.admin',
 	'django.contrib.webdesign',
-	#'babeldjango',
 	'django_extensions',
 	'pysk.app',
 	'pysk.vps',
 )
+
