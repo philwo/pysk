@@ -35,3 +35,14 @@ host = localhost
 OMG
 chmod 0600 /root/.my.cnf
 
+# Remove old root users
+mysql -e "DROP USER 'root'@'127.0.0.1';"
+mysql -e "DROP USER 'root'@'`hostname`';"
+
+# Install Roundcube user + tables
+mysql -e "CREATE USER 'roundcube'@'localhost' IDENTIFIED BY 'BDSF7w3iurTs';"
+mysql -e "GRANT USAGE ON *.* TO 'roundcube'@'localhost' IDENTIFIED BY 'BDSF7w3iurTs';"
+mysql -e "CREATE DATABASE IF NOT EXISTS \`roundcube\`;"
+mysql -e "GRANT ALL PRIVILEGES ON \`roundcube\`.* TO 'roundcube'@'localhost';"
+cat /opt/pysk/www/roundcube/SQL/mysql.initial.sql | mysql roundcube
+
