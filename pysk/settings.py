@@ -8,9 +8,10 @@ import os.path
 import socket
 
 PROJECT_PATH = os.path.abspath(os.path.split(__file__)[0])
+MY_IP = socket.gethostbyaddr(socket.gethostname())[2][0]
 MY_HOSTNAME = socket.gethostbyaddr(socket.gethostname())[0]
 
-DEBUG = False # False
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 if TEMPLATE_DEBUG == True:
@@ -66,10 +67,6 @@ LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/admin/"
 ACCOUNT_ACTIVATION_DAYS = 14
 
-# Hostname and IP of this server
-import socket
-MY_IP = socket.gethostbyaddr(socket.gethostname())[2][0]
-MY_HOSTNAME = socket.gethostbyaddr(socket.gethostname())[0]
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
