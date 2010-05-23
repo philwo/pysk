@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+# /etc/rc.local: Local multi-user startup script.
+#
+
+if [ -x /sbin/first_start ]; then
+    /sbin/first_start 2>&1 | tee /root/first_start.log
+fi
+
+# USER STARTUP
+for i in /home/*/startup.sh; do
+    username=`echo $i | cut -d'/' -f3`
+    [ -x /home/$username/startup.sh ] && su -c"/home/$username/startup.sh" $username &
+done
+
