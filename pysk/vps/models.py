@@ -5,7 +5,6 @@ from time import time
 from math import floor
 
 from django.contrib.auth.models import User
-from app.models import Customer
 from django.utils.translation import ugettext_lazy as _
 
 ## Model classes
@@ -108,7 +107,7 @@ CHOICES_FORCE_WWW = (
 
 class VirtualHost(models.Model):
     id = models.AutoField(primary_key=True)
-    owner = models.ForeignKey(Customer)
+    owner = models.ForeignKey(User)
     name = models.CharField(max_length=255, blank=True, verbose_name=_(u"Hostname"), help_text=_(u"Sometimes also called 'subdomain' ..."))
     domain = models.ForeignKey(Domain)
     ipport = models.ForeignKey(IPAddress, verbose_name=_(u"IP"))
