@@ -16,4 +16,4 @@ pacman -Q | grep rubygems1.8 && pacman -S --noconfirm rubygems1.8
 pacman -Q | grep spawn-fcgi && pacman -S --noconfirm spawn-fcgi
 pacman -Q | grep supervisor && pacman -S --noconfirm supervisor
 pacman -Q | grep unbound && pacman -S --noconfirm unbound
-
+pacman -Q | grep monit && pacman -S --noconfirm monit
