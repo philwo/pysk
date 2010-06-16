@@ -16,14 +16,14 @@ server {
     
     {% ifequal vh.force_www "strip" %}
     # Strip www from hostname
-    if ($host ~* www\.(.*)) {
+    if ($host ~* ^www\.(.*)) {
         set $host_without_www $1;
         rewrite ^(.*)$ http://$host_without_www$1 permanent;
     }
     {% endifequal %}
     {% ifequal vh.force_www "prepend" %}
     # Force www prefix
-    if ($host !~* www\.) {
+    if ($host !~* ^www\.) {
         rewrite ^(.*)$ http://www.$host$1 permanent;
     }
     {% endifequal %}        
