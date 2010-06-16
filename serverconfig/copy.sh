@@ -64,9 +64,11 @@ echo $MYSQLPW > /opt/pysk/secret/mysqlpw
 swapon -a
 
 echo "Removing pacnew files"
-find /etc -name "*.pacnew" -delete
-find /etc -name "*.pacsave" -delete
-rm -f /etc/my.cnf /etc/mysql/*.cf
+find /etc -name "*.pacnew" -delete || /bin/true
+find /etc -name "*.pacsave" -delete || /bin/true
+rm -f /etc/my.cnf /etc/mysql/*.cf || /bin/true
 
 [ ! -f /usr/share/GeoIP/GeoIP.dat ] && /opt/pysk/tools/logfiles/update_geoip.sh
+
+exit 0
 

@@ -338,7 +338,7 @@ for ext in PHPExtension.objects.all():
 # Generate a PHP config + monit-conf for every user who uses PHP
 for customer in set([x.owner for x in VirtualHost.objects.filter(enable_php=True)]):
     username = customer.user.username
-    makefile("/etc/php/php-%s.sh" % (username,), render_to_string("etc/php/php.sh", {"username": username, "php_instances": 5}, ctx), 0755)
+    makefile("/etc/php/php-%s.sh" % (username,), render_to_string("etc/php/php.sh", {"username": username, "php_instances": 3}, ctx), 0755)
     makefile("/etc/php/php-%s.ini" % (username,), render_to_string("etc/php/php.ini", {
         "username": username,
         "sc": ServerConfig.objects.get(active=True),

@@ -3,6 +3,8 @@
 set -e
 set -u
 
+export LANG="en_US.utf-8"
+
 . /etc/conf.d/postgresql
 
 # Let init script initialize most things

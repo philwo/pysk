@@ -33,7 +33,9 @@ check process kvm-${serverid}-${name} with pidfile /var/run/kvm/${name}.pid
         -drive file=/dev/haruhi_vg/${name},cache=none,aio=native,if=virtio,boot=on
         -m ${ram}
         -k de
+        -vga vmware
         -vnc 127.0.0.1:${serverid}
+        -balloon virtio
         -net nic,macaddr=${mac},model=virtio
         -net tap,script=/etc/qemu-ifup_${ip},downscript=/etc/qemu-ifdown-private
         -kernel /boot/vmlinuz26
