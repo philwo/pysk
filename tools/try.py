@@ -224,14 +224,14 @@ diff("/etc/postfix/virtual_forwardings", "/etc/postfix/virtual_forwardings.new",
 mkdir("/srv/http/default/htdocs/", 0755, "root")
 
 # Generate an Apache instance + monit-conf for every user who uses Apache
-customers = set([x.owner for x in VirtualHost.objects.filter(apache_enabled=True)])
-for customer in customers:
-    username = customer.user.username
+users = set([x.owner for x in VirtualHost.objects.filter(apache_enabled=True)])
+for user in users:
+    username = user.username
     apacheroot = "/etc/httpd-%s" % (username,)
     logpath = "/var/log/httpd-%s" % (username,)
     runpath = "/var/run/httpd-%s" % (username,)
 
-    ipoffset = customer.kundennr - 10000
+    ipoffset = user.id
     assert(ipoffset >= 0)
     
     mkdir(logpath, 0755, "root")                                                            # /var/log/httpd-philwo
@@ -263,7 +263,7 @@ for customer in customers:
     monit_list += ["httpd-%s" % (username,)]
     
     # For every IP of this server, which should be served by an apache
-    for vh in VirtualHost.objects.filter(active=True, owner=customer, apache_enabled=True):
+    for vh in VirtualHost.objects.filter(active=True, owner=user, apache_enabled=True):
         htdocs_dir = "/home/%s/www/%s/htdocs/" % (username, vh.fqdn())
 
         extra_aliases = ""
@@ -290,7 +290,7 @@ for customer in customers:
     makefile("/usr/sbin/apachectl-%s" % (username,), render_to_string("usr/bin/apachectl", {"username": username, "ipoffset": ipoffset}, ctx), 0755)
     runprog(["/usr/sbin/apachectl-%s" % (username,), "restart"])
 
-sync(glob("/etc/logrotate.d/httpd-*"), ["/etc/logrotate.d/httpd-%s" % (c.user.username,) for c in customers], start_func=None, stop_func=remove)
+sync(glob("/etc/logrotate.d/httpd-*"), ["/etc/logrotate.d/httpd-%s" % (user.username,) for user in users], start_func=None, stop_func=remove)
 
 ### NGINX
 makefile("/etc/nginx/conf/aliases", render_to_string("etc/nginx/conf/aliases", {"my_ip": settings.MY_IP, "aliases": Alias.objects.filter(active=True)}, ctx))
@@ -300,7 +300,7 @@ if os.path.exists("/etc/nginx/conf/sites"):
 mkdir("/etc/nginx/conf/sites", 0755, "root")
 
 for vh in VirtualHost.objects.filter(active=True):
-    ipoffset = vh.owner.kundennr - 10000
+    ipoffset = vh.owner.id
     assert(ipoffset >= 0)
     ports = ("80",) if not vh.ssl_enabled else ("80", "443")
     for port in ports:
@@ -314,9 +314,9 @@ for vh in VirtualHost.objects.filter(active=True):
         makefile("/etc/nginx/conf/sites/%s-%s" % (vh.fqdn(), port), config, strip_emptylines=True)
      
     # Fixup htdocs dir
-    vh_dir = "/home/%s/www/%s" % (vh.owner.user.username, vh.fqdn())
-    mkdir(vh_dir, 0755, vh.owner.user.username, "users")
-    mkdir(os.path.join(vh_dir, "htdocs"), 0755, vh.owner.user.username, "users")
+    vh_dir = "/home/%s/www/%s" % (vh.owner.username, vh.fqdn())
+    mkdir(vh_dir, 0755, vh.owner.username, "users")
+    mkdir(os.path.join(vh_dir, "htdocs"), 0755, vh.owner.username, "users")
 
 runprog(["/etc/rc.d/nginx", "reload"])
 
@@ -336,13 +336,13 @@ for ext in PHPExtension.objects.all():
         ext.delete()
 
 # Generate a PHP config + monit-conf for every user who uses PHP
-for customer in set([x.owner for x in VirtualHost.objects.filter(enable_php=True)]):
-    username = customer.user.username
+for user in set([x.owner for x in VirtualHost.objects.filter(enable_php=True)]):
+    username = user.username
     makefile("/etc/php/php-%s.sh" % (username,), render_to_string("etc/php/php.sh", {"username": username, "php_instances": 3}, ctx), 0755)
     makefile("/etc/php/php-%s.ini" % (username,), render_to_string("etc/php/php.ini", {
         "username": username,
         "sc": ServerConfig.objects.get(active=True),
-        "virtualhosts": VirtualHost.objects.filter(owner=customer, enable_php=True),
+        "virtualhosts": VirtualHost.objects.filter(owner=user, enable_php=True),
         "extensions": PHPExtension.objects.all(),
     }, ctx))
     mkdir("/var/log/php-%s" % (username,), 0755, username)
@@ -364,10 +364,10 @@ makefile("/etc/monit.d/php-pysk", render_to_string("etc/monit.d/php", {"username
 monit_list += ["php-pysk"]
 monit_restart_list += ["php-pysk"]
 
-customers = set([x.owner for x in VirtualHost.objects.filter(enable_php=True)])
-sync(glob("/etc/logrotate.d/php-*"), ["/etc/logrotate.d/php-%s" % (c.user.username,) for c in customers] + ["/etc/logrotate.d/php-pysk"], start_func=None, stop_func=remove)
-sync(glob("/etc/php/php-*.sh"), ["/etc/php/php-%s.sh" % (c.user.username,) for c in customers] + ["/etc/php/php-pysk.sh"], start_func=None, stop_func=remove)
-sync(glob("/etc/php/php-*.ini"), ["/etc/php/php-%s.ini" % (c.user.username,) for c in customers] + ["/etc/php/php-pysk.ini"], start_func=None, stop_func=remove)
+users = set([x.owner for x in VirtualHost.objects.filter(enable_php=True)])
+sync(glob("/etc/logrotate.d/php-*"), ["/etc/logrotate.d/php-%s" % (user.username,) for user in users] + ["/etc/logrotate.d/php-pysk"], start_func=None, stop_func=remove)
+sync(glob("/etc/php/php-*.sh"), ["/etc/php/php-%s.sh" % (user.username,) for user in users] + ["/etc/php/php-pysk.sh"], start_func=None, stop_func=remove)
+sync(glob("/etc/php/php-*.ini"), ["/etc/php/php-%s.ini" % (user.username,) for user in users] + ["/etc/php/php-pysk.ini"], start_func=None, stop_func=remove)
 
 # Remove interfering config files (possibly installed by PHP distribution)
 for x in glob("/etc/php/conf.d/*"): remove(x)

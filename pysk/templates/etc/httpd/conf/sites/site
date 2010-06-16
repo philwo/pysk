@@ -20,7 +20,7 @@
     # mod_rpaf
     RPAFenable On
     RPAFsethostname On
-    RPAFproxy_ips 127.0.0.1
+    RPAFproxy_ips 127.0.{{ipoffset}}.1
 
     {% ifequal port "81" %}
     # HTTPS header variable

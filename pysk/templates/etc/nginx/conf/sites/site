@@ -11,19 +11,19 @@ server {
     {% endifequal %}
     
     server_name {{vh.fqdn}} www.{{vh.fqdn}} {{extra_aliases}};
-    root /home/{{vh.owner.user.username}}/www/{{vh.fqdn}}/htdocs/;
+    root /home/{{vh.owner.username}}/www/{{vh.fqdn}}/htdocs/;
     index index.php index.html index.htm;
     
     {% ifequal vh.force_www "strip" %}
     # Strip www from hostname
-    if ($host ~* www\.(.*)) {
+    if ($host ~* ^www\.(.*)) {
         set $host_without_www $1;
         rewrite ^(.*)$ http://$host_without_www$1 permanent;
     }
     {% endifequal %}
     {% ifequal vh.force_www "prepend" %}
     # Force www prefix
-    if ($host !~* www\.) {
+    if ($host !~* ^www\.) {
         rewrite ^(.*)$ http://www.$host$1 permanent;
     }
     {% endifequal %}        
@@ -46,13 +46,13 @@ server {
         include /etc/nginx/conf/fastcgi_params;
         fastcgi_index index.php;
         fastcgi_split_path_info ^(.+\.php)(.*)$;
-        fastcgi_param SCRIPT_FILENAME /home/{{vh.owner.user.username}}/www/{{vh.fqdn}}/htdocs$fastcgi_script_name;
+        fastcgi_param SCRIPT_FILENAME /home/{{vh.owner.username}}/www/{{vh.fqdn}}/htdocs$fastcgi_script_name;
         fastcgi_param PATH_INFO $fastcgi_path_info;
         fastcgi_param PATH_TRANSLATED $document_root$fastcgi_path_info;
         fastcgi_pass_header Authorization;
         fastcgi_intercept_errors off;
         if (-f $request_filename) {
-            fastcgi_pass unix:/tmp/php-{{vh.owner.user.username}}.sock;
+            fastcgi_pass unix:/tmp/php-{{vh.owner.username}}.sock;
         }
     }
     {% endif %}

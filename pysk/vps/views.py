@@ -194,8 +194,8 @@ def v0_nginx(request):
     vhosts = {}
 
     for vh in VirtualHost.objects.filter(active=True):
-        username = vh.owner.user.username
-        ipoffset = vh.owner.kundennr - 10000
+        username = vh.owner.username
+        ipoffset = vh.owner.id
         assert(ipoffset >= 0)
         htdocs_dir = "/home/%s/www/%s/htdocs" % (username, vh.fqdn())
 

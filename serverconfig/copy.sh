@@ -38,7 +38,7 @@ chmod 0600 /var/lib/postgres/data/server.{crt,key}
 chmod 0700 /var/lib/postgres/data
 
 chown -R pysk:pysk /opt/pysk
-chown -R root:root /opt/pysk/.hg
+chown -R root:root /opt/pysk/.hg /opt/pysk/vendors/django/.hg /opt/pysk/vendors/django-extensions/.hg
 chmod 0711 /opt/pysk
 chmod 0700 /opt/pysk/*
 chmod -R u=rwX,g=rX,o= /opt/pysk/secret /opt/pysk/www /opt/pysk/static
