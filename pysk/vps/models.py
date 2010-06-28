@@ -30,7 +30,7 @@ class Domain(models.Model):
     def __unicode__(self):
         return u"%s" % (self.name)
 
-    def save(self, force_insert=False, force_update=False):
+    def save(self, *args, **kwargs):
         from datetime import date
         t = date.today().strftime("%Y%m%d")
 
@@ -49,7 +49,7 @@ class Domain(models.Model):
                 c = int(str(self.serial)[8:]) + 1
 
         self.serial = "%s%02i" % (t, c)
-        super(Domain, self).save(force_insert, force_update)
+        super(Domain, self).save(*args, **kwargs)
 
     class Meta:
         ordering = ["name"]
@@ -127,9 +127,9 @@ class VirtualHost(models.Model):
     def __unicode__(self):
         return u"%s.%s" % (self.name, self.domain)
 
-    def save(self, force_insert=False, force_update=False):
+    def save(self, *args, **kwargs):
         self.sortkey = "%s-%s" % (self.domain.name.replace(".", "-"), self.name.replace(".", "-"))
-        super(VirtualHost, self).save(force_insert, force_update)
+        super(VirtualHost, self).save(*args, **kwargs)
 
     def fqdn(self):
         return (u"%s.%s." % (self.name, self.domain)).strip(".")
