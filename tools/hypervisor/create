@@ -128,7 +128,8 @@ pacman -S --noconfirm --needed base-devel \
     rubygems1.8 \
     gnupg \
     geoip iproute2 iptables pwgen recode spawn-fcgi sudo inetutils dnsutils \
-    lftp duplicity
+    lftp duplicity \
+    munin-node
 
 # Remove crap
 pacman -Rcs --noconfirm wpa_supplicant xfsprogs reiserfsprogs rp-pppoe ppp pcmciautils mdadm jfsutils
@@ -137,8 +138,6 @@ pacman -Rcs --noconfirm wpa_supplicant xfsprogs reiserfsprogs rp-pppoe ppp pcmci
 
 easy_install ipy
 easy_install smartypants
-#easy_install m2crypto
-#easy_install pyyaml
 
 ln -s /opt/java/bin/java /usr/bin/java
 
