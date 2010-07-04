@@ -407,3 +407,20 @@ class ServerConfig(models.Model):
     id = models.AutoField(primary_key=True)
     active = models.BooleanField(unique=True, default=True)
     default_php_config = models.ForeignKey(PHPConfig)
+
+class FTPUser(models.Model):
+    id = models.AutoField(primary_key=True)
+    owner = models.ForeignKey(User)
+    suffix = models.CharField(max_length=16)
+    home = models.CharField(max_length=512)
+
+    def username(self):
+        return u"%s-%s" % (self.owner.username, self.suffix)
+
+    def __unicode__(self):
+        return u"%s" % (self.username())
+    
+    class Meta:
+        ordering = ["owner", "suffix"]
+        verbose_name = _(u"FTP user")
+        verbose_name_plural = _(u"FTP users")

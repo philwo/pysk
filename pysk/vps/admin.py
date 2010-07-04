@@ -139,6 +139,15 @@ class ServerConfigAdmin(admin.ModelAdmin):
         }),
     )
 
+class FTPUserAdmin(admin.ModelAdmin):
+    list_display = ("username", "home")
+    list_display_links = ("username",)
+    fieldsets = (
+        (None, {
+            "fields": ("owner", "suffix", "home"),
+        }),
+    )
+
 admin.site.register(Domain, DomainAdmin)
 admin.site.register(NSEntry, NSEntryAdmin)
 admin.site.register(IPAddress, IPAddressAdmin)
@@ -149,3 +158,4 @@ admin.site.register(VirtualHost, VirtualHostAdmin)
 admin.site.register(PHPExtension, PHPExtensionAdmin)
 admin.site.register(PHPConfig, PHPConfigAdmin)
 admin.site.register(ServerConfig, ServerConfigAdmin)
+admin.site.register(FTPUser, FTPUserAdmin)
