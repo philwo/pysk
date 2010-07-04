@@ -48,7 +48,7 @@ def main(argv=None):
 
     # /etc/passwd
     query = "SELECT u.username as plainusername, u.username, u.password, u.id + 9999 AS uid, u.id + 9999 AS gid, 'igowo user' AS gecos, '/home/' || u.username AS home, '/bin/bash' AS shell, 'false' AS ftponly FROM auth_user u WHERE u.password LIKE 'crypt%'"
-    query = query + " UNION SELECT u.username as plainusername, u.username || '-' || fu.suffix, u.password, u.id + 9999 AS uid, u.id + 9999 AS gid, 'igowo ftp user' AS gecos, '/home/' || u.username || '/' || fu.home, '/bin/false' AS shell, 'true' AS ftponly FROM vps_ftpuser fu, auth_user u WHERE fu.owner_id = u.id AND u.password LIKE 'crypt%' ORDER BY username" 
+    query = query + " UNION SELECT u.username as plainusername, u.username || '-' || fu.suffix, u.password, u.id + 9999 AS uid, u.id + 9999 AS gid, 'igowo ftp user' AS gecos, fu.home, '/bin/false' AS shell, 'true' AS ftponly FROM vps_ftpuser fu, auth_user u WHERE fu.owner_id = u.id AND u.password LIKE 'crypt%' ORDER BY username" 
     cursor.execute(query)
     users = cursor.fetchall()
 
@@ -59,10 +59,10 @@ def main(argv=None):
         assert(not u["username"].startswith("pysk-"))
         u["home"] = os.path.realpath(u["home"])
         assert(re.match(r"^/home/%s/[\w\d\-_./ ]*$" % (u["plainusername"]), u["home"]))
-  
+
      #users_by_uid = dict([(x["uid"], x) for x in users])
      users_by_username = dict([(x["username"], x) for x in users])
- 
+
     passwd_csv = csv.reader(open("/etc/passwd", "rb"), delimiter=":", quoting=csv.QUOTE_NONE)
     group_csv = csv.reader(open("/etc/group", "rb"), delimiter=":", quoting=csv.QUOTE_NONE)
     shadow_csv = csv.reader(open("/etc/shadow", "rb"), delimiter=":", quoting=csv.QUOTE_NONE)
