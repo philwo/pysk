@@ -57,8 +57,8 @@ def main(argv=None):
         assert(u["password"].startswith("crypt$$1$"))
         assert(not u["username"].startswith("philwo-"))
         assert(not u["username"].startswith("pysk-"))
-        u["home"] = os.path.realpath(u["home"])
-        assert(re.match(r"^/home/%s/[\w\d\-_./ ]*$" % (u["plainusername"]), u["home"]))
+        home = os.path.realpath(u["home"])
+        assert(re.match(r"^/home/%s/[\w\d\-_./ ]*$" % (u["plainusername"]), home))
 
     #users_by_uid = dict([(x["uid"], x) for x in users])
     users_by_username = dict([(x["username"], x) for x in users])
@@ -109,7 +109,7 @@ def main(argv=None):
         uid = user_row[2]
         gid = user_row[3]
         gecos = user_row[4]
-        home = user_row[5]
+        home = os.path.realpath(user_row[5])
         shell = user_row[6]
         passwd_new.writerow((username, fakepasswd, uid, gid, gecos, home, shell))
 
@@ -160,7 +160,7 @@ def main(argv=None):
             continue
         user = user_row[0]
         uid = user_row[2]
-        home = user_row[5]
+        home = os.path.realpath(user_row[5])
         gid = 100 # "users" group
     
         print "Fixing permissions for user %s ..." % (user,)
