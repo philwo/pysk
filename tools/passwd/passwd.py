@@ -46,7 +46,7 @@ def main(argv=None):
     cursor = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     # /etc/passwd
-    query = "SELECT u.username, u.password, u.id + 9999 AS uid, u.id + 9999 AS gid, 'igowo user' AS gecos, '/home/' || u.username AS home, '/bin/bash' AS shell, 'false' AS ftponly FROM auth_user u WHERE u.password LIKE 'crypt%' ORDER BY username"
+    query = "SELECT u.username, u.password, u.id + 9999 AS uid, u.id + 9999 AS gid, 'igowo user' AS gecos, '/home/' || u.username AS home, '/bin/bash' AS shell, 'false' AS ftponly FROM auth_user u WHERE u.password LIKE 'crypt%'"
     query = query + " UNION SELECT fu.suffix || '-' || u.username, u.password, u.id + 9999 AS uid, u.id + 9999 AS gid, 'igowo ftp user' AS gecos, fu.home, '/bin/false' AS shell, 'true' AS ftponly FROM vps_ftpuser fu, auth_user u WHERE fu.owner_id = u.id AND u.password LIKE 'crypt%' ORDER BY username" 
     cursor.execute(query)
     users = cursor.fetchall()
