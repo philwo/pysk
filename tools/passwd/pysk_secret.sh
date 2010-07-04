@@ -3,6 +3,8 @@
 set -e
 set -u
 
+yes y | pwck
+
 cat > /opt/pysk/secret/htpasswd.new <<'EOF'
 pysk:04UnS7oSZEUVw
 EOF
