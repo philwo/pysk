@@ -46,10 +46,15 @@ def main(argv=None):
     cursor = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     # /etc/passwd
-    query = "SELECT u.username, u.password, u.id + 9999 AS uid, u.id + 9999 AS gid, 'igowo user' AS gecos, '/home/' || u.username AS home, '/bin/bash' AS shell FROM auth_user u WHERE u.password LIKE 'crypt%' ORDER BY username" 
+    query = "SELECT u.username, u.password, u.id + 9999 AS uid, u.id + 9999 AS gid, 'igowo user' AS gecos, '/home/' || u.username AS home, '/bin/bash' AS shell, 'false' AS ftponly FROM auth_user u WHERE u.password LIKE 'crypt%' ORDER BY username" 
     cursor.execute(query)
     users = cursor.fetchall()
-    users_by_uid = dict([(x["uid"], x) for x in users])
+
+    query = "SELECT fu.suffix || '-' || u.username, u.password, u.id + 9999 AS uid, u.id + 9999 AS gid, 'igowo ftp user' AS gecos, fu.home, '/bin/false' AS shell, 'true' AS ftponly FROM vps_ftpuser fu, auth_user u WHERE fu.owner_id = u.id AND u.password LIKE 'crypt%' ORDER BY username" 
+    cursor.execute(query)
+    users.extend(cursor.fetchall())
+
+    #users_by_uid = dict([(x["uid"], x) for x in users])
     users_by_username = dict([(x["username"], x) for x in users])
 
     # Check if all passwords are encrypted correctly
@@ -109,6 +114,8 @@ def main(argv=None):
     # group.new
     userlist = []
     for user_row in users:
+        if user_row.ftponly == "true":
+            continue
         groupname = user_row[0]
         fakepasswd = "x"
         gid = user_row[3]
@@ -147,11 +154,13 @@ def main(argv=None):
     print Popen(["diff", "-u", "/etc/shadow.old", "/etc/shadow"], stdout=PIPE).communicate()[0]
     
     for user_row in users:
+        if user_row.ftponly == "true":
+            continue
         user = user_row[0]
         uid = user_row[2]
         home = user_row[5]
         gid = 100 # "users" group
-        
+    
         print "Fixing permissions for user %s ..." % (user,)
 
         # /home/username
