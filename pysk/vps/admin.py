@@ -151,7 +151,7 @@ class FTPUserAdmin(admin.ModelAdmin):
     form = FTPUserAdminForm
     fieldsets = (
         (None, {
-            "fields": ("owner", "suffix", "home"),
+            "fields": ("owner", "password", "suffix", "home"),
         }),
     )
 
