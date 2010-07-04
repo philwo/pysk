@@ -60,8 +60,8 @@ def main(argv=None):
         u["home"] = os.path.realpath(u["home"])
         assert(re.match(r"^/home/%s/[\w\d\-_./ ]*$" % (u["plainusername"]), u["home"]))
 
-     #users_by_uid = dict([(x["uid"], x) for x in users])
-     users_by_username = dict([(x["username"], x) for x in users])
+    #users_by_uid = dict([(x["uid"], x) for x in users])
+    users_by_username = dict([(x["username"], x) for x in users])
 
     passwd_csv = csv.reader(open("/etc/passwd", "rb"), delimiter=":", quoting=csv.QUOTE_NONE)
     group_csv = csv.reader(open("/etc/group", "rb"), delimiter=":", quoting=csv.QUOTE_NONE)
