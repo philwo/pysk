@@ -410,10 +410,10 @@ class ServerConfig(models.Model):
 
 class FTPUser(models.Model):
     id = models.AutoField(primary_key=True)
-    owner = models.ForeignKey(User)
-    password = models.CharField(max_length=256)
-    suffix = models.CharField(max_length=16)
-    home = models.CharField(max_length=512)
+    owner = models.ForeignKey(User, help_text=_(u"The user, from which the FTP user inherits its permissions."))
+    password = models.CharField(max_length=256, help_text=_(u"The password for the FTP user."))
+    suffix = models.CharField(max_length=16, help_text=_(u"The suffix, which gets appended to the username specified above."))
+    home = models.CharField(max_length=512, help_text=_(u"An absolute path to the home directory of the FTP user, like: /home/myuser/www/mysite.de/htdocs"))
 
     def username(self):
         return u"%s-%s" % (self.owner.username, self.suffix)
