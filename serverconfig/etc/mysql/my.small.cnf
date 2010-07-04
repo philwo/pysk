@@ -30,13 +30,14 @@ ssl-ca   =/etc/ssl/private/DigiCertCA.crt
 ssl-cert =/etc/ssl/private/star_igowo_de.crt
 ssl-key  =/etc/ssl/private/star_igowo_de.key
 
-key_buffer_size = 16K
+key_buffer_size = 32M
 max_allowed_packet = 1M
-table_open_cache = 4
+table_open_cache = 256
 sort_buffer_size = 64K
 read_buffer_size = 256K
 read_rnd_buffer_size = 256K
 net_buffer_length = 2K
+thread_cache_size = 32
 thread_stack = 128K
 
 skip-innodb
