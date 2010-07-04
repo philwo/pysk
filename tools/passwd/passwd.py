@@ -111,7 +111,7 @@ def main(argv=None):
     # group.new
     userlist = []
     for user_row in users:
-        if user_row.ftponly == "true":
+        if user_row["ftponly"] == "true":
             continue
         groupname = user_row[0]
         fakepasswd = "x"
@@ -151,7 +151,7 @@ def main(argv=None):
     print Popen(["diff", "-u", "/etc/shadow.old", "/etc/shadow"], stdout=PIPE).communicate()[0]
     
     for user_row in users:
-        if user_row.ftponly == "true":
+        if user_row["ftponly"] == "true":
             continue
         user = user_row[0]
         uid = user_row[2]
