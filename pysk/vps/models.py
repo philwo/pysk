@@ -411,6 +411,7 @@ class ServerConfig(models.Model):
 class FTPUser(models.Model):
     id = models.AutoField(primary_key=True)
     owner = models.ForeignKey(User)
+    password = models.CharField(max_length=256)
     suffix = models.CharField(max_length=16)
     home = models.CharField(max_length=512)
 
