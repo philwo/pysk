@@ -423,7 +423,7 @@ class FTPUser(models.Model):
         import random
         algo = 'crypt'
         salt = "$1$%s$" % (get_hexdigest("sha1", str(random.random()), str(random.random()))[:5],)
-        salt_and_hsh = get_hexdigest(algo, salt, raw_password)
+        salt_and_hsh = get_hexdigest(algo, salt, self.password)
         self.password = '%s$%s' % (algo, salt_and_hsh)
         super(FTPUser, self).save(*args, **kwargs)
 
