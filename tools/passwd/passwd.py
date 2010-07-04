@@ -16,6 +16,7 @@ from shutil import copy2
 import psycopg2, psycopg2.extras
 import csv
 import socket
+import re
 
 def ensure_permissions(directory, perms):
     if not os.path.exists(directory):
@@ -56,7 +57,8 @@ def main(argv=None):
 
     # Check if all passwords are encrypted correctly
     for u in users:
-        assert(u[1].startswith("crypt$$1$"))
+        assert(u["password"].startswith("crypt$$1$"))
+        assert(re.match(r"^/[\w\d/ ]*$", u["home"]))
   
     passwd_csv = csv.reader(open("/etc/passwd", "rb"), delimiter=":", quoting=csv.QUOTE_NONE)
     group_csv = csv.reader(open("/etc/group", "rb"), delimiter=":", quoting=csv.QUOTE_NONE)

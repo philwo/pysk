@@ -419,12 +419,14 @@ class FTPUser(models.Model):
         return u"%s-%s" % (self.owner.username, self.suffix)
 
     def save(self, *args, **kwargs):
-        from django.contrib.auth.models import get_hexdigest
-        import random
-        algo = 'crypt'
-        salt = "$1$%s$" % (get_hexdigest("sha1", str(random.random()), str(random.random()))[:5],)
-        salt_and_hsh = get_hexdigest(algo, salt, self.password)
-        self.password = '%s$%s' % (algo, salt_and_hsh)
+        # Encrypt password if still in clear-text
+        if not self.password.startswith("crypt$$1$"):
+            from django.contrib.auth.models import get_hexdigest
+            import random
+            algo = 'crypt'
+            salt = "$1$%s$" % (get_hexdigest("sha1", str(random.random()), str(random.random()))[:5],)
+            salt_and_hsh = get_hexdigest(algo, salt, self.password)
+            self.password = '%s$%s' % (algo, salt_and_hsh)
         super(FTPUser, self).save(*args, **kwargs)
 
     def __unicode__(self):
