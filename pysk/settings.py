@@ -62,7 +62,6 @@ USE_ETAGS = True
 
 ROOT_URLCONF = 'pysk.urls'
 
-AUTH_PROFILE_MODULE = "app.customer"
 LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/admin/"
 ACCOUNT_ACTIVATION_DAYS = 14
