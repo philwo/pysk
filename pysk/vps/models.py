@@ -196,7 +196,7 @@ class Forwarding(models.Model):
     id = models.AutoField(primary_key=True)
     source = models.CharField(max_length=75, verbose_name=_(u"Username"), help_text=_(u"This is the username, the part before the @ sign! Leave blank for catch-all."), blank=True)
     domain = models.ForeignKey(Domain, help_text=_(u"Which domain should become part of the e-mail address? (This is the part after the @ sign!)"))
-    target = models.CharField(max_length=200, verbose_name=_(u"Destination address"), help_text=_(u"To which destination address shall the mail be forwarded?"))
+    target = models.CharField(max_length=8000, verbose_name=_(u"Destination address"), help_text=_(u"To which destination address shall the mail be forwarded?"))
     active = models.BooleanField(default=True)
 
     def email(self):
