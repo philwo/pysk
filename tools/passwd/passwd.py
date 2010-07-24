@@ -16,6 +16,7 @@ from shutil import copy2
 import psycopg2, psycopg2.extras
 import csv
 import socket
+import re
 
 def ensure_permissions(directory, perms):
     if not os.path.exists(directory):
@@ -46,16 +47,23 @@ def main(argv=None):
     cursor = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     # /etc/passwd
-    query = "SELECT u.username, u.password, u.id + 9999 AS uid, u.id + 9999 AS gid, 'igowo user' AS gecos, '/home/' || u.username AS home, '/bin/bash' AS shell FROM auth_user u WHERE u.password LIKE 'crypt%' ORDER BY username" 
+    query = "SELECT u.username as plainusername, u.username, u.password, u.id + 9999 AS uid, u.id + 9999 AS gid, 'igowo user' AS gecos, '/home/' || u.username AS home, '/bin/bash' AS shell, 'false' AS ftponly FROM auth_user u WHERE u.password LIKE 'crypt%'"
+    query = query + " UNION SELECT u.username as plainusername, u.username || '-' || fu.suffix, fu.password, u.id + 9999 AS uid, u.id + 9999 AS gid, 'igowo ftp user' AS gecos, fu.home, '/usr/local/bin/ftponly' AS shell, 'true' AS ftponly FROM vps_ftpuser fu, auth_user u WHERE fu.owner_id = u.id AND u.password LIKE 'crypt%' ORDER BY username" 
     cursor.execute(query)
     users = cursor.fetchall()
-    users_by_uid = dict([(x["uid"], x) for x in users])
-    users_by_username = dict([(x["username"], x) for x in users])
 
     # Check if all passwords are encrypted correctly
     for u in users:
-        assert(u[1].startswith("crypt$$1$"))
-  
+        assert(u["password"].startswith("crypt$$1$"))
+        assert(not u["username"].startswith("philwo-"))
+        assert(not u["username"].startswith("pysk-"))
+        home = os.path.realpath(u["home"]) + "/"
+        print home
+        assert(re.match(r"^/home/%s/[\w\d\-_./ ]*$" % (u["plainusername"],), home))
+
+    #users_by_uid = dict([(x["uid"], x) for x in users])
+    users_by_username = dict([(x["username"], x) for x in users])
+
     passwd_csv = csv.reader(open("/etc/passwd", "rb"), delimiter=":", quoting=csv.QUOTE_NONE)
     group_csv = csv.reader(open("/etc/group", "rb"), delimiter=":", quoting=csv.QUOTE_NONE)
     shadow_csv = csv.reader(open("/etc/shadow", "rb"), delimiter=":", quoting=csv.QUOTE_NONE)
@@ -63,6 +71,7 @@ def main(argv=None):
     passwd_new_file = open("/etc/passwd.new", "w+b")
     group_new_file = open("/etc/group.new", "w+b")
     shadow_new_file = open("/etc/shadow.new", "w+b")
+    chroot_users = open("/etc/vsftpd.chroot_list.new", "wb")
     passwd_new = csv.writer(passwd_new_file, delimiter=":", quoting=csv.QUOTE_NONE, lineterminator="\n")
     group_new = csv.writer(group_new_file, delimiter=":", quoting=csv.QUOTE_NONE, lineterminator="\n")
     shadow_new = csv.writer(shadow_new_file, delimiter=":", quoting=csv.QUOTE_NONE, lineterminator="\n")
@@ -70,9 +79,11 @@ def main(argv=None):
     chmod("/etc/passwd.new", 0644)
     chmod("/etc/group.new", 0644)
     chmod("/etc/shadow.new", 0640)
+    chmod("/etc/vsftpd.chroot_list.new", 0644)
     chown("/etc/passwd.new", 0, 0)
     chown("/etc/group.new", 0, 0)
     chown("/etc/shadow.new", 0, 0)
+    chown("/etc/vsftpd.chroot_list.new", 0, 0)
 
     # Read old passwd/group/shadow
     for row in passwd_csv:
@@ -97,21 +108,23 @@ def main(argv=None):
     # passwd.new
     for user_row in users:
         # Insert fake password, necessary for /etc/passwd
-        username = user_row[0]
+        username = user_row["username"]
         fakepasswd = "x" # not user_row[1] !
-        uid = user_row[2]
-        gid = user_row[3]
-        gecos = user_row[4]
-        home = user_row[5]
-        shell = user_row[6]
+        uid = user_row["uid"]
+        gid = user_row["gid"]
+        gecos = user_row["gecos"]
+        home = os.path.realpath(user_row["home"])
+        shell = user_row["shell"]
         passwd_new.writerow((username, fakepasswd, uid, gid, gecos, home, shell))
 
     # group.new
     userlist = []
     for user_row in users:
-        groupname = user_row[0]
+        if user_row["ftponly"] == "true":
+            continue
+        groupname = user_row["username"]
         fakepasswd = "x"
-        gid = user_row[3]
+        gid = user_row["gid"]
         members = ""
         userlist.append(groupname)
         group_new.writerow((groupname, fakepasswd, gid, members))
@@ -119,25 +132,33 @@ def main(argv=None):
     
     # shadow.new
     for user_row in users:
-        username = user_row[0]
-        password = user_row[1][6:]
+        username = user_row["username"]
+        password = user_row["password"][6:]
         days_since_1970 = int(mktime(datetime.now().timetuple()) / 86400)
         days_before_change_allowed = 0
         days_after_change_necessesary = 99999
         days_before_expire = 7
         shadow_new.writerow((username, password, days_since_1970, days_before_change_allowed, days_after_change_necessesary, days_before_expire, "", "", ""))
 
+    for user_row in users:
+        if user_row["ftponly"] == "true":
+            chroot_users.write("%s\n" % (user_row["username"],))
+
     # Finish up
     passwd_new_file.close()
     group_new_file.close()
     shadow_new_file.close()
+    chroot_users.close()
 
     copy2("/etc/passwd", "/etc/passwd.old")
     copy2("/etc/group", "/etc/group.old")
     copy2("/etc/shadow", "/etc/shadow.old")
+    if os.path.isfile("/etc/vsftpd.chroot_list"):
+        copy2("/etc/vsftpd.chroot_list", "/etc/vsftpd.chroot_list.old")
     rename("/etc/passwd.new", "/etc/passwd")
     rename("/etc/group.new", "/etc/group")
     rename("/etc/shadow.new", "/etc/shadow")
+    rename("/etc/vsftpd.chroot_list.new", "/etc/vsftpd.chroot_list")
 
     print Popen(["/usr/sbin/pwck", "-s"], stdout=PIPE).communicate()[0]
     print Popen(["/usr/sbin/grpck", "-s"], stdout=PIPE).communicate()[0]
@@ -145,13 +166,17 @@ def main(argv=None):
     print Popen(["diff", "-u", "/etc/passwd.old", "/etc/passwd"], stdout=PIPE).communicate()[0]
     print Popen(["diff", "-u", "/etc/group.old", "/etc/group"], stdout=PIPE).communicate()[0]
     print Popen(["diff", "-u", "/etc/shadow.old", "/etc/shadow"], stdout=PIPE).communicate()[0]
+    if os.path.isfile("/etc/vsftpd.chroot_list.old"):
+        print Popen(["diff", "-u", "/etc/vsftpd.chroot_list.old", "/etc/vsftpd.chroot_list"], stdout=PIPE).communicate()[0]
     
     for user_row in users:
-        user = user_row[0]
-        uid = user_row[2]
-        home = user_row[5]
+        if user_row["ftponly"] == "true":
+            continue
+        user = user_row["username"]
+        uid = user_row["uid"]
+        home = os.path.realpath(user_row["home"])
         gid = 100 # "users" group
-        
+    
         print "Fixing permissions for user %s ..." % (user,)
 
         # /home/username

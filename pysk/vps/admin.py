@@ -139,6 +139,22 @@ class ServerConfigAdmin(admin.ModelAdmin):
         }),
     )
 
+class FTPUserAdminForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput())
+
+    class Meta:
+        model = FTPUser
+
+class FTPUserAdmin(admin.ModelAdmin):
+    list_display = ("username", "home")
+    list_display_links = ("username",)
+    form = FTPUserAdminForm
+    fieldsets = (
+        (None, {
+            "fields": ("owner", "password", "suffix", "home"),
+        }),
+    )
+
 admin.site.register(Domain, DomainAdmin)
 admin.site.register(NSEntry, NSEntryAdmin)
 admin.site.register(IPAddress, IPAddressAdmin)
@@ -149,3 +165,4 @@ admin.site.register(VirtualHost, VirtualHostAdmin)
 admin.site.register(PHPExtension, PHPExtensionAdmin)
 admin.site.register(PHPConfig, PHPConfigAdmin)
 admin.site.register(ServerConfig, ServerConfigAdmin)
+admin.site.register(FTPUser, FTPUserAdmin)

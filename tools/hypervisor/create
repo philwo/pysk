@@ -251,6 +251,11 @@ touch /etc/nginx/conf/aliases
 /opt/pysk/tools/passwd/passwd.py
 /opt/pysk/tools/passwd/pysk_secret.sh
 
+/usr/sbin/munin-node-configure --shell | /bin/sh
+
+cd /etc/monit.d
+ln -s optional/mysqld .
+
 rm $0
 sleep 10
 

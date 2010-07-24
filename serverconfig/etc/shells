@@ -1,0 +1,10 @@
+#
+# /etc/shells
+#
+
+/bin/sh
+/bin/bash
+/bin/dash
+/usr/local/bin/ftponly
+
+# End of file

@@ -407,3 +407,32 @@ class ServerConfig(models.Model):
     id = models.AutoField(primary_key=True)
     active = models.BooleanField(unique=True, default=True)
     default_php_config = models.ForeignKey(PHPConfig)
+
+class FTPUser(models.Model):
+    id = models.AutoField(primary_key=True)
+    owner = models.ForeignKey(User, help_text=_(u"The user, from which the FTP user inherits its permissions."))
+    password = models.CharField(max_length=256, help_text=_(u"The password for the FTP user."))
+    suffix = models.CharField(max_length=16, help_text=_(u"The suffix, which gets appended to the username specified above."))
+    home = models.CharField(max_length=512, help_text=_(u"An absolute path to the home directory of the FTP user, like: /home/myuser/www/mysite.de/htdocs"))
+
+    def username(self):
+        return u"%s-%s" % (self.owner.username, self.suffix)
+
+    def save(self, *args, **kwargs):
+        # Encrypt password if still in clear-text
+        if not self.password.startswith("crypt$$1$"):
+            from django.contrib.auth.models import get_hexdigest
+            import random
+            algo = 'crypt'
+            salt = "$1$%s$" % (get_hexdigest("sha1", str(random.random()), str(random.random()))[:5],)
+            salt_and_hsh = get_hexdigest(algo, salt, self.password)
+            self.password = '%s$%s' % (algo, salt_and_hsh)
+        super(FTPUser, self).save(*args, **kwargs)
+
+    def __unicode__(self):
+        return u"%s" % (self.username())
+    
+    class Meta:
+        ordering = ["owner", "suffix"]
+        verbose_name = _(u"FTP user")
+        verbose_name_plural = _(u"FTP users")
