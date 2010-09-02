@@ -37,8 +37,11 @@ smtp_tls_session_cache_database = btree:/var/lib/postfix/smtp_scache
 virtual_alias_maps = hash:/etc/postfix/virtual_forwardings
 virtual_mailbox_domains = hash:/etc/postfix/virtual_domains
 virtual_mailbox_maps = hash:/etc/postfix/virtual_mailboxes
-virtual_transport = dovecot
+
+#virtual_transport = dovecot
+virtual_transport = procmail
 dovecot_destination_recipient_limit = 1
+procmail_destination_recipient_limit = 1
 
 smtpd_sasl_auth_enable = yes
 smtpd_sasl_type = dovecot

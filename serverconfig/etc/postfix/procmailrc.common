@@ -1,0 +1,28 @@
+# file: /etc/postfix/procmailrc.common
+
+# system-wide settings for procmail
+PATH="/usr/local/bin:/usr/bin:/bin"
+SHELL="/bin/bash"
+SENDMAIL="/usr/sbin/sendmail -oi -t"
+LOGFILE="/var/log/procmail.log"
+
+# Troubleshooting
+VERBOSE=on
+LOGABSTRACT=all
+
+DELIVER="/usr/lib/dovecot/deliver"
+
+# fallback:
+DEFAULT="/home/vmail/$DOMAIN/$USER/Maildir/"
+MAILDIR="/home/vmail/$DOMAIN/$USER/Maildir/"
+
+X_ORIGINAL_TO=`formail -xX-Original-To: \
+         | sed -e 's/[;\`\\]/ /g' \
+         | expand | sed -e 's/^[ ]*//g' -e 's/[ ]*$//g'`
+
+:0 f
+| formail -I"Envelope-To: $X_ORIGINAL_TO"
+
+:0 w
+| $DELIVER -f $SENDER -d $USER@$DOMAIN
+

@@ -103,6 +103,9 @@ scache    unix  -       -       n       -       1       scache
 #  flags=FR user=list argv=/usr/lib/mailman/bin/postfix-to-mailman.py
 #  ${nexthop} ${user}
 
+procmail  unix  -       n       n       -       -       pipe
+  flags=DROhu user=mail:mail argv=/usr/bin/procmail -t -m SENDER=${sender} USER=${user} DOMAIN=${nexthop} /etc/postfix/procmailrc.common
+
 dovecot   unix  -       n       n       -       -       pipe
-  flags=DROhu user=mail:mail argv=/usr/lib/dovecot/deliver -e -d ${user}@${nexthop}
+  flags=DROhu user=mail:mail argv=/usr/lib/dovecot/deliver -e -f ${sender} -d ${user}@${nexthop}
 
