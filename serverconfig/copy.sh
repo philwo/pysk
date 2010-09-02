@@ -51,6 +51,7 @@ sed -i s/XXXIPXXX/$ipaddress/g /etc/nginx/conf/pysk.conf
 sed -i s/XXXHOSTNAMEXXX/$hostname/g /etc/nginx/conf/pysk.conf
 
 ln -sf /etc/mysql/$mysql_conf /etc/mysql/my.cnf
+ln -sf /etc/postfix/$postfix_conf /etc/postfix/main.cf
 
 echo -n "Enabling postgresql fast shutdown... "
 cd /etc/rc.d

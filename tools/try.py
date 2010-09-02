@@ -215,6 +215,7 @@ diff("/etc/postfix/virtual_domains", "/etc/postfix/virtual_domains.new", move_on
 
 # virtual_forwardings
 forwardings = ["%s@%s\t%s" % (f.source, f.domain, f.target) for f in Forwarding.objects.filter(active=True)]
+forwardings += ["%s@%s\t%s@%s" % (m.mail, m.domain, m.mail, m.domain) for m in Mailbox.objects.filter(active=True)]
 forwardings += ["postmaster@%s\t%s" % (domain, POSTMASTER_ADDRESS) for domain in domains]
 forwardings += ["abuse@%s\t%s" % (domain, ABUSE_ADDRESS) for domain in domains]
 makefile("/etc/postfix/virtual_forwardings.new", "\n".join(forwardings) + "\n")

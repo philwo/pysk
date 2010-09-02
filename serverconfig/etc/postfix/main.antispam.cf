@@ -38,8 +38,8 @@ virtual_alias_maps = hash:/etc/postfix/virtual_forwardings
 virtual_mailbox_domains = hash:/etc/postfix/virtual_domains
 virtual_mailbox_maps = hash:/etc/postfix/virtual_mailboxes
 
-#virtual_transport = dovecot
-virtual_transport = procmail
+virtual_transport = dovecot
+#virtual_transport = procmail
 dovecot_destination_recipient_limit = 1
 procmail_destination_recipient_limit = 1
 
