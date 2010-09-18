@@ -33,6 +33,9 @@ chmod 0640 /etc/ssl/private/*
 chmod 0600 /etc/ssl/private/star_igowo_de_combined.crt
 chown root:sslkeys /etc/ssl/private/*
 
+chown -R root:root /etc/dovecot/*.conf*  /etc/dovecot/conf.d/*
+chmod 0644 /etc/dovecot/*.conf* /etc/dovecot/conf.d/*
+
 chown -R postgres:postgres /var/lib/postgres/data
 chmod 0600 /var/lib/postgres/data/server.{crt,key}
 chmod 0700 /var/lib/postgres/data

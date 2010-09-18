@@ -125,7 +125,7 @@ def diff(oldfile, newfile, print_on_diff=True, move_on_diff=False, run_on_diff=N
     output = "".join(difflib.unified_diff(fromlines, tolines, fromfile, tofile, fromdate, todate, n=3))
     
     # Backup old file and move new file over
-    if move_on_diff and len(output) > 0:
+    if move_on_diff and (len(output) > 0 or os.stat(newfile).st_uid != os.stat(oldfile).st_uid or os.stat(newfile).st_gid != os.stat(oldfile).st_gid):
         copyfile(oldfile, oldfile + ".old")
         rename(newfile, oldfile)
     elif move_on_diff and len(output) == 0:
@@ -201,6 +201,7 @@ for m in Mailbox.objects.filter(active=True).order_by("mail", "domain__name"):
     output.append("%s:%s:%s:%s::%s::%s" % (user, password, vmail_uid, vmail_gid, home, quota))
 
 makefile("/etc/dovecot/passwd.new", "\n".join(output) + "\n", 0600)
+chown("/etc/dovecot/passwd.new", "dovecot", "dovecot")
 d = diff("/etc/dovecot/passwd", "/etc/dovecot/passwd.new", move_on_diff=True)
 
 ### POSTFIX

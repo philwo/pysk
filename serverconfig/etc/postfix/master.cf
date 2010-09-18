@@ -107,5 +107,5 @@ procmail  unix  -       n       n       -       -       pipe
   flags=DROhu user=mail:mail argv=/usr/bin/procmail -t -m SENDER=${sender} USER=${user} DOMAIN=${nexthop} /etc/postfix/procmailrc.common
 
 dovecot   unix  -       n       n       -       -       pipe
-  flags=DROhu user=mail:mail argv=/usr/lib/dovecot/deliver -e -f ${sender} -d ${user}@${nexthop}
+  flags=DROhu user=mail:mail argv=/usr/lib/dovecot/dovecot-lda -e -f ${sender} -d ${user}@${nexthop}
 

@@ -38,10 +38,14 @@ virtual_alias_maps = hash:/etc/postfix/virtual_forwardings
 virtual_mailbox_domains = hash:/etc/postfix/virtual_domains
 virtual_mailbox_maps = hash:/etc/postfix/virtual_mailboxes
 
+#virtual_transport = lmtp:unix:/var/run/dovecot/lmtp
 virtual_transport = dovecot
 #virtual_transport = procmail
+lmtp_destination_recipient_limit = 1
 dovecot_destination_recipient_limit = 1
 procmail_destination_recipient_limit = 1
+
+lmtp_assume_final = yes
 
 smtpd_sasl_auth_enable = yes
 smtpd_sasl_type = dovecot
