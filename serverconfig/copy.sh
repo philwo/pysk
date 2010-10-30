@@ -56,6 +56,10 @@ sed -i s/XXXHOSTNAMEXXX/$hostname/g /etc/nginx/conf/pysk.conf
 ln -sf /etc/mysql/$mysql_conf /etc/mysql/my.cnf
 ln -sf /etc/postfix/$postfix_conf /etc/postfix/main.cf
 
+echo -n "Adding SMTPS to /etc/services... "
+fgrep -- 'smtps' /etc/services >/dev/null || echo "smtps   465/tcp" >> /etc/services
+fgrep -- 'smtps' /etc/services >/dev/null && echo "OK" || echo "FAIL"
+
 echo -n "Enabling postgresql fast shutdown... "
 cd /etc/rc.d
 fgrep -- '-w stop"' postgresql >/dev/null && patch -p0 < /opt/pysk/snippets/20100117_postgres_fast_shutdown.diff &>/dev/null
