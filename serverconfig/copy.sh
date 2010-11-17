@@ -7,7 +7,7 @@ excludefile="/opt/pysk/etc/serverconfig/exclude/`hostname`"
 rsyncopts="-rltD --exclude copy.sh --exclude diff.sh"
 mainuser=`grep "igowo user" /etc/passwd | head -n1 | cut -d":" -f1`
 hostname=`hostname --fqdn`
-ipaddress=`python -c "import socket;print socket.gethostbyaddr(socket.gethostname())[2][0]"`
+ipaddress=`python2 -c "import socket;print socket.gethostbyaddr(socket.gethostname())[2][0]"`
 
 if [ -s $excludefile ] ; then
 	rsyncopts="$rsyncopts --exclude-from=$excludefile"
@@ -41,7 +41,7 @@ chmod 0600 /var/lib/postgres/data/server.{crt,key}
 chmod 0700 /var/lib/postgres/data
 
 chown -R pysk:pysk /opt/pysk
-chown -R root:root /opt/pysk/.hg /opt/pysk/vendors/django/.hg /opt/pysk/vendors/django-extensions/.hg
+chown -R root:root /opt/pysk/.hg
 chmod 0711 /opt/pysk
 chmod 0700 /opt/pysk/*
 chmod -R u=rwX,g=rX,o= /opt/pysk/secret /opt/pysk/www /opt/pysk/static

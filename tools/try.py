@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 
 import sys, os, os.path
 
@@ -215,8 +215,9 @@ makefile("/etc/postfix/virtual_domains.new", "\n".join(["%s\tdummy" % (d,) for d
 diff("/etc/postfix/virtual_domains", "/etc/postfix/virtual_domains.new", move_on_diff=True, run_on_diff=lambda: runprog(["/usr/sbin/postmap", "/etc/postfix/virtual_domains"]))
 
 # virtual_forwardings
+plain_forwardings = ["%s@%s" % (f.source, f.domain) for f in Forwarding.objects.filter(active=True)]
 forwardings = ["%s@%s\t%s" % (f.source, f.domain, f.target) for f in Forwarding.objects.filter(active=True)]
-forwardings += ["%s@%s\t%s@%s" % (m.mail, m.domain, m.mail, m.domain) for m in Mailbox.objects.filter(active=True)]
+forwardings += ["%s@%s\t%s@%s" % (m.mail, m.domain, m.mail, m.domain) for m in Mailbox.objects.filter(active=True) if "%s@%s" % (m.mail, m.domain) not in plain_forwardings]
 forwardings += ["postmaster@%s\t%s" % (domain, POSTMASTER_ADDRESS) for domain in domains]
 forwardings += ["abuse@%s\t%s" % (domain, ABUSE_ADDRESS) for domain in domains]
 makefile("/etc/postfix/virtual_forwardings.new", "\n".join(forwardings) + "\n")

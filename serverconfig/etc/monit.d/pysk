@@ -1,6 +1,6 @@
 check process pysk with pidfile /var/run/pysk.pid
     group system
-    start program = "/usr/bin/python /opt/pysk/pysk/manage.py runfcgi daemonize=false method=threaded host=127.0.0.1 port=8081 pidfile=/var/run/pysk.pid --settings=settings"
+    start program = "/usr/bin/python2.7 /opt/pysk/pysk/manage.py runfcgi daemonize=false method=threaded host=127.0.0.1 port=8081 pidfile=/var/run/pysk.pid --settings=settings"
     stop program = "/bin/bash -c '/usr/bin/test -s /var/run/pysk.pid && /bin/kill `cat /var/run/pysk.pid` && /bin/rm -f /var/run/pysk.pid'"
     if failed port 8081
         then restart

@@ -1,0 +1,32 @@
+diff -r d8d6c2c21de5 -r 2ce9bb3ff215 django/contrib/auth/models.py
+--- a/django/contrib/auth/models.py Sun May 23 10:38:23 2010 +0000
++++ b/django/contrib/auth/models.py Sun May 23 16:07:11 2010 +0200
+@@ -37,7 +37,11 @@
+     Returns a boolean of whether the raw_password was correct. Handles
+     encryption formats behind the scenes.
+     """
+-    algo, salt, hsh = enc_password.split('$')
++    algo, salt_and_hash = enc_password.split('$', 1)
++    if algo == 'crypt' and salt_and_hash.startswith('$1'):
++        salt = hsh = salt_and_hash
++    else:
++        salt, hsh = salt_and_hash.rsplit('$', 1)
+     return hsh == get_hexdigest(algo, salt, raw_password)
+ 
+ class SiteProfileNotAvailable(Exception):
+@@ -239,10 +243,10 @@
+ 
+     def set_password(self, raw_password):
+         import random
+-        algo = 'sha1'
+-        salt = get_hexdigest(algo, str(random.random()), str(random.random()))[:5]
+-        hsh = get_hexdigest(algo, salt, raw_password)
+-        self.password = '%s$%s$%s' % (algo, salt, hsh)
++        algo = 'crypt'
++        salt = "$1$%s$" % (get_hexdigest("sha1", str(random.random()), str(random.random()))[:5],)
++        salt_and_hsh = get_hexdigest(algo, salt, raw_password)
++        self.password = '%s$%s' % (algo, salt_and_hsh)
+ 
+     def check_password(self, raw_password):
+         """
+
