@@ -12,3 +12,4 @@ wwwlogs/dnscache.*
 wwwlogs/inbox/*.log
 wwwlogs/pending/*/*.log
 wwwlogs/processed/*/*
+uploads/*
