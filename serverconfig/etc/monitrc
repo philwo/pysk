@@ -13,6 +13,6 @@ set httpd port 2812 and
     use address 0.0.0.0
     allow localhost
     allow mikuru.igowo.de
-    ssl enable
-    pemfile /etc/ssl/private/star_igowo_de_combined.crt
+#    ssl enable
+#    pemfile /etc/ssl/private/star_igowo_de_combined.crt
 include /etc/monit.d/*
