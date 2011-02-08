@@ -26,7 +26,7 @@ character-set-server    = latin1
 default-character-set   = latin1
 
 ssl      = 1
-ssl-ca   =/etc/ssl/private/DigiCertCA.crt
+ssl-ca   =/etc/ssl/private/StartSSL.crt
 ssl-cert =/etc/ssl/private/star_igowo_de.crt
 ssl-key  =/etc/ssl/private/star_igowo_de.key
 
