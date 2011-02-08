@@ -5,6 +5,15 @@ import os, sys
 import cPickle
 import urllib2
 import yaml
+import pycurl
+from cStringIO import StringIO
+
+class Test:
+    def __init__(self):
+        self.contents = ''
+
+    def body_callback(self, buf):
+        self.contents = self.contents + buf
 
 APIPASS = "W68p20YST5Iv6KGG"
 
@@ -20,9 +29,18 @@ urllib2.install_opener(opener)
 
 conf = {}
 for s in servers:
+    #print "%s ..." % (s,)
     try:
         if s["kind"] == "pysk":
-            zonefiles = cPickle.load(urllib2.urlopen("https://%s.igowo.de/api/v0/dns/bind/" % (s["name"],)))
+            output = StringIO()
+            c = pycurl.Curl()
+            c.setopt(c.URL, 'https://pysk:%s@%s.igowo.de/api/v0/dns/bind/' % (APIPASS, s['name']))
+            c.setopt(c.WRITEFUNCTION, output.write)
+            c.perform()
+            c.close()
+            output.seek(0)
+            zonefiles = cPickle.load(output)
+            #zonefiles = cPickle.load(urllib2.urlopen("https://%s.igowo.de/api/v0/dns/bind/" % (s["name"],)))
         else:
             zonefiles = {}
         for key, value in zonefiles.iteritems():
@@ -55,8 +73,9 @@ for s in servers:
                     del lines[0]
                 f.writelines("\n".join(lines))
             f.close()
-    except urllib2.URLError:
+    except urllib2.URLError as e:
         print >>sys.stderr, "ERROR: Could not get zones from %s !!!" % (s["name"],)
+        print >>sys.stderr, e
         pass
 
 # Add servers to igowo.de zone
