@@ -29,8 +29,13 @@ chmod 0700 /root /root/.ssh /etc/monit.d
 chmod 0600 /etc/monitrc /root/.pgpass /root/.ssh/*
 chmod 0440 /etc/sudoers
 
+hname=`hostname | sed 's/\./_/g'`
+rm -f /etc/ssl/private/TrustedRoot.crt /etc/ssl/private/DigiCertCA.crt /etc/ssl/private/star_igowo_de*
+cp    /etc/ssl/private/${hname}.crt          /etc/ssl/private/star_igowo_de.crt
+cp    /etc/ssl/private/${hname}_combined.crt /etc/ssl/private/star_igowo_de_combined.crt
+cp    /etc/ssl/private/${hname}.key          /etc/ssl/private/star_igowo_de.key
 chmod 0640 /etc/ssl/private/*
-chmod 0600 /etc/ssl/private/star_igowo_de_combined.crt
+chmod 0600 /etc/ssl/private/*_combined.crt
 chown root:sslkeys /etc/ssl/private/*
 
 chown -R root:root /etc/dovecot/*.conf*  /etc/dovecot/conf.d/*
