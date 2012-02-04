@@ -2,21 +2,20 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import with_statement
-import sys, os, os.path
+import sys
+import os
+import os.path
 from os import chmod, chown, rename
 from stat import S_IMODE, ST_MODE
-from optparse import OptionParser
-from crypt import crypt
 from datetime import datetime
 from time import mktime
-from string import letters, digits
-from random import choice
 from subprocess import Popen, PIPE
 from shutil import copy2
-import psycopg2, psycopg2.extras
+import psycopg2
+import psycopg2.extras
 import csv
-import socket
 import re
+
 
 def ensure_permissions(directory, perms):
     if not os.path.exists(directory):
@@ -26,6 +25,7 @@ def ensure_permissions(directory, perms):
     if not S_IMODE(statinfo[ST_MODE]) == perms:
         print "WARNING: directory had wrong permissions: %s" % (directory,)
         os.chmod(directory, perms)
+
 
 def ensure_uid_gid(directory, uid, gid):
     statinfo = os.stat(directory)
@@ -38,17 +38,18 @@ def ensure_uid_gid(directory, uid, gid):
             print "WARNING: directory had wrong group: %i != %i" % (gid, statinfo.st_gid)
             os.chown(directory, -1, gid)
 
+
 def main(argv=None):
     if argv is None:
         argv = sys.argv
 
-    DATABASE_PASSWORD = 'z62VUW2m59Y69u99'
+    DATABASE_PASSWORD = 'XXXXXXXXXXX'
     db = psycopg2.connect("host='localhost' user='pysk' password='%s' dbname='pysk'" % (DATABASE_PASSWORD,))
     cursor = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     # /etc/passwd
     query = "SELECT u.username as plainusername, u.username, u.password, u.id + 9999 AS uid, u.id + 9999 AS gid, 'igowo user' AS gecos, '/home/' || u.username AS home, '/bin/bash' AS shell, 'false' AS ftponly FROM auth_user u WHERE u.password LIKE 'crypt%'"
-    query = query + " UNION SELECT u.username as plainusername, u.username || '-' || fu.suffix, fu.password, u.id + 9999 AS uid, u.id + 9999 AS gid, 'igowo ftp user' AS gecos, fu.home, '/usr/local/bin/ftponly' AS shell, 'true' AS ftponly FROM vps_ftpuser fu, auth_user u WHERE fu.owner_id = u.id AND u.password LIKE 'crypt%' ORDER BY username" 
+    query = query + " UNION SELECT u.username as plainusername, u.username || '-' || fu.suffix, fu.password, u.id + 9999 AS uid, u.id + 9999 AS gid, 'igowo ftp user' AS gecos, fu.home, '/usr/local/bin/ftponly' AS shell, 'true' AS ftponly FROM vps_ftpuser fu, auth_user u WHERE fu.owner_id = u.id AND u.password LIKE 'crypt%' ORDER BY username"
     cursor.execute(query)
     users = cursor.fetchall()
 
@@ -103,13 +104,13 @@ def main(argv=None):
         if not username in users_by_username:
             # User is an un-managed user, just copy it
             shadow_new.writerow(row)
-    
+
     # Add our managed users from pysk
     # passwd.new
     for user_row in users:
         # Insert fake password, necessary for /etc/passwd
         username = user_row["username"]
-        fakepasswd = "x" # not user_row[1] !
+        fakepasswd = "x"  # not user_row[1] !
         uid = user_row["uid"]
         gid = user_row["gid"]
         gecos = user_row["gecos"]
@@ -129,7 +130,7 @@ def main(argv=None):
         userlist.append(groupname)
         group_new.writerow((groupname, fakepasswd, gid, members))
     group_new.writerow(("users", "x", "100", ",".join(userlist)))
-    
+
     # shadow.new
     for user_row in users:
         username = user_row["username"]
@@ -168,15 +169,15 @@ def main(argv=None):
     print Popen(["diff", "-u", "/etc/shadow.old", "/etc/shadow"], stdout=PIPE).communicate()[0]
     if os.path.isfile("/etc/vsftpd.chroot_list.old"):
         print Popen(["diff", "-u", "/etc/vsftpd.chroot_list.old", "/etc/vsftpd.chroot_list"], stdout=PIPE).communicate()[0]
-    
+
     for user_row in users:
         if user_row["ftponly"] == "true":
             continue
         user = user_row["username"]
         uid = user_row["uid"]
         home = os.path.realpath(user_row["home"])
-        gid = 100 # "users" group
-    
+        gid = 100  # "users" group
+
         print "Fixing permissions for user %s ..." % (user,)
 
         # /home/username
@@ -188,5 +189,4 @@ def main(argv=None):
         ensure_uid_gid(os.path.join(home, "www"), uid, gid)
 
 if __name__ == "__main__":
-  sys.exit(main())
-
+    sys.exit(main())

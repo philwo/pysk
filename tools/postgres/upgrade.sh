@@ -39,4 +39,3 @@ GRANT ALL ON SCHEMA public TO postgres;
 CREATE LANGUAGE plpgsql;
 
 EOT
-

@@ -10,4 +10,3 @@ if ($scheme = "https") {
 }
 
 proxy_set_header X-Forwarded-Ssl $https;
-

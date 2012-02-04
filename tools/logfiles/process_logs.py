@@ -3,9 +3,15 @@
 
 from __future__ import with_statement
 
-import apachelog, sys, os, os.path
-import psycopg2, psycopg2.extras
-import threading, Queue, socket
+import apachelog
+import sys
+import os
+import os.path
+import psycopg2
+import psycopg2.extras
+import threading
+import Queue
+import socket
 from datetime import datetime
 import time
 from socket import inet_pton, gethostbyaddr, AF_INET, AF_INET6
@@ -13,7 +19,7 @@ from tempfile import NamedTemporaryFile, mkstemp
 from subprocess import Popen, PIPE, call
 from optparse import OptionParser
 from glob import glob
-import hashlib
+
 
 class ResolveThread(threading.Thread):
     def __init__(self, inputQueue, outputDict, exitEvent):
@@ -52,6 +58,7 @@ class ResolveThread(threading.Thread):
                     break
                 pass
 
+
 def main(argv=None):
     if argv is None:
         argv = sys.argv
@@ -61,12 +68,13 @@ def main(argv=None):
     parser.add_option("-d", "--debug", action="store_true", dest="debug", help="Turn on debugging output", default=False)
     (options, args) = parser.parse_args(argv)
 
-    if options.debug: print >> sys.stderr, "Debug mode activated"
+    if options.debug:
+        print >> sys.stderr, "Debug mode activated"
 
     OUTPUTDIR = "/opt/pysk/wwwlogs"
 
     # Get list of vhosts
-    db = psycopg2.connect("host='localhost' user='pysk' password='z62VUW2m59Y69u99' dbname='pysk'")
+    db = psycopg2.connect("host='localhost' user='pysk' password='XXXXXXXXXXXXXXX' dbname='pysk'")
     cursor = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
     query = "SELECT trim(both '.' from vh.name || '.' || d.name) as vhost FROM vps_virtualhost vh, vps_domain d WHERE vh.domain_id = d.id ORDER BY vhost"
     cursor.execute(query)
@@ -124,16 +132,16 @@ def main(argv=None):
                             vhosts[vhost]["logfile"] = NamedTemporaryFile(prefix=vhost, dir=os.path.join(OUTPUTDIR, "temp"))
                         logfile = vhosts[vhost]["logfile"]
 
-                        if "%A" in data:
-                            local_ip = data["%A"]
-                        else:
-                            local_ip = ""
+                        #if "%A" in data:
+                        #    local_ip = data["%A"]
+                        #else:
+                        #    local_ip = ""
 
                         if "%D" in data:
                             utime = data["%D"]
                             # stored in milliseconds instead of microseconds?
                             if '.' in utime:
-                                utime = int(float(utime)*1000)
+                                utime = int(float(utime) * 1000)
                         else:
                             utime = None
                         r_host = data["%h"]
@@ -143,7 +151,7 @@ def main(argv=None):
                             resolvedIPDict[r_host] = True
                             inputQueue.put(r_host)
 
-                        r_logname = data["%l"]
+                        #r_logname = data["%l"]
                         r_user = data["%u"]
                         req_dt = apachelog.parse_date(data["%t"])
 
@@ -176,9 +184,11 @@ def main(argv=None):
 
                         logfile.write(logline.encode("utf-8") + "\n")
                 except UnicodeDecodeError:
-                    if options.debug: print >> sys.stderr, "UnicodeDecodeError on line %s" % line
+                    if options.debug:
+                        print >> sys.stderr, "UnicodeDecodeError on line %s" % line
                 except apachelog.ApacheLogParserError:
-                    if options.debug: print >> sys.stderr, "ApacheLogParserError on line %s" % line
+                    if options.debug:
+                        print >> sys.stderr, "ApacheLogParserError on line %s" % line
                 except:
                     sys.stderr.write("Unable to parse %s" % line)
                     raise
@@ -266,7 +276,6 @@ def main(argv=None):
     call("chown pysk:http /var/lib/awstats/*", shell=True)
     call("chown pysk:http /var/lib/awstats/*/*", shell=True)
     call("find /var/lib/awstats/ -name \"*.tmp.*\" -delete", shell=True)
-        
+
 if __name__ == "__main__":
     sys.exit(main())
-

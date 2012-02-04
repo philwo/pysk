@@ -1,6 +1,6 @@
 # Germany
 Server = http://files.igowo.de/arch/$repo/os/x86_64
-#Server = ftp://mirror:N9ORxiYllxZG@mikuru.igowo.de/$repo/os/x86_64
+#Server = ftp://mirror:XXXXXXXXXX@mikuru.igowo.de/$repo/os/x86_64
 #Server = file:///home/mirror/files/$repo/os/x86_64
 #Server = http://ftp.hosteurope.de/mirror/ftp.archlinux.org/$repo/os/x86_64
 

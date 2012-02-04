@@ -1,4 +1,8 @@
+These changes to 3rd party components are needed on the igowo hosting infrastructure:
+
+Django:
+- Patch with django-crypt-patch.diff so we can reuse the user passwords in /etc/shadow
+
 Roundcube modifications:
 - program/include/iniset.php: removed magic quotes check (deprecated in PHP >= 5.3.0)
 - skins/default/templates: removed autocomplete="off" (customer feature request)
-

@@ -1,12 +1,13 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-import os, sys
+import sys
 import cPickle
 import urllib2
 import yaml
 import pycurl
 from cStringIO import StringIO
+
 
 class Test:
     def __init__(self):
@@ -15,7 +16,7 @@ class Test:
     def body_callback(self, buf):
         self.contents = self.contents + buf
 
-APIPASS = "W68p20YST5Iv6KGG"
+APIPASS = "XXXXXXXXXXX"
 
 servers = [host for host in yaml.load_all(open("/var/named/hosts.yml", "r"))]
 
@@ -91,4 +92,3 @@ zonefile.close()
 f = open("/var/named/zones.pysk", "w")
 f.writelines("\n".join(conf.values()))
 f.close()
-

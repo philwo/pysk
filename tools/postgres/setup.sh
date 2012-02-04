@@ -46,4 +46,3 @@ localhost:5432:*:postgres:${rootpw}
 ${hostname}:5432:*:postgres:${rootpw}
 OMG
 chmod 0600 /root/.pgpass
-

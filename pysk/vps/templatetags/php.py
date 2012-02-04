@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
+
 from django import template
 
 register = template.Library()
+
 
 @register.filter(name="php_ini_value")
 def php_ini_value(value):

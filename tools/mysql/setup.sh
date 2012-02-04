@@ -45,4 +45,3 @@ mysql --password="$rootpw" -e "GRANT USAGE ON *.* TO 'roundcube'@'localhost' IDE
 mysql --password="$rootpw" -e "CREATE DATABASE IF NOT EXISTS \`roundcube\`;"
 mysql --password="$rootpw" -e "GRANT ALL PRIVILEGES ON \`roundcube\`.* TO 'roundcube'@'localhost';"
 cat /opt/pysk/www/roundcube/SQL/mysql.initial.sql | sed s/InnoDB/MYISAM/gi | mysql --password="$rootpw" roundcube
-

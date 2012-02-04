@@ -7,7 +7,7 @@ set statefile /dev/shm/.monit.state
 set mailserver localhost
 set mail-format { from: philipp@igowo.de }
 set alert philipp@igowo.de
-#set mmonit http://monit:8AcnRmYBoxqz@mikuru.igowo.de:8082/collector
+#set mmonit http://monit:XXXXXXXXXX@mikuru.igowo.de:8082/collector
 #    and register without credentials
 set httpd port 2812 and
     use address 0.0.0.0

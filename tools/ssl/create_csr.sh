@@ -20,4 +20,3 @@ CN = `hostname`
 EOF
 
 openssl req -new -nodes -config /opt/pysk/serverconfig/etc/ssl/private/${hname}.cnf -out /opt/pysk/serverconfig/etc/ssl/private/${hname}.csr
-

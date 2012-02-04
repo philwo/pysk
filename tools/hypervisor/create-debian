@@ -13,12 +13,6 @@ ip=$7
 mac=$8
 workdir="/mnt/${name}-work"
 
-# mikuru.igowo.de  188.40.56.251   ca:18:31:8d:a0:0a   Arch Linux
-# yuki.igowo.de    188.40.56.252   ca:18:31:8d:a0:0b   Arch Linux
-# kyon.igowo.de    188.40.56.253   ca:18:31:8d:a0:0c   Windows Server 2008
-# c-ds.igowo.de    188.40.198.34   02:3d:88:c0:65:84   Arch Linux
-# c-ps1-1.igowo.de 188.40.198.35   02:a3:51:57:4a:c7   Arch Linux
-
 ### Create virtual disk and filesystem
 lvcreate -L${size} -n${name} haruhi_vg
 mke2fs -t ext4 /dev/haruhi_vg/${name}
@@ -184,7 +178,7 @@ $ip     $name.igowo.de
 EOF
 
 # Set root password
-(echo 'root:$1$k9YWgchg$sdhkVQUebdenb9/RMDCO3.:14486::::::'; grep -v "^root" ${workdir}/etc/shadow) > ${workdir}/etc/shadow.new
+(echo 'root:$1$1234578$12345678912345/123456.:14486::::::'; grep -v "^root" ${workdir}/etc/shadow) > ${workdir}/etc/shadow.new
 mv ${workdir}/etc/shadow.new ${workdir}/etc/shadow
 
 # Set root SSH authorized_keys
@@ -202,4 +196,3 @@ echo "/swapfile none swap sw 0 0" >> ${workdir}/etc/fstab
 
 # Finished
 umount ${workdir}
-

@@ -5,6 +5,7 @@ from pysk.vps.models import *
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
+
 ## Admin classes
 
 class DomainAdmin(admin.ModelAdmin):
@@ -29,6 +30,7 @@ class DomainAdmin(admin.ModelAdmin):
         })
     )
 
+
 class NSEntryAdmin(admin.ModelAdmin):
     list_display = ("fqdn", "type", "value",)
     list_display_links = ("fqdn",)
@@ -42,12 +44,15 @@ class NSEntryAdmin(admin.ModelAdmin):
         }),
     )
 
+
 class IPAddressAdmin(admin.ModelAdmin):
     list_display = ("ip",)
+
 
 class AliasAdmin(admin.ModelAdmin):
     list_display = ("fqdn", "target", "active",)
     list_display_links = ("fqdn",)
+
 
 class MailboxAdminForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput())
@@ -55,10 +60,12 @@ class MailboxAdminForm(forms.ModelForm):
     class Meta:
         model = Mailbox
 
+
 class MailboxAdmin(admin.ModelAdmin):
     list_display = ("mail", "domain", "quota", "active",)
     list_display_links = ("mail", "domain",)
     form = MailboxAdminForm
+
 
 class ForwardingAdmin(admin.ModelAdmin):
     list_display = ("email", "target", "active",)
@@ -75,9 +82,11 @@ class ForwardingAdmin(admin.ModelAdmin):
         }),
     )
 
+
 class DirectAliasInline(admin.TabularInline):
     model = DirectAlias
     extra = 3
+
 
 class VirtualHostAdmin(admin.ModelAdmin):
     list_display = ("fqdn", "owner", "ipport", "ssl_cert", "ssl_key", "force_www", "ssl_enabled", "ssl_force", "apache_enabled", "active",)
@@ -101,18 +110,22 @@ class VirtualHostAdmin(admin.ModelAdmin):
         }),
     )
 
+
 class PHPExtensionInline(admin.TabularInline):
     model = PHPExtension
     extra = 1
-    
+
+
 class PHPConfigInline(admin.StackedInline):
     model = PHPConfig
     extra = 1
 
+
 class PHPExtensionAdmin(admin.ModelAdmin):
-    list_display = ("enabled","name",)
+    list_display = ("enabled", "name",)
     list_editable = ("enabled",)
     list_display_links = ("name",)
+
 
 class PHPConfigAdmin(admin.ModelAdmin):
     list_display = ("name",)
@@ -132,6 +145,7 @@ class PHPConfigAdmin(admin.ModelAdmin):
         }),
     )
 
+
 class ServerConfigAdmin(admin.ModelAdmin):
     fieldsets = (
         (_(u"PHP config"), {
@@ -139,11 +153,13 @@ class ServerConfigAdmin(admin.ModelAdmin):
         }),
     )
 
+
 class FTPUserAdminForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput())
 
     class Meta:
         model = FTPUser
+
 
 class FTPUserAdmin(admin.ModelAdmin):
     list_display = ("username", "home")

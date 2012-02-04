@@ -3,9 +3,9 @@
 set -e
 set -u
 
-FTP_PASSWORD="vzOQuQBd"
-FTP_URL="ftp://48554@88.198.42.117/duplicity/`hostname`/"
-PASSPHRASE="cY1V78sCkxeZ7jpReOCyixH8"
+FTP_PASSWORD="XXXXXXXX"
+FTP_URL="ftp://XXXXX@88.198.42.117/duplicity/`hostname`/"
+PASSPHRASE="XXXXXXXXXXXXXXX"
 
 set -x
 
@@ -19,4 +19,3 @@ FTP_PASSWORD=$FTP_PASSWORD PASSPHRASE=$PASSPHRASE duplicity verify --encrypt-key
     --exclude /var/lib/pacman --exclude /home/mirror --exclude /root/.cache/duplicity/ \
     --exclude /var/abs --exclude /swapfile \
     ${FTP_URL} /
-

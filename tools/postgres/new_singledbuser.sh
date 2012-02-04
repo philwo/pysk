@@ -14,4 +14,3 @@ EOT
 psql -U postgres $DBNAME -f - <<EOT
 GRANT ALL ON SCHEMA public TO $DBNAME WITH GRANT OPTION;
 EOT
-

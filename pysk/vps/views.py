@@ -1,28 +1,26 @@
 # -*- coding: utf-8 -*-
 
 from django.conf import settings
-from django.contrib.auth.decorators import user_passes_test, login_required
-from django.db import transaction
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_list_or_404, get_object_or_404, render_to_response
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.template.loader import render_to_string
 
 from pysk.app.models import *
 from pysk.vps.models import *
 import cPickle
-import hashlib
-from time import time
-from IPy import IP
 import re
 
 re_private_ip = re.compile(r'^(127\.|10\.)')
 
+
 class PyskValidationException(Exception):
     def __init__(self, value):
         self.parameter = value
+
     def __str__(self):
         return repr(self.parameter)
+
 
 def genentries(resp, d):
     processed = [d.name]
@@ -60,9 +58,12 @@ def genentries(resp, d):
     else:
         # MX records
         output.append("; MX RECORDS")
-        if (d.mx1 != ""): output.append("@ IN MX 10 %s" % (d.mx1,))
-        if (d.mx2 != ""): output.append("@ IN MX 20 %s" % (d.mx2,))
-        if (d.mx3 != ""): output.append("@ IN MX 30 %s" % (d.mx3,))
+        if (d.mx1 != ""):
+            output.append("@ IN MX 10 %s" % (d.mx1,))
+        if (d.mx2 != ""):
+            output.append("@ IN MX 20 %s" % (d.mx2,))
+        if (d.mx3 != ""):
+            output.append("@ IN MX 30 %s" % (d.mx3,))
         output.append("")
 
         if d.jabber != "":
@@ -99,7 +100,7 @@ def genentries(resp, d):
             output.append("; %s -> %s" % (a.fqdn(), a.target))
             output.append("%s IN A  %s" % (a.name if a.name else "@", settings.MY_IP))
             if a.www_alias:
-                output.append("%s IN A %s" % ("www."+a.name if a.name else "www", settings.MY_IP))
+                output.append("%s IN A %s" % ("www." + a.name if a.name else "www", settings.MY_IP))
         output.append("")
 
     dataset = VirtualHost.objects.filter(active=True).filter(domain=d)
@@ -107,7 +108,7 @@ def genentries(resp, d):
         output.append("; HOSTS")
         for vh in dataset:
             output.append("%s IN A %s" % (vh.name if vh.name else "@", vh.ipport.ip))
-            output.append("%s IN A %s" % ("www."+vh.name if vh.name else "www", vh.ipport.ip))
+            output.append("%s IN A %s" % ("www." + vh.name if vh.name else "www", vh.ipport.ip))
         output.append("")
 
     dataset = DirectAlias.objects.filter(active=True).filter(domain=d)
@@ -117,8 +118,8 @@ def genentries(resp, d):
             output.append("; %s -> %s" % (da.fqdn(), da.host.fqdn()))
             output.append("%s IN A %s" % (da.name if da.name else "@", da.host.ipport.ip))
         output.append("")
-        
-    dataset = Domain.objects.filter(active=True).filter(name__endswith="."+d.name)
+
+    dataset = Domain.objects.filter(active=True).filter(name__endswith="." + d.name)
     if dataset.count() > 0:
         output.append("; SUBDOMAINS")
         for sd in dataset:
@@ -129,6 +130,7 @@ def genentries(resp, d):
         output.append("")
 
     return output, processed
+
 
 def bind(request):
     SOAmail = "info.igowo.de."
@@ -142,12 +144,13 @@ def bind(request):
     domains = Domain.objects.filter(active=True)
     dlist = []
     dlist.extend(domains)
-    dlist.sort(lambda x,y: x.name.count(".") - y.name.count("."))
+    dlist.sort(lambda x, y: x.name.count(".") - y.name.count("."))
     dprocessedlist = []
     zonefiles = {}
 
     for d in dlist:
-        if d.name in dprocessedlist: continue
+        if d.name in dprocessedlist:
+            continue
         output = []
 
         # SOA
@@ -156,12 +159,18 @@ def bind(request):
 
         # NS records
         output.append("; NS RECORDS")
-        if (d.ns1 != ""): output.append("@ IN NS %s" %(d.ns1,))
-        if (d.ns2 != ""): output.append("@ IN NS %s" %(d.ns2,))
-        if (d.ns3 != ""): output.append("@ IN NS %s" %(d.ns3,))
-        if (d.ns4 != ""): output.append("@ IN NS %s" %(d.ns4,))
-        if (d.ns5 != ""): output.append("@ IN NS %s" %(d.ns5,))
-        if (d.ns6 != ""): output.append("@ IN NS %s" %(d.ns6,))
+        if (d.ns1 != ""):
+            output.append("@ IN NS %s" % (d.ns1,))
+        if (d.ns2 != ""):
+            output.append("@ IN NS %s" % (d.ns2,))
+        if (d.ns3 != ""):
+            output.append("@ IN NS %s" % (d.ns3,))
+        if (d.ns4 != ""):
+            output.append("@ IN NS %s" % (d.ns4,))
+        if (d.ns5 != ""):
+            output.append("@ IN NS %s" % (d.ns5,))
+        if (d.ns6 != ""):
+            output.append("@ IN NS %s" % (d.ns6,))
         output.append("")
 
         newoutput, newprocessed = genentries(resp, d)
@@ -185,6 +194,7 @@ def bind(request):
     resp.write(cPickle.dumps(zonefiles, cPickle.HIGHEST_PROTOCOL))
     return resp
 
+
 def v0_nginx(request):
     """
     nginx configuration
@@ -205,12 +215,12 @@ def v0_nginx(request):
         extra_aliases = ""
         for da in DirectAlias.objects.filter(active=True).filter(host=vh):
             extra_aliases += " %s" % (da.fqdn(),)
-        
+
         output_commonconfig.append("\tserver_name %s www.%s %s;" % (vh.fqdn(), vh.fqdn(), extra_aliases.strip()))
         output_commonconfig.append("\troot %s/;" % (htdocs_dir,))
         output_commonconfig.append("\tindex index.php index.html index.htm;")
         output_commonconfig.append("\t")
-        
+
         if vh.force_www == "strip":
             output_commonconfig.append("\t# Strip www from hostname")
             output_commonconfig.append("\tif ($host ~* www\.(.*)) {")
@@ -224,24 +234,24 @@ def v0_nginx(request):
             output_commonconfig.append("\t\trewrite ^(.*)$ http://www.$host$1 permanent;")
             output_commonconfig.append("\t}")
             output_commonconfig.append("\t")
-        
+
         if not vh.apache_enabled and vh.enable_php:
             output_commonconfig.append("\t# PHP (FastCGI)")
             output_commonconfig.append("\tlocation ~ ^(.+\.php)(.*)$ {")
             output_commonconfig.append("\t\tinclude /etc/nginx/conf/fastcgi_params;")
-            output_commonconfig.append("\t\tfastcgi_index index.php;");
-            output_commonconfig.append("\t\tfastcgi_split_path_info ^(.+\.php)(.*)$;");
-            output_commonconfig.append("\t\tfastcgi_param SCRIPT_FILENAME %s$fastcgi_script_name;" % (htdocs_dir,));
-            output_commonconfig.append("\t\tfastcgi_param PATH_INFO $fastcgi_path_info;");
-            output_commonconfig.append("\t\tfastcgi_param PATH_TRANSLATED $document_root$fastcgi_path_info;");
-            output_commonconfig.append("\t\tfastcgi_pass_header Authorization;");
-            output_commonconfig.append("\t\tfastcgi_intercept_errors off;");
+            output_commonconfig.append("\t\tfastcgi_index index.php;")
+            output_commonconfig.append("\t\tfastcgi_split_path_info ^(.+\.php)(.*)$;")
+            output_commonconfig.append("\t\tfastcgi_param SCRIPT_FILENAME %s$fastcgi_script_name;" % (htdocs_dir,))
+            output_commonconfig.append("\t\tfastcgi_param PATH_INFO $fastcgi_path_info;")
+            output_commonconfig.append("\t\tfastcgi_param PATH_TRANSLATED $document_root$fastcgi_path_info;")
+            output_commonconfig.append("\t\tfastcgi_pass_header Authorization;")
+            output_commonconfig.append("\t\tfastcgi_intercept_errors off;")
             output_commonconfig.append("\t\tif (-f $request_filename) {")
             output_commonconfig.append("\t\t\tfastcgi_pass unix:/tmp/php-%s.sock;" % (username,))
             output_commonconfig.append("\t\t}")
             output_commonconfig.append("\t}")
             output_commonconfig.append("\t")
-        
+
         # Construct http and https server block
         output = []
         output.append("server {")
@@ -259,19 +269,19 @@ def v0_nginx(request):
             output.append("\t\tinclude /etc/nginx/conf/proxy_params;")
             output.append("\t\tproxy_pass http://127.0.%s.1:80/;" % (ipoffset,))
             output.append("\t}")
-        output.append("\n".join(["\t"+x for x in vh.nginx_config.replace("\r\n", "\n").split("\n")]))
+        output.append("\n".join(["\t" + x for x in vh.nginx_config.replace("\r\n", "\n").split("\n")]))
         output.append("\t")
         output.append("}\n")
-        
+
         if vh.ssl_enabled:
             output.append("server {")
             output.append("\tlisten %s:443;" % (vh.ipport.ip,))
             output.append("\t")
             output.append("\t# SSL support")
-            output.append("\tssl on;");
-            output.append("\tssl_certificate %s;" % (vh.ssl_cert, ));
+            output.append("\tssl on;")
+            output.append("\tssl_certificate %s;" % (vh.ssl_cert, ))
             if vh.ssl_key:
-                output.append("\tssl_certificate_key %s;" % (vh.ssl_key, ));
+                output.append("\tssl_certificate_key %s;" % (vh.ssl_key, ))
             output.append("\t")
             for line in output_commonconfig:
                 output.append(line)
@@ -281,14 +291,15 @@ def v0_nginx(request):
                 output.append("\t\tinclude /etc/nginx/conf/proxy_params;")
                 output.append("\t\tproxy_pass http://127.0.%s.1:81/;" % (ipoffset,))
                 output.append("\t}")
-            output.append("\n".join(["\t"+x for x in vh.nginx_config.replace("\r\n", "\n").split("\n")]))
+            output.append("\n".join(["\t" + x for x in vh.nginx_config.replace("\r\n", "\n").split("\n")]))
             output.append("\t")
             output.append("}\n")
 
         vhosts[vh.fqdn()] = ["\n".join(output), username, htdocs_dir]
-        
+
     resp.write(cPickle.dumps(vhosts, cPickle.HIGHEST_PROTOCOL))
     return resp
+
 
 @login_required
 def save(request):

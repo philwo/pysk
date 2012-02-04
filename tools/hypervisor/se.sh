@@ -6,4 +6,3 @@ for i in `cat hosts`; do
     echo "###### $i ######"
     ssh -t root@$i "$@"
 done
-

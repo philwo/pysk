@@ -1,0 +1,43 @@
+### Pysk 1.0 -> 1.1
+
+# 1) SSL hosts must be dealed manually with
+# 2) Check that every virtualhost only has one HostConfig
+# 3) Delete 127.0.0.1 ipaddress, make sure every HostConfig uses the public IP
+
+pacman --noconfirm -Syu
+pacman --noconfirm -S perl-yaml perl-libwww geoip
+
+cd /opt/pysk
+hg pull -u
+
+psql pysk < pysk10-to11.sql
+
+/opt/pysk/snippets/20091120_add_sslkeys_group.sh
+
+cd /opt/pysk/serverconfig/
+./diff.sh
+./copy.sh
+
+perl -MCPAN -e 'install Geo::IP'
+
+monit reload
+sleep 10
+monit unmonitor all
+/etc/rc.d/postfix restart
+/etc/rc.d/dovecot restart
+/etc/rc.d/mysqld restart
+/etc/rc.d/nginx restart
+/etc/rc.d/httpd restart
+sleep 3
+monit monitor all
+monit restart pysk
+monit restart php-fpm
+monit restart php-fpm-pysk
+watch -n1 monit summary
+
+cd /opt/pysk/snippets
+./20091112_recrypt_passwords.sh
+./20091112_resave_virtualhost.sh
+/opt/pysk/tools/passwd/pysk_secret.sh
+
+/opt/pysk/tools/web.sh

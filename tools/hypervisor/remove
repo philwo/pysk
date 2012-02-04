@@ -10,4 +10,3 @@ set -x
 #kill ...
 #dmsetup remove haruhi_vg-c--ph--1
 #lvremove /dev/haruhi_vg/c-ph-1
-

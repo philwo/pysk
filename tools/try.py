@@ -1,13 +1,14 @@
 #!/usr/bin/env python2
 
-import sys, os, os.path
+import sys
+import os
+import os.path
 
 sys.path.insert(0, "/opt/pysk/pysk")
 sys.path.insert(0, "/opt/pysk")
 os.environ["DJANGO_SETTINGS_MODULE"] = "pysk.settings"
 
 from django.conf import settings
-from django.db import transaction
 from django.template import Context
 from django.template.loader import render_to_string
 
@@ -15,20 +16,15 @@ from pysk.app.models import *
 from pysk.vps.models import *
 
 from time import time, sleep
-from IPy import IP
 from pwd import getpwnam, getpwuid
 from grp import getgrnam, getgrgid
 from glob import glob
 from stat import S_IMODE, ST_MODE
 
-import cPickle
-import hashlib
 import re
 import subprocess
 import shutil
-import urllib2
 import socket
-import time
 import difflib
 
 validDomain = re.compile("([a-zA-Z0-9-]+\.?)+")
@@ -37,10 +33,12 @@ POSTMASTER_ADDRESS = "philipp@igowo.de"
 ABUSE_ADDRESS = "philipp@igowo.de"
 HYPERVISOR_IP = "188.40.56.202"
 
+
 # Utility functions
 def symlink(target, source):
     print "symlink       %s  %s" % (target, source)
     os.symlink(target, source)
+
 
 def rmtree(path):
     if os.path.exists(path):
@@ -49,6 +47,7 @@ def rmtree(path):
     elif DEBUG:
         print "rmtree SKIP   %s" % (path,)
 
+
 def remove(path):
     if os.path.exists(path):
         print "remove        %s" % (path,)
@@ -56,17 +55,21 @@ def remove(path):
     elif DEBUG:
         print "remove SKIP   %s" % (path,)
 
+
 def copyfile(fromfile, tofile):
     print "copyfile      %s  %s" % (fromfile, tofile)
     shutil.copy(fromfile, tofile)
-    
+
+
 def rename(fromfile, tofile):
     print "rename        %s  %s" % (fromfile, tofile)
     os.rename(fromfile, tofile)
 
+
 def runprog(args):
     print "runprog       %s" % (" ".join(args))
     subprocess.call(args)
+
 
 def chown(path, user, group=None):
     pw = getpwnam(user) if type(user) != int else getpwuid(user)
@@ -74,13 +77,14 @@ def chown(path, user, group=None):
     gid = pw.pw_gid
     if group != None:
         gid = getgrnam(group).gr_gid if type(group) != int else getgrgid(group)
-    
+
     statinfo = os.stat(path)
     if statinfo.st_uid != uid or statinfo.st_gid != gid:
         print "chown         %s:%s  %s" % (user, group if group else user, path)
         os.chown(path, uid, gid)
     elif DEBUG:
         print "chown SKIP    %s:%s  %s" % (user, group if group else user, path)
+
 
 def chmod(path, mode):
     statinfo = os.stat(path)
@@ -89,6 +93,7 @@ def chmod(path, mode):
         os.chmod(path, mode)
     elif DEBUG:
         print "chmod SKIP %o  %s" % (mode, path)
+
 
 def mkdir(path, mode, user, group=None):
     if not os.path.exists(path):
@@ -99,6 +104,7 @@ def mkdir(path, mode, user, group=None):
     chmod(path, mode)
     chown(path, user, group)
 
+
 def makefile(path, content, mode=0644, strip_emptylines=False):
     print "makefile %o  %s" % (mode, path,)
     if strip_emptylines:
@@ -106,6 +112,7 @@ def makefile(path, content, mode=0644, strip_emptylines=False):
     with open(path, "w") as conf:
         conf.write(content)
     chmod(path, mode)
+
 
 def diff(oldfile, newfile, print_on_diff=True, move_on_diff=False, run_on_diff=None):
     print "diff          %s  %s" % (oldfile, newfile)
@@ -123,21 +130,22 @@ def diff(oldfile, newfile, print_on_diff=True, move_on_diff=False, run_on_diff=N
     tolines = open(tofile, 'U').readlines()
 
     output = "".join(difflib.unified_diff(fromlines, tolines, fromfile, tofile, fromdate, todate, n=3))
-    
+
     # Backup old file and move new file over
     if move_on_diff and (len(output) > 0 or os.stat(newfile).st_uid != os.stat(oldfile).st_uid or os.stat(newfile).st_gid != os.stat(oldfile).st_gid):
         copyfile(oldfile, oldfile + ".old")
         rename(newfile, oldfile)
     elif move_on_diff and len(output) == 0:
         os.remove(newfile)
-    
+
     if print_on_diff and len(output) > 0:
         print output
-        
+
     if run_on_diff != None:
         run_on_diff()
-    
+
     return output if len(output) > 0 else None
+
 
 def sync(ist, soll, start_func=None, stop_func=None):
     #print "sync          %s" % (sorted(ist),)
@@ -236,14 +244,14 @@ for user in users:
 
     ipoffset = user.id
     assert(ipoffset >= 0)
-    
+
     mkdir(logpath, 0755, "root")                                                            # /var/log/httpd-philwo
     mkdir(runpath, 0755, "root")                                                            # /var/run/httpd-philwo
     mkdir(os.path.join(runpath, "fastcgi"), 0700, username)                                 # /var/run/httpd-philwo/fastcgi
     mkdir(os.path.join(runpath, "davlock"), 0700, username)                                 # /var/run/httpd-philwo/davlock
-    
+
     if os.path.exists(apacheroot):
-    	rmtree(apacheroot)
+        rmtree(apacheroot)
     mkdir(apacheroot, 0755, "root")
     symlink("/usr/lib/httpd/build", os.path.join(apacheroot, "build"))                      # /etc/httpd-philwo/build           -> /usr/lib/httpd/build
     symlink("/usr/lib/httpd/modules", os.path.join(apacheroot, "modules"))                  # /etc/httpd-philwo/modules         -> /usr/lib/httpd/modules
@@ -253,7 +261,7 @@ for user in users:
     mkdir(os.path.join(apacheroot, "conf", "sites"), 0755, "root")                          # /etc/httpd-philwo/conf/sites
     symlink("/etc/httpd/conf/magic", os.path.join(apacheroot, "conf", "magic"))             # /etc/httpd-philwo/conf/magic      -> /etc/httpd/conf/magic
     symlink("/etc/httpd/conf/mime.types", os.path.join(apacheroot, "conf", "mime.types"))   # /etc/httpd-philwo/conf/mime.types -> /etc/httpd/conf/mime.types
-    
+
     makefile(os.path.join(apacheroot, "conf", "httpd.conf"),                                # /etc/httpd-philwo/conf/httpd.conf
                             render_to_string("etc/httpd/conf/httpd.conf",
                             {"username": username, "ipoffset": ipoffset}, ctx))
@@ -264,7 +272,7 @@ for user in users:
                             render_to_string("etc/monit.d/httpd",
                             {"username": username, "ipoffset": ipoffset}, ctx))
     monit_list += ["httpd-%s" % (username,)]
-    
+
     # For every IP of this server, which should be served by an apache
     for vh in VirtualHost.objects.filter(active=True, owner=user, apache_enabled=True):
         htdocs_dir = "/home/%s/www/%s/htdocs/" % (username, vh.fqdn())
@@ -272,8 +280,8 @@ for user in users:
         extra_aliases = ""
         for da in DirectAlias.objects.filter(active=True).filter(host=vh):
             extra_aliases += " %s" % (da.fqdn(),)
-        
-        apache_config = "\n".join(["    "+x for x in vh.apache_config.replace("\r\n", "\n").split("\n")])
+
+        apache_config = "\n".join(["    " + x for x in vh.apache_config.replace("\r\n", "\n").split("\n")])
 
         output = []
         ports = ("80",) if not vh.ssl_enabled else ("80", "81")
@@ -311,11 +319,11 @@ for vh in VirtualHost.objects.filter(active=True):
             "vh": vh,
             "port": port,
             "extra_aliases": " ".join([da.fqdn() for da in DirectAlias.objects.filter(active=True).filter(host=vh)]),
-            "nginx_config": "\n".join(["    "+x for x in vh.nginx_config.replace("\r\n", "\n").split("\n")]),
+            "nginx_config": "\n".join(["    " + x for x in vh.nginx_config.replace("\r\n", "\n").split("\n")]),
             "ipoffset": ipoffset,
         }, ctx)
         makefile("/etc/nginx/conf/sites/%s-%s" % (vh.fqdn(), port), config, strip_emptylines=True)
-     
+
     # Fixup htdocs dir
     vh_dir = "/home/%s/www/%s" % (vh.owner.username, vh.fqdn())
     mkdir(vh_dir, 0755, vh.owner.username, "users")
@@ -373,7 +381,8 @@ sync(glob("/etc/php/php-*.sh"), ["/etc/php/php-%s.sh" % (user.username,) for use
 sync(glob("/etc/php/php-*.ini"), ["/etc/php/php-%s.ini" % (user.username,) for user in users] + ["/etc/php/php-pysk.ini"], start_func=None, stop_func=remove)
 
 # Remove interfering config files (possibly installed by PHP distribution)
-for x in glob("/etc/php/conf.d/*"): remove(x)
+for x in glob("/etc/php/conf.d/*"):
+    remove(x)
 
 ### MONIT
 def monit_kill(id):
@@ -385,7 +394,7 @@ sync([os.path.basename(x) for x in glob("/etc/monit.d/*")], monit_list, monit_st
 
 runprog(["/usr/bin/monit", "reload"])
 sleep(3)
-for x in monit_restart_list: runprog(["/usr/bin/monit", "restart", x])
+for x in monit_restart_list:
+    runprog(["/usr/bin/monit", "restart", x])
 
 print "FINISHED!"
-

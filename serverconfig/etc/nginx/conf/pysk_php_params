@@ -9,4 +9,3 @@ fastcgi_param PATH_TRANSLATED $document_root$fastcgi_path_info;
 
 fastcgi_pass_header Authorization;
 fastcgi_intercept_errors off;
-

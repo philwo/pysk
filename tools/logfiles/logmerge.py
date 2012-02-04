@@ -1,14 +1,17 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-import sys, os, os.path
+import sys
+import os
+import os.path
 from optparse import OptionParser
 from subprocess import call
+
 
 def main(argv=None):
     """
     Wrapper for logresolvemerge.pl which moves the processed logfiles away after successful processing
-    
+
     """
     if argv is None:
         argv = sys.argv
@@ -17,13 +20,14 @@ def main(argv=None):
     parser.add_option("-d", "--debug", action="store_true", dest="debug", help="Turn on debugging output", default=False)
     (options, args) = parser.parse_args(argv)
     args = args[1:]
-    
+
     OUTPUTDIR = "/opt/pysk/wwwlogs"
 
-    if options.debug: print >> sys.stderr, "Debug mode activated"
+    if options.debug:
+        print >> sys.stderr, "Debug mode activated"
 
     ret = call(["/opt/pysk/tools/logfiles/logresolvemerge.pl"] + args)
-    
+
     if ret == 0:
         #print "Moving logfiles from pending to processed ..."
         for fname in args:

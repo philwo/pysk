@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from django.db import models
-from time import time
-from math import floor
 
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
+
 
 ## Model classes
 
@@ -56,6 +55,7 @@ class Domain(models.Model):
         verbose_name = _(u"Domain")
         verbose_name_plural = _(u"Domains")
 
+
 class NSEntry(models.Model):
     NSENTRY_TYPE_CHOICES = (
         ("A", "A"),
@@ -87,6 +87,7 @@ class NSEntry(models.Model):
         verbose_name = _(u"Custom DNS record")
         verbose_name_plural = _(u"Custom DNS records")
 
+
 class IPAddress(models.Model):
     id = models.AutoField(primary_key=True)
     ip = models.IPAddressField(unique=True)
@@ -104,6 +105,7 @@ CHOICES_FORCE_WWW = (
         ("prepend", _(u"force www subdomain")),
         ("ignore", _(u"both is okay")),
     )
+
 
 class VirtualHost(models.Model):
     id = models.AutoField(primary_key=True)
@@ -141,6 +143,7 @@ class VirtualHost(models.Model):
         verbose_name = _(u"Webspace")
         verbose_name_plural = _(u"Webspaces")
 
+
 class Alias(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=64, blank=True, verbose_name=_(u"Hostname"))
@@ -161,6 +164,7 @@ class Alias(models.Model):
         verbose_name = _(u"HTTP forwarding")
         verbose_name_plural = _(u"HTTP forwardings")
 
+
 class DirectAlias(models.Model):
     id = models.AutoField(primary_key=True)
     host = models.ForeignKey(VirtualHost)
@@ -174,6 +178,7 @@ class DirectAlias(models.Model):
     class Meta:
         verbose_name = _(u"Direct alias")
         verbose_name_plural = _(u"Direct aliases")
+
 
 class Mailbox(models.Model):
     id = models.AutoField(primary_key=True)
@@ -191,6 +196,7 @@ class Mailbox(models.Model):
         unique_together = (("mail", "domain"),)
         verbose_name = _(u"Mailbox")
         verbose_name_plural = _(u"Mailboxes")
+
 
 class Forwarding(models.Model):
     id = models.AutoField(primary_key=True)
@@ -212,6 +218,7 @@ class Forwarding(models.Model):
         verbose_name = _(u"E-Mail forwarding")
         verbose_name_plural = _(u"E-Mail forwardings")
 
+
 class PHPConfig(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=75, unique=True, verbose_name=_(u"Config name"))
@@ -224,41 +231,41 @@ class PHPConfig(models.Model):
     confused and end up parsing the wrong code in the wrong context. But because
     this short cut has been a feature for such a long time, it's currently still
     supported for backwards compatibility, but we recommend you don't use them.<br /><br />
-    
+
     see <a href="http://php.net/short-open-tag">http://php.net/short-open-tag</a>
     """))
     max_execution_time = models.IntegerField(verbose_name=_(u"Max. execution time"), help_text=_(u"""
     <strong>Maximum execution time of each script, in seconds</strong><br /><br />
-    
+
     see <a href="http://php.net/max-execution-time">http://php.net/max-execution-time</a>
     """))
     max_input_time = models.IntegerField(verbose_name=_(u"Max. input time"), help_text=_(u"""
     <strong>Maximum amount of time each script may spend parsing request data.</strong><br /><br />
-    
+
     It's a good idea to limit this time on productions servers in order to eliminate unexpectedly
     long running scripts.<br /><br />
-    
+
     see <a href="http://php.net/max-input-time">http://php.net/max-input-time</a>
     """))
     memory_limit = models.CharField(max_length=20, verbose_name=_(u"Memory limit"), help_text=_(u"""
     <strong>Maximum amount of memory a script may consume (128MB)</strong><br /><br />
-    
+
     see <a href="http://php.net/memory-limit">http://php.net/memory-limit</a>
     """))
     post_max_size = models.CharField(max_length=20, verbose_name=_(u"POST request max. size"), help_text=_(u"""
     <strong>Maximum size of POST data that PHP will accept.</strong><br /><br />
-    
+
     see <a href="http://php.net/post-max-size">http://php.net/post-max-size</a>
     """))
     upload_max_filesize = models.CharField(max_length=20, verbose_name=_(u"File-upload max. filesize"), help_text=_(u"""
     <strong>Maximum allowed size for uploaded files.</strong><br /><br />
-    
+
     see <a href="http://php.net/upload-max-filesize">http://php.net/upload-max-filesize</a>
     """))
     allow_call_time_pass_reference = models.BooleanField(verbose_name=_(u"Allow call time pass reference"), help_text=_(u"""
     <strong>This directive allows you to enable and disable warnings which PHP will issue
     if you pass a value by reference at function call time.</strong><br /><br />
-    
+
     Passing values by
     reference at function call time is a deprecated feature which will be removed
     from PHP at some point in the near future. The acceptable method for passing a
@@ -266,18 +273,18 @@ class PHPConfig(models.Model):
     definition, not at call time. This directive does not disable this feature, it
     only determines whether PHP will warn you about it or not. These warnings
     should enabled in development environments only.
-    
+
     see <a href="http://php.net/allow-call-time-pass-reference">http://php.net/allow-call-time-pass-reference</a>
     """))
     error_reporting = models.CharField(max_length=100, verbose_name=_(u"Error reporting"), help_text=_(u"""
     <strong>This directive informs PHP of which errors, warnings and notices you would like
     it to take action for.</strong><br /><br />
-    
+
     The recommended way of setting values for this
     directive is through the use of the error level constants and bitwise
     operators. The error level constants are below here for convenience as well as
     some common settings and their meanings.<br /><br />
-    
+
     <strong>Error Level Constants:</strong><br /><br />
     E_ALL: All errors and warnings (includes E_STRICT as of PHP 6.0.0)<br /><br />
     E_ERROR: fatal run-time errors<br /><br />
@@ -296,7 +303,7 @@ class PHPConfig(models.Model):
     E_USER_NOTICE: user-generated notice message<br /><br />
     E_DEPRECATED: warn about code that will not work in future versions of PHP<br /><br />
     E_USER_DEPRECATED: user-generated deprecation warnings<br /><br />
-    
+
     <strong>Common Values:</strong><br /><br />
     E_ALL & ~E_NOTICE  (Show all errors, except for notices and coding standards warnings.)<br /><br />
     E_ALL & ~E_NOTICE | E_STRICT  (Show all errors, except for notices)<br /><br />
@@ -306,7 +313,7 @@ class PHPConfig(models.Model):
     display_errors = models.BooleanField(verbose_name=_(u"Display errors"), help_text=_(u"""
     <strong>This directive controls whether or not and where PHP will output errors,
     notices and warnings too.</strong><br /><br />
-    
+
     Error output is very useful during development, but
     it could be very dangerous in production environments. Depending on the code
     which is triggering the error, sensitive information could potentially leak
@@ -319,19 +326,19 @@ class PHPConfig(models.Model):
     display_startup_errors = models.BooleanField(verbose_name=_(u"Display start-up errors"), help_text=_(u"""
     <strong>The display of errors which occur during PHP's startup sequence are handled
     separately from display_errors.</strong><br /><br />
-    
+
     PHP's default behavior is to suppress those
     errors from clients. Turning the display of startup errors on can be useful in
     debugging configuration problems. But, it's strongly recommended that you
     leave this setting off on production servers.<br /><br />
-    
+
     see <a href="http://php.net/display-startup-errors">http://php.net/display-startup-errors</a>
     """))
     log_errors = models.BooleanField(verbose_name=_(u"Log errors to file"), help_text=_(u"""
     <strong>Besides displaying errors, PHP can also log errors to locations such as a
     server-specific log, STDERR, or a location specified by the error_log
     directive found below.</strong><br /><br />
-    
+
     While errors should not be displayed on productions
     servers they should still be monitored and logging is a great way to do that.<br /><br />
 
@@ -339,7 +346,7 @@ class PHPConfig(models.Model):
     """))
     track_errors = models.BooleanField(verbose_name=_(u"Track errors in variable"), help_text=_(u"""
     <strong>Store the last error/warning message in $php_errormsg (boolean).</strong><br /><br />
-    
+
     Setting this value
     to On can assist in debugging and is appropriate for development servers. It should
     however be disabled on production servers.<br /><br />
@@ -349,7 +356,7 @@ class PHPConfig(models.Model):
     html_errors = models.BooleanField(verbose_name=_(u"Link to documentation on error"), help_text=_(u"""
     <strong>When PHP displays or logs an error, it has the capability of inserting html
     links to documentation related to that error.</strong><br /><br />
-    
+
     This directive controls whether
     those HTML links appear in error messages or not. For performance and security
     reasons, it's recommended you disable this on production servers.<br /><br />
@@ -360,7 +367,7 @@ class PHPConfig(models.Model):
     <strong>PHP 4.2 and less have an undocumented feature/bug that allows you to
     to initialize a session variable in the global scope, even when register_globals
     is disabled.</strong><br /><br />
-    
+
     PHP 4.3 and later will warn you, if this feature is used.
     You can disable the feature and the warning separately. At this time,
     the warning is only displayed, if bug_compat_42 is enabled. This feature
@@ -381,7 +388,7 @@ class PHPConfig(models.Model):
 
     see <a href="http://php.net/session.bug-compat-warn">http://php.net/session.bug-compat-warn</a>
     """))
-    
+
     def __unicode__(self):
         return u"%s" % (self.name,)
 
@@ -390,11 +397,12 @@ class PHPConfig(models.Model):
         verbose_name = _(u"PHP config")
         verbose_name_plural = _(u"PHP configs")
 
+
 class PHPExtension(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=75, unique=True, verbose_name=_(u"Extension module"))
     enabled = models.BooleanField(default=False)
-    
+
     def __unicode__(self):
         return u"%s" % (self.name,)
 
@@ -403,10 +411,12 @@ class PHPExtension(models.Model):
         verbose_name = _(u"PHP extension")
         verbose_name_plural = _(u"PHP extensions")
 
+
 class ServerConfig(models.Model):
     id = models.AutoField(primary_key=True)
     active = models.BooleanField(unique=True, default=True)
     default_php_config = models.ForeignKey(PHPConfig)
+
 
 class FTPUser(models.Model):
     id = models.AutoField(primary_key=True)
@@ -431,7 +441,7 @@ class FTPUser(models.Model):
 
     def __unicode__(self):
         return u"%s" % (self.username())
-    
+
     class Meta:
         ordering = ["owner", "suffix"]
         verbose_name = _(u"FTP user")

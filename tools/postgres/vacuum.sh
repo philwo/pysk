@@ -9,4 +9,3 @@ for db in $databases; do
     psql -h localhost -U postgres -c "VACUUM ANALYZE;" -q ${db}
     psql -h localhost -U postgres -c "REINDEX DATABASE ${db};" -q ${db}
 done
-

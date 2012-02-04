@@ -3,14 +3,17 @@
 
 from __future__ import with_statement
 
-import sys, os, os.path
+import sys
+import os
+import os.path
 from imaplib import IMAP4
 from email import message_from_string
 from tempfile import mkstemp
 
+
 def main(argv=None):
     M = IMAP4("imap.igowo.de")
-    M.login("webstats@intra.igowo.de", "c9Pf6G6vAAV3")
+    M.login("webstats@intra.igowo.de", "XXXXXXXXXXXX")
     M.select()
     typ, data = M.sort("DATE", "UTF-8", "UNSEEN")
 
