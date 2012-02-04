@@ -1,0 +1,4 @@
+Roundcube modifications:
+- program/include/iniset.php: removed magic quotes check (deprecated in PHP >= 5.3.0)
+- skins/default/templates: removed autocomplete="off" (customer feature request)
+
