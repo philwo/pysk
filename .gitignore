@@ -1,0 +1,14 @@
+*.pyc
+*.swp
+.DS_Store
+secret/mysqlpw
+secret/htpasswd
+tools/logfiles2/logs/*
+tools/logfiles2/src/*
+tools/hypervisor/lists/*
+www/roundcube/logs/*
+wwwlogs/dnscache.*
+wwwlogs/inbox/*.log
+wwwlogs/pending/*/*.log
+wwwlogs/processed/*/*
+uploads/*
