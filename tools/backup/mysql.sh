@@ -21,20 +21,21 @@ set -u
 backup_root="/root/backup/mysql"
 
 mkdir -p ${backup_root}/
-rm -f ${backup_root}/*
+rm -rf ${backup_root}/*
 
-databases=`mysql -Bse 'show databases' | fgrep -v "information_schema"`
+echo "Dumping users ..."
+mysql -BNe "select concat('\'',user,'\'@\'',host,'\'') from mysql.user" | while read uh; do mysql -BNe "show grants for $uh" | sed 's/$/;/; s/\\\\/\\/g'; done > ${backup_root}/grants.sql
+
+databases=`mysql -Bse 'show databases' | fgrep -v "information_schema" | fgrep -v "performance_schema"`
 for db in $databases; do
+    echo "Dumping ${db} ..."
+    mysqldump --add-drop-database --allow-keywords -ERx --triggers ${db} | gzip -9 > ${backup_root}/${db}.sql.gz
 
     # Dump individual tables
-    #tables=`mysql -Bse 'show tables' ${db}`
-    #for table in $tables; do
-    #   mkdir mkdir -p ${backup_root}/${db}/
-    #   file="${backup_root}/${db}/${table}.sql.xz"
-    #   mysqldump --add-drop-table --allow-keywords
-    #done
-
-    echo "Dumping ${db} ..."
-    #mysqldump --add-drop-database --lock-all-tables --events --routines --triggers --allow-keywords ${db} | xz -7 > ${backup_root}/${db}.sql.xz
-    mysqldump --add-drop-database --lock-all-tables --events --routines --triggers --allow-keywords ${db} | gzip -9 > ${backup_root}/${db}.sql.gz
+    mkdir ${backup_root}/${db}
+    tables=`mysql -Bse 'show tables' ${db}`
+    for table in $tables; do
+        echo "Dumping ${db}.${table} ..."
+        mysqldump --add-drop-table --allow-keywords -ERx --triggers ${db} ${table} | gzip -9 > ${backup_root}/${db}/{$table}.sql.gz
+    done
 done
